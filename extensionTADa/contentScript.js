@@ -11,7 +11,8 @@ const DEFAULT_SETTINGS = {
   ensureComments: true,
   autoSelectChips: false,
   pipButton: true,
-  abLooper: true
+  abLooper: true,
+  videoBookmarks: true
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -33,6 +34,14 @@ const AB_STYLE_ID = "tada-ab-style";
 const AB_BTN_ID = "tada-ab-btn";
 const AB_CLEAR_BTN_ID = "tada-ab-clear-btn";
 const AB_TRACK_ID = "tada-ab-track";
+const BOOKMARK_STYLE_ID = "tada-bookmark-style";
+const BOOKMARK_BTN_ID = "tada-bookmark-btn";
+const BOOKMARK_ADD_BTN_ID = "tada-bookmark-add-btn";
+const BOOKMARK_MODAL_ID = "tada-bookmark-modal";
+const BOOKMARK_TRACK_ID = "tada-bookmark-track";
+const BOOKMARK_PANEL_ID = "tada-bookmark-panel";
+const BOOKMARK_TOAST_ID = "tada-bookmark-toast";
+const BOOKMARKS_STORAGE_KEY = "tada_video_bookmarks_v1";
 const AD_SELECTORS = [
   "ytd-promoted-video-renderer",
   "ytd-promoted-sparkles-text-search-renderer",
@@ -2949,6 +2958,9 @@ function abReset() {
 
 /* --- Smart button click handler --- */
 function abSmartClick() {
+  if (typeof stopBookmarkPicking === "function" && typeof bookmarkPicking !== "undefined" && bookmarkPicking) {
+    stopBookmarkPicking();
+  }
   // If both points set → toggle loop
   if (ab.a !== null && ab.b !== null) {
     abToggle();
@@ -3064,6 +3076,20 @@ function abSetupTimeline() {
   bar.dataset.tadaAb = "1";
 
   bar.addEventListener("click", (e) => {
+    // 1. Chế độ chọn Bookmark / Note trên thanh tua
+    if (typeof bookmarkPicking !== "undefined" && bookmarkPicking && currentSettings.videoBookmarks) {
+      e.preventDefault();
+      e.stopPropagation();
+      const t = abTimeFromEvent(e);
+      if (t !== null) {
+        stopBookmarkPicking();
+        const v = getMainVideoElement();
+        if (v) v.currentTime = t;
+        openBookmarkInputModal(t);
+      }
+      return;
+    }
+
     if (!currentSettings.abLooper) return;
     // Shift/Alt+Click shortcuts always work
     if (e.shiftKey) { e.preventDefault(); e.stopPropagation(); const t = abTimeFromEvent(e); if (t !== null) abSetA(t); return; }
@@ -3440,6 +3466,1417 @@ function applyAbLooperSetting() {
   }
 }
 
+/* ===== TADa VIDEO BOOKMARKS & NOTES ===== */
+let currentVideoBookmarks = [];
+let bookmarkPanelOpen = false;
+let bookmarkHotkeysBound = false;
+let bookmarkControlInterval = null;
+let currentBookmarkVideoId = null;
+let bookmarkPicking = false;
+
+function formatBookmarkTime(sec) {
+  if (sec === null || sec === undefined || isNaN(sec)) return "00:00";
+  const total = Math.max(0, Math.floor(sec));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n) => (n < 10 ? "0" + n : "" + n);
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+function escapeBookmarkHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getCurrentVideoTitle() {
+  const metaTitle = document.querySelector("h1.ytd-watch-metadata yt-formatted-string")?.textContent;
+  if (metaTitle && metaTitle.trim()) return metaTitle.trim();
+  const pageTitle = document.title || "";
+  return pageTitle.replace(/ - YouTube$/, "").trim() || "Video YouTube";
+}
+
+function getCurrentVideoChannel() {
+  const channelEl = document.querySelector("ytd-channel-name yt-formatted-string a, ytd-video-owner-renderer #channel-name a");
+  return channelEl?.textContent?.trim() || "";
+}
+
+function bookmarkToast(msg) {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+  let t = player.querySelector("#" + BOOKMARK_TOAST_ID);
+  if (!t) {
+    t = document.createElement("div");
+    t.id = BOOKMARK_TOAST_ID;
+    t.className = "tada-bm-toast";
+    player.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.remove("show");
+  void t.offsetWidth;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.classList.remove("show");
+  }, 2200);
+}
+
+/* --- Picking Mode --- */
+function toggleBookmarkPicking() {
+  if (bookmarkPicking) {
+    stopBookmarkPicking();
+    bookmarkToast("✕ Đã hủy chọn mốc");
+  } else {
+    startBookmarkPicking();
+  }
+}
+
+function startBookmarkPicking() {
+  if (typeof abPicking !== "undefined" && abPicking) {
+    abPicking = false;
+    if (typeof abUpdatePickingUI === "function") abUpdatePickingUI();
+  }
+  bookmarkPicking = true;
+  updateBookmarkButtonUI();
+  bookmarkUpdatePickingUI();
+  bookmarkToast("👆 Click trên thanh tua để chọn mốc ghi chú (Esc để hủy)");
+}
+
+function stopBookmarkPicking() {
+  bookmarkPicking = false;
+  updateBookmarkButtonUI();
+  bookmarkUpdatePickingUI();
+}
+
+function bookmarkUpdatePickingUI() {
+  const bar = document.querySelector(".ytp-progress-bar");
+  if (bar) {
+    bar.classList.toggle("tada-bm-picking", bookmarkPicking);
+  }
+  const addBtn = document.getElementById(BOOKMARK_ADD_BTN_ID);
+  if (addBtn) {
+    addBtn.classList.toggle("picking", bookmarkPicking);
+  }
+}
+
+/* --- Storage & Data --- */
+async function loadBookmarksForCurrentVideo() {
+  const vId = getCurrentVideoId();
+  currentBookmarkVideoId = vId;
+  if (!vId) {
+    currentVideoBookmarks = [];
+    updateBookmarkButtonBadge();
+    updateBookmarkPins();
+    if (bookmarkPanelOpen) renderBookmarkPanelList();
+    return;
+  }
+  try {
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      const data = await chrome.storage.local.get([BOOKMARKS_STORAGE_KEY]);
+      const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
+      const videoEntry = allBm[vId];
+      currentVideoBookmarks = Array.isArray(videoEntry?.items) ? [...videoEntry.items] : [];
+      currentVideoBookmarks.sort((a, b) => (a.time || 0) - (b.time || 0));
+    }
+  } catch (err) {
+    console.debug("[TADa] Failed to load bookmarks", err);
+  }
+  updateBookmarkButtonBadge();
+  updateBookmarkPins();
+  if (bookmarkPanelOpen) renderBookmarkPanelList();
+}
+
+async function saveNewBookmark(targetTime, noteText) {
+  const vId = getCurrentVideoId();
+  if (!vId) return;
+
+  const v = getMainVideoElement();
+  const time = typeof targetTime === "number" ? targetTime : (v?.currentTime || 0);
+  const roundedTime = parseFloat(time.toFixed(1));
+  const finalNote = (noteText && noteText.trim()) ? noteText.trim() : `Mốc ${formatBookmarkTime(roundedTime)}`;
+
+  const newItem = {
+    id: "bm_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+    time: roundedTime,
+    note: finalNote,
+    createdAt: Date.now()
+  };
+
+  try {
+    const data = await chrome.storage.local.get([BOOKMARKS_STORAGE_KEY]);
+    const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
+    const existing = allBm[vId] || {
+      title: getCurrentVideoTitle(),
+      channel: getCurrentVideoChannel(),
+      duration: v?.duration || 0,
+      items: []
+    };
+
+    existing.title = getCurrentVideoTitle() || existing.title;
+    existing.channel = getCurrentVideoChannel() || existing.channel;
+    existing.duration = v?.duration || existing.duration;
+    existing.updatedAt = Date.now();
+
+    const items = Array.isArray(existing.items) ? existing.items : [];
+    items.push(newItem);
+    items.sort((a, b) => (a.time || 0) - (b.time || 0));
+    existing.items = items;
+    allBm[vId] = existing;
+
+    await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: allBm });
+    currentVideoBookmarks = items;
+
+    updateBookmarkButtonBadge();
+    updateBookmarkPins();
+    if (bookmarkPanelOpen) renderBookmarkPanelList();
+    bookmarkToast(`🏷️ Đã ghim [${formatBookmarkTime(roundedTime)}]: ${finalNote}`);
+  } catch (err) {
+    console.error("[TADa] Failed to save bookmark", err);
+  }
+}
+
+async function updateBookmarkNote(bmId, newNote) {
+  const vId = getCurrentVideoId();
+  if (!vId) return;
+  try {
+    const data = await chrome.storage.local.get([BOOKMARKS_STORAGE_KEY]);
+    const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
+    if (allBm[vId] && Array.isArray(allBm[vId].items)) {
+      const item = allBm[vId].items.find(it => it.id === bmId);
+      if (item) {
+        item.note = (newNote && newNote.trim()) ? newNote.trim() : `Mốc ${formatBookmarkTime(item.time)}`;
+        item.updatedAt = Date.now();
+        allBm[vId].updatedAt = Date.now();
+        await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: allBm });
+        currentVideoBookmarks = allBm[vId].items;
+        updateBookmarkPins();
+        if (bookmarkPanelOpen) renderBookmarkPanelList();
+        bookmarkToast("✏️ Đã cập nhật ghi chú!");
+      }
+    }
+  } catch (err) {
+    console.error("[TADa] Failed to update bookmark", err);
+  }
+}
+
+async function removeBookmark(bmId) {
+  const vId = getCurrentVideoId();
+  if (!vId) return;
+
+  try {
+    const data = await chrome.storage.local.get([BOOKMARKS_STORAGE_KEY]);
+    const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
+    if (allBm[vId] && Array.isArray(allBm[vId].items)) {
+      allBm[vId].items = allBm[vId].items.filter(item => item.id !== bmId);
+      allBm[vId].updatedAt = Date.now();
+      if (allBm[vId].items.length === 0) {
+        delete allBm[vId];
+        currentVideoBookmarks = [];
+      } else {
+        currentVideoBookmarks = allBm[vId].items;
+      }
+      await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: allBm });
+      updateBookmarkButtonBadge();
+      updateBookmarkPins();
+      if (bookmarkPanelOpen) renderBookmarkPanelList();
+      bookmarkToast("🗑️ Đã xóa mốc thời gian");
+    }
+  } catch (err) {
+    console.error("[TADa] Failed to remove bookmark", err);
+  }
+}
+
+function exportBookmarksToMarkdown() {
+  const vId = getCurrentVideoId();
+  if (!vId || currentVideoBookmarks.length === 0) {
+    bookmarkToast("Chưa có mốc nào để sao chép");
+    return;
+  }
+  const title = getCurrentVideoTitle();
+  const url = `https://www.youtube.com/watch?v=${vId}`;
+  let md = `📌 **${title}**\n🔗 ${url}\n\n`;
+  currentVideoBookmarks.forEach((bm) => {
+    md += `- [${formatBookmarkTime(bm.time)}](${url}&t=${Math.floor(bm.time)}s) - ${bm.note}\n`;
+  });
+
+  navigator.clipboard.writeText(md).then(() => {
+    bookmarkToast("📋 Đã chép Markdown vào bộ nhớ tạm!");
+  }).catch(() => {
+    bookmarkToast("❌ Không thể chép vào clipboard");
+  });
+}
+
+/* --- Note Input Popup Modal --- */
+function openBookmarkInputModal(targetTime, existingItem = null) {
+  if (!currentSettings.videoBookmarks || !isWatchPage()) return;
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  removeBookmarkModal();
+
+  const isEdit = Boolean(existingItem);
+  const time = typeof targetTime === "number" ? targetTime : (existingItem?.time || 0);
+  const roundedTime = parseFloat(time.toFixed(1));
+
+  const overlay = document.createElement("div");
+  overlay.id = BOOKMARK_MODAL_ID;
+  overlay.className = "tada-bm-modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="tada-bm-modal" role="dialog" aria-modal="true">
+      <div class="tada-bm-modal-header">
+        <div class="tada-bm-modal-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" class="tada-bm-modal-icon">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>${isEdit ? "Chỉnh sửa ghi chú" : "Thêm ghi chú mốc thời gian"}</span>
+        </div>
+        <button class="tada-bm-modal-btn-close" id="tada-bm-modal-close" title="Đóng (Esc)">✕</button>
+      </div>
+
+      <div class="tada-bm-modal-body">
+        <div class="tada-bm-modal-time-row">
+          <span class="tada-bm-modal-time-label">Mốc thời gian:</span>
+          <span class="tada-bm-modal-time-pill" title="Mốc thời gian ghi chú">⏱️ ${formatBookmarkTime(roundedTime)}</span>
+        </div>
+        <textarea id="tada-bm-modal-textarea" class="tada-bm-modal-textarea" placeholder="Nhập ghi chú cho mốc này... (Nhấn Enter để lưu)" rows="3" maxlength="250">${isEdit ? escapeBookmarkHtml(existingItem.note) : ""}</textarea>
+        <div class="tada-bm-modal-hint">
+          <span>💡 Nhấn <b>Enter</b> để lưu · <b>Shift+Enter</b> xuống dòng · <b>Esc</b> để hủy</span>
+        </div>
+      </div>
+
+      <div class="tada-bm-modal-footer">
+        <button class="tada-bm-modal-btn-cancel" id="tada-bm-modal-cancel">Hủy</button>
+        <button class="tada-bm-modal-btn-save" id="tada-bm-modal-save">${isEdit ? "Cập nhật" : "Lưu ghi chú"}</button>
+      </div>
+    </div>
+  `;
+
+  player.appendChild(overlay);
+
+  const textarea = overlay.querySelector("#tada-bm-modal-textarea");
+  const saveBtn = overlay.querySelector("#tada-bm-modal-save");
+  const cancelBtn = overlay.querySelector("#tada-bm-modal-cancel");
+  const closeBtn = overlay.querySelector("#tada-bm-modal-close");
+
+  const doSave = async () => {
+    const text = textarea?.value?.trim() || "";
+    if (isEdit && existingItem) {
+      await updateBookmarkNote(existingItem.id, text);
+    } else {
+      await saveNewBookmark(roundedTime, text);
+    }
+    removeBookmarkModal();
+  };
+
+  saveBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    doSave();
+  });
+
+  cancelBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    removeBookmarkModal();
+  });
+
+  closeBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    removeBookmarkModal();
+  });
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      removeBookmarkModal();
+    }
+  });
+
+  textarea?.addEventListener("keydown", (e) => {
+    e.stopPropagation();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      doSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      removeBookmarkModal();
+    }
+  });
+
+  setTimeout(() => {
+    if (textarea) {
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }
+  }, 50);
+}
+
+function removeBookmarkModal() {
+  document.getElementById(BOOKMARK_MODAL_ID)?.remove();
+}
+
+/* --- Buttons in Player Controls --- */
+function ensureBookmarkButton() {
+  if (!currentSettings.videoBookmarks || !isWatchPage()) {
+    removeBookmarkButton();
+    return;
+  }
+
+  const pipBtn = document.getElementById(PIP_BUTTON_ID);
+  const settingsBtn = document.querySelector(".ytp-settings-button");
+  const rightControls = document.querySelector(".ytp-right-controls") ||
+    settingsBtn?.closest?.(".ytp-right-controls") ||
+    settingsBtn?.parentElement;
+
+  if (!rightControls && !settingsBtn && !pipBtn) return;
+
+  // 1. Nút Thêm Note (Bật chế độ chọn điểm trên thanh tua)
+  let addBtn = document.getElementById(BOOKMARK_ADD_BTN_ID);
+  if (!addBtn || !document.contains(addBtn)) {
+    if (addBtn) addBtn.remove();
+    addBtn = document.createElement("button");
+    addBtn.id = BOOKMARK_ADD_BTN_ID;
+    addBtn.className = "ytp-button tada-bookmark-button tada-bookmark-add-button";
+    addBtn.setAttribute("aria-label", "Thêm ghi chú mốc thời gian");
+    addBtn.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+        <path class="ytp-svg-fill" d="M12 7 C10.9 7 10 7.9 10 9 V28 L18 24 L26 28 V9 C26 7.9 25.1 7 24 7 H12 Z" fill="#fff"></path>
+        <circle cx="25" cy="11" r="5.5" fill="#E8930C"></circle>
+        <path d="M25 8.5 V13.5 M22.5 11 H27.5" stroke="#1A1410" stroke-width="1.8" stroke-linecap="round"></path>
+      </svg>
+    `;
+    addBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleBookmarkPicking();
+    });
+
+    if (pipBtn && pipBtn.nextSibling) {
+      pipBtn.parentNode.insertBefore(addBtn, pipBtn.nextSibling);
+    } else if (pipBtn) {
+      pipBtn.parentNode.appendChild(addBtn);
+    } else if (settingsBtn && settingsBtn.nextSibling) {
+      settingsBtn.parentNode.insertBefore(addBtn, settingsBtn.nextSibling);
+    } else if (rightControls) {
+      rightControls.insertBefore(addBtn, rightControls.firstChild);
+    }
+  }
+
+  // 2. Nút Xem tất cả ghi chú (mở panel danh sách)
+  let listBtn = document.getElementById(BOOKMARK_BTN_ID);
+  if (!listBtn || !document.contains(listBtn)) {
+    if (listBtn) listBtn.remove();
+    listBtn = document.createElement("button");
+    listBtn.id = BOOKMARK_BTN_ID;
+    listBtn.className = "ytp-button tada-bookmark-button";
+    listBtn.setAttribute("aria-label", "Xem tất cả ghi chú");
+    listBtn.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+        <path class="ytp-svg-fill" d="M12 7 C10.9 7 10 7.9 10 9 V28 L18 24 L26 28 V9 C26 7.9 25.1 7 24 7 H12 Z" fill="#fff"></path>
+      </svg>
+      <span class="tada-bm-btn-badge" id="tada-bm-btn-badge" style="display:none;"></span>
+    `;
+
+    listBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleBookmarkPanel();
+    });
+
+    if (addBtn && addBtn.nextSibling) {
+      addBtn.parentNode.insertBefore(listBtn, addBtn.nextSibling);
+    } else if (addBtn) {
+      addBtn.parentNode.appendChild(listBtn);
+    } else if (pipBtn && pipBtn.nextSibling) {
+      pipBtn.parentNode.insertBefore(listBtn, pipBtn.nextSibling);
+    } else if (rightControls) {
+      rightControls.appendChild(listBtn);
+    }
+  }
+
+  updateBookmarkButtonUI();
+}
+
+function updateBookmarkButtonUI() {
+  const addBtn = document.getElementById(BOOKMARK_ADD_BTN_ID);
+  if (addBtn) {
+    addBtn.classList.toggle("picking", bookmarkPicking);
+    addBtn.setAttribute("title", bookmarkPicking
+      ? "Đang chọn trên thanh tua · Click để hủy"
+      : "Thêm ghi chú mốc thời gian · Bật để click chọn điểm trên thanh tua (N)");
+  }
+
+  const listBtn = document.getElementById(BOOKMARK_BTN_ID);
+  if (listBtn) {
+    listBtn.classList.toggle("active", bookmarkPanelOpen);
+    listBtn.setAttribute("title", bookmarkPanelOpen
+      ? "Đang mở danh sách ghi chú · Click để đóng (B)"
+      : "Xem tất cả ghi chú (B)");
+    updateBookmarkButtonBadge();
+  }
+}
+
+function updateBookmarkButtonBadge() {
+  const btn = document.getElementById(BOOKMARK_BTN_ID);
+  if (!btn) return;
+  const badge = document.getElementById("tada-bm-btn-badge");
+  const count = currentVideoBookmarks.length;
+  if (badge) {
+    if (count > 0) {
+      badge.textContent = count > 99 ? "99+" : count;
+      badge.style.display = "flex";
+      btn.classList.add("has-bookmarks");
+    } else {
+      badge.style.display = "none";
+      btn.classList.remove("has-bookmarks");
+    }
+  }
+  btn.classList.toggle("active", bookmarkPanelOpen);
+}
+
+function removeBookmarkButton() {
+  document.getElementById(BOOKMARK_ADD_BTN_ID)?.remove();
+  document.getElementById(BOOKMARK_BTN_ID)?.remove();
+  removeBookmarkPanel();
+  removeBookmarkModal();
+  removeBookmarkTrack();
+  stopBookmarkPicking();
+}
+
+/* --- Timeline Track & Diamond Pins --- */
+function ensureBookmarkTrack() {
+  const bar = document.querySelector(".ytp-progress-bar");
+  if (!bar) return;
+  if (typeof abSetupTimeline === "function") {
+    abSetupTimeline();
+  }
+  let track = document.getElementById(BOOKMARK_TRACK_ID);
+  if (!track || !document.contains(track)) {
+    if (track) track.remove();
+    track = document.createElement("div");
+    track.id = BOOKMARK_TRACK_ID;
+    track.className = "tada-bm-track";
+    bar.appendChild(track);
+  }
+}
+
+function updateBookmarkPins() {
+  const bar = document.querySelector(".ytp-progress-bar");
+  if (!bar || !currentSettings.videoBookmarks) {
+    removeBookmarkTrack();
+    return;
+  }
+  ensureBookmarkTrack();
+  const track = document.getElementById(BOOKMARK_TRACK_ID);
+  if (!track) return;
+
+  const v = getMainVideoElement();
+  const dur = v?.duration;
+  if (!dur || isNaN(dur) || dur <= 0 || currentVideoBookmarks.length === 0) {
+    track.innerHTML = "";
+    return;
+  }
+
+  let html = "";
+  currentVideoBookmarks.forEach((bm) => {
+    const pct = Math.max(0, Math.min(100, (bm.time / dur) * 100));
+    html += `
+      <div class="tada-bm-pin" style="left: ${pct}%;" data-time="${bm.time}" data-id="${bm.id}">
+        <div class="tada-bm-pin-diamond"></div>
+        <div class="tada-bm-tooltip">${formatBookmarkTime(bm.time)}: ${escapeBookmarkHtml(bm.note)}</div>
+      </div>
+    `;
+  });
+  track.innerHTML = html;
+
+  if (!track.dataset.listenerBound) {
+    track.dataset.listenerBound = "true";
+    track.addEventListener("click", (e) => {
+      const pin = e.target.closest(".tada-bm-pin");
+      if (!pin) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const time = parseFloat(pin.dataset.time);
+      if (!isNaN(time)) {
+        const video = getMainVideoElement();
+        if (video) {
+          video.currentTime = time;
+          video.play().catch(() => { });
+          bookmarkToast(`⏱️ Nhảy tới ${formatBookmarkTime(time)}`);
+        }
+      }
+    });
+  }
+}
+
+function removeBookmarkTrack() {
+  document.getElementById(BOOKMARK_TRACK_ID)?.remove();
+}
+
+/* --- View All Notes Panel --- */
+function toggleBookmarkPanel() {
+  if (bookmarkPanelOpen) {
+    closeBookmarkPanel();
+  } else {
+    openBookmarkPanel();
+  }
+}
+
+function openBookmarkPanel() {
+  if (!currentSettings.videoBookmarks || !isWatchPage()) return;
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  bookmarkPanelOpen = true;
+  let panel = document.getElementById(BOOKMARK_PANEL_ID);
+  if (!panel || !document.contains(panel)) {
+    if (panel) panel.remove();
+    panel = document.createElement("div");
+    panel.id = BOOKMARK_PANEL_ID;
+    panel.className = "tada-bm-panel";
+    player.appendChild(panel);
+  }
+
+  const v = getMainVideoElement();
+  const curTime = v?.currentTime || 0;
+
+  panel.innerHTML = `
+    <div class="tada-bm-header">
+      <div class="tada-bm-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="tada-bm-title-icon">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Tất cả ghi chú</span>
+        <span class="tada-bm-header-count" id="tada-bm-header-count">${currentVideoBookmarks.length}</span>
+      </div>
+      <div class="tada-bm-actions">
+        <button id="tada-bm-btn-export" class="tada-bm-btn-action" title="Sao chép Markdown / Ghi chú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Chép MD
+        </button>
+        <button id="tada-bm-btn-close" class="tada-bm-btn-action tada-bm-btn-close" title="Đóng panel (Esc hoặc B)">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Action Bar -->
+    <div class="tada-bm-add-bar">
+      <button id="tada-bm-btn-pick-new" class="tada-bm-btn-pick-action" title="Bật chế độ click chọn mốc trên thanh tua">
+        👆 Chọn mốc trên thanh tua
+      </button>
+      <button id="tada-bm-btn-curtime" class="tada-bm-time-pill" title="Thêm ghi chú ngay tại giây hiện tại của video">
+        + Ghim tại ⏱️ <span id="tada-bm-curtime-display">${formatBookmarkTime(curTime)}</span>
+      </button>
+    </div>
+
+    <!-- Bookmarks List -->
+    <div class="tada-bm-list-container" id="tada-bm-list-container">
+      <!-- Injected list -->
+    </div>
+  `;
+
+  renderBookmarkPanelList();
+
+  const closeBtn = panel.querySelector("#tada-bm-btn-close");
+  closeBtn?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); closeBookmarkPanel(); });
+
+  const exportBtn = panel.querySelector("#tada-bm-btn-export");
+  exportBtn?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); exportBookmarksToMarkdown(); });
+
+  const pickNewBtn = panel.querySelector("#tada-bm-btn-pick-new");
+  pickNewBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeBookmarkPanel();
+    startBookmarkPicking();
+  });
+
+  const curTimeBtn = panel.querySelector("#tada-bm-btn-curtime");
+  curTimeBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const video = getMainVideoElement();
+    const time = video?.currentTime || 0;
+    openBookmarkInputModal(time);
+  });
+
+  updateBookmarkButtonUI();
+}
+
+function renderBookmarkPanelList() {
+  const container = document.getElementById("tada-bm-list-container");
+  if (!container) return;
+
+  const countBadge = document.getElementById("tada-bm-header-count");
+  if (countBadge) countBadge.textContent = currentVideoBookmarks.length;
+
+  if (currentVideoBookmarks.length === 0) {
+    container.innerHTML = `
+      <div class="tada-bm-empty">
+        <div class="tada-bm-empty-icon">📌</div>
+        <div class="tada-bm-empty-text">Chưa có ghi chú nào cho video này</div>
+        <div class="tada-bm-empty-sub">Bấm nút bên dưới để chọn mốc trên thanh tua!</div>
+        <button id="tada-bm-empty-pick-btn" class="tada-bm-empty-btn">
+          👆 Chọn điểm trên thanh tua
+        </button>
+      </div>
+    `;
+    const pickBtn = container.querySelector("#tada-bm-empty-pick-btn");
+    pickBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeBookmarkPanel();
+      startBookmarkPicking();
+    });
+    return;
+  }
+
+  let html = "";
+  currentVideoBookmarks.forEach((bm) => {
+    html += `
+      <div class="tada-bm-item" data-id="${bm.id}">
+        <button class="tada-bm-item-jump" data-time="${bm.time}" title="Nhảy tới ${formatBookmarkTime(bm.time)} và phát">
+          ⏱️ ${formatBookmarkTime(bm.time)}
+        </button>
+        <div class="tada-bm-item-note" title="${escapeBookmarkHtml(bm.note)}">
+          ${escapeBookmarkHtml(bm.note)}
+        </div>
+        <div class="tada-bm-item-actions">
+          <button class="tada-bm-item-edit" data-id="${bm.id}" title="Chỉnh sửa ghi chú này">
+            ✏️
+          </button>
+          <button class="tada-bm-item-delete" data-id="${bm.id}" title="Xóa mốc này">
+            ✕
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll(".tada-bm-item-jump").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const time = parseFloat(btn.dataset.time);
+      if (!isNaN(time)) {
+        const video = getMainVideoElement();
+        if (video) {
+          video.currentTime = time;
+          video.play().catch(() => { });
+          bookmarkToast(`⏱️ Nhảy tới ${formatBookmarkTime(time)}`);
+        }
+      }
+    });
+  });
+
+  container.querySelectorAll(".tada-bm-item-edit").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const id = btn.dataset.id;
+      const item = currentVideoBookmarks.find(it => it.id === id);
+      if (item) {
+        openBookmarkInputModal(item.time, item);
+      }
+    });
+  });
+
+  container.querySelectorAll(".tada-bm-item-delete").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const id = btn.dataset.id;
+      if (id) removeBookmark(id);
+    });
+  });
+}
+
+function closeBookmarkPanel() {
+  bookmarkPanelOpen = false;
+  document.getElementById(BOOKMARK_PANEL_ID)?.remove();
+  updateBookmarkButtonUI();
+}
+
+function removeBookmarkPanel() {
+  bookmarkPanelOpen = false;
+  document.getElementById(BOOKMARK_PANEL_ID)?.remove();
+}
+
+/* --- Hotkeys --- */
+function handleGlobalBookmarkHotkeys(e) {
+  if (!currentSettings.videoBookmarks || !isWatchPage()) return;
+  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+
+  if (e.key === "Escape") {
+    if (document.getElementById(BOOKMARK_MODAL_ID)) {
+      e.preventDefault(); e.stopPropagation();
+      removeBookmarkModal();
+      return;
+    }
+    if (bookmarkPicking) {
+      e.preventDefault(); e.stopPropagation();
+      stopBookmarkPicking();
+      bookmarkToast("✕ Đã hủy chọn mốc");
+      return;
+    }
+    if (bookmarkPanelOpen) {
+      e.preventDefault(); e.stopPropagation();
+      closeBookmarkPanel();
+      return;
+    }
+    return;
+  }
+
+  if (shouldIgnoreKeyEvent(e) || e.target?.closest?.("ytd-comments, #comments, #search-input, [role='textbox']")) {
+    return;
+  }
+
+  if (e.key === "b" || e.key === "B") {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.shiftKey) {
+      toggleBookmarkPicking();
+    } else {
+      toggleBookmarkPanel();
+    }
+    return;
+  }
+
+  if (e.key === "n" || e.key === "N") {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleBookmarkPicking();
+    return;
+  }
+}
+
+function ensureBookmarkHotkeys() {
+  if (bookmarkHotkeysBound) return;
+  window.addEventListener("keydown", handleGlobalBookmarkHotkeys, true);
+  bookmarkHotkeysBound = true;
+}
+
+function bindVideoBookmarkListeners() {
+  const v = getMainVideoElement();
+  if (!v || v.dataset.tadaBmBound) return;
+  v.dataset.tadaBmBound = "true";
+  v.addEventListener("durationchange", () => {
+    updateBookmarkPins();
+  });
+  v.addEventListener("loadedmetadata", () => {
+    updateBookmarkPins();
+  });
+  v.addEventListener("play", () => {
+    ensureBookmarkButton();
+    updateBookmarkPins();
+  });
+}
+
+function startBookmarkCheck() {
+  if (bookmarkControlInterval) {
+    clearInterval(bookmarkControlInterval);
+    bookmarkControlInterval = null;
+  }
+  let count = 0;
+  ensureBookmarkButton();
+  updateBookmarkPins();
+  bindVideoBookmarkListeners();
+  bookmarkControlInterval = setInterval(() => {
+    count++;
+    if (isWatchPage()) {
+      ensureBookmarkButton();
+      updateBookmarkPins();
+      bindVideoBookmarkListeners();
+    }
+    if (count > 25 && document.getElementById(BOOKMARK_BTN_ID) && document.getElementById(BOOKMARK_ADD_BTN_ID)) {
+      clearInterval(bookmarkControlInterval);
+      bookmarkControlInterval = null;
+    }
+  }, 300);
+}
+
+function onBookmarkNav() {
+  loadBookmarksForCurrentVideo();
+  if (bookmarkPanelOpen) {
+    closeBookmarkPanel();
+  }
+  removeBookmarkModal();
+  stopBookmarkPicking();
+}
+
+function applyVideoBookmarksSetting() {
+  const existingStyle = document.getElementById(BOOKMARK_STYLE_ID);
+  if (currentSettings.videoBookmarks) {
+    if (!existingStyle) {
+      const style = document.createElement("style");
+      style.id = BOOKMARK_STYLE_ID;
+      style.textContent = `
+        /* ===== TADa VIDEO BOOKMARKS ===== */
+        .tada-bookmark-button {
+          position: relative;
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0;
+          width: 44px;
+          height: 100%;
+          opacity: 0.88;
+          transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          vertical-align: top;
+        }
+        .tada-bookmark-button:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.08);
+        }
+        .tada-bookmark-button:active { transform: scale(0.92); }
+        .tada-bookmark-button svg { width: 100%; height: 100%; pointer-events: none; }
+        .tada-bookmark-button.active svg path.ytp-svg-fill { fill: #E8930C !important; }
+        .tada-bookmark-button.active { opacity: 1; }
+
+        /* Add Button Picking state */
+        .tada-bookmark-add-button.picking {
+          opacity: 1 !important;
+          background: rgba(232, 147, 12, 0.22) !important;
+          border-radius: 6px;
+          animation: tadaBmPulse 1.2s ease-in-out infinite;
+        }
+        .tada-bookmark-add-button.picking svg path.ytp-svg-fill {
+          fill: #E8930C !important;
+        }
+
+        /* Timeline picking crosshair & glow */
+        .ytp-progress-bar.tada-bm-picking {
+          cursor: crosshair !important;
+          box-shadow: 0 0 0 2px #E8930C, 0 0 14px rgba(232, 147, 12, 0.75) !important;
+          border-radius: 4px;
+        }
+
+        @keyframes tadaBmPulse {
+          0%, 100% { opacity: 0.85; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .tada-bm-btn-badge {
+          position: absolute;
+          top: 8px;
+          right: 5px;
+          background: #E8930C;
+          color: #1A1410;
+          font-size: 9px;
+          font-weight: 800;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          min-width: 14px;
+          height: 14px;
+          padding: 0 3px;
+          border-radius: 9999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          pointer-events: none;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        }
+        .tada-bm-track {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 39;
+        }
+        .tada-bm-pin {
+          position: absolute;
+          top: -3px;
+          transform: translateX(-50%);
+          width: 14px;
+          height: 14px;
+          pointer-events: auto;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 41;
+          transition: transform 0.15s ease;
+        }
+        .tada-bm-pin:hover {
+          transform: translateX(-50%) scale(1.35);
+          z-index: 45;
+        }
+        .tada-bm-pin-diamond {
+          width: 8px;
+          height: 8px;
+          background: #E8930C;
+          border: 1.5px solid #FFFFFF;
+          border-radius: 1px;
+          transform: rotate(45deg);
+          box-shadow: 0 0 6px rgba(232, 147, 12, 0.9), 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .tada-bm-tooltip {
+          position: absolute;
+          bottom: 22px;
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          background: rgba(18, 14, 10, 0.94);
+          color: #FDF6EC;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 4px;
+          border: 1px solid rgba(232, 147, 12, 0.4);
+          white-space: nowrap;
+          pointer-events: none;
+          opacity: 0;
+          transition: all 0.15s ease;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .tada-bm-pin:hover .tada-bm-tooltip {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== Note Input Modal ===== */
+        .tada-bm-modal-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: tadaBmFadeIn 0.18s ease-out;
+        }
+        .tada-bm-modal {
+          background: rgba(22, 17, 13, 0.96);
+          border: 1px solid rgba(232, 147, 12, 0.45);
+          border-radius: 14px;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(232, 147, 12, 0.25);
+          width: 90%;
+          max-width: 400px;
+          padding: 16px 18px;
+          color: #FDF6EC;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          animation: tadaBmScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          pointer-events: auto;
+          user-select: none;
+        }
+        .tada-bm-modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          padding-bottom: 8px;
+        }
+        .tada-bm-modal-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #FDF6EC;
+        }
+        .tada-bm-modal-icon {
+          width: 16px;
+          height: 16px;
+          color: #E8930C;
+        }
+        .tada-bm-modal-btn-close {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 13px;
+          cursor: pointer;
+          padding: 2px 6px;
+          border-radius: 4px;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-modal-btn-close:hover {
+          color: #FDF6EC;
+          background: rgba(255, 255, 255, 0.1);
+        }
+        .tada-bm-modal-body {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .tada-bm-modal-time-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+        }
+        .tada-bm-modal-time-label {
+          color: rgba(255, 255, 255, 0.65);
+        }
+        .tada-bm-modal-time-pill {
+          background: rgba(232, 147, 12, 0.2);
+          border: 1px solid rgba(232, 147, 12, 0.45);
+          color: #FDF6EC;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 6px;
+        }
+        .tada-bm-modal-textarea {
+          width: 100%;
+          box-sizing: border-box;
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 8px;
+          color: #FDF6EC;
+          font-size: 12px;
+          padding: 8px 10px;
+          outline: none;
+          font-family: inherit;
+          resize: none;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .tada-bm-modal-textarea:focus {
+          border-color: #E8930C;
+          box-shadow: 0 0 0 2px rgba(232, 147, 12, 0.25);
+        }
+        .tada-bm-modal-textarea::placeholder {
+          color: rgba(255, 255, 255, 0.35);
+        }
+        .tada-bm-modal-hint {
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.45);
+        }
+        .tada-bm-modal-hint b {
+          color: rgba(255, 255, 255, 0.75);
+        }
+        .tada-bm-modal-footer {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          padding-top: 4px;
+        }
+        .tada-bm-modal-btn-cancel {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #FDF6EC;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-modal-btn-cancel:hover {
+          background: rgba(255, 255, 255, 0.15);
+        }
+        .tada-bm-modal-btn-save {
+          background: #E8930C;
+          border: none;
+          color: #1A1410;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-modal-btn-save:hover {
+          background: #F59E0B;
+          transform: scale(1.02);
+        }
+        .tada-bm-modal-btn-save:active {
+          transform: scale(0.96);
+        }
+        @keyframes tadaBmScaleIn {
+          from { opacity: 0; transform: scale(0.92); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== View All Notes Panel ===== */
+        .tada-bm-panel {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          width: 330px;
+          max-height: calc(100% - 75px);
+          background: rgba(22, 17, 13, 0.96);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(232, 147, 12, 0.35);
+          border-radius: 12px;
+          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+          color: #FDF6EC;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          display: flex;
+          flex-direction: column;
+          z-index: 61;
+          overflow: hidden;
+          animation: tadaBmFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-bm-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 12px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(0, 0, 0, 0.25);
+        }
+        .tada-bm-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #FDF6EC;
+        }
+        .tada-bm-title-icon { width: 15px; height: 15px; color: #E8930C; }
+        .tada-bm-header-count {
+          font-size: 10px;
+          font-weight: 700;
+          padding: 1px 6px;
+          border-radius: 9999px;
+          background: rgba(232, 147, 12, 0.2);
+          color: #E8930C;
+        }
+        .tada-bm-actions { display: flex; align-items: center; gap: 6px; }
+        .tada-bm-btn-action {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #FDF6EC;
+          font-size: 10px;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-btn-action:hover {
+          background: rgba(232, 147, 12, 0.2);
+          border-color: rgba(232, 147, 12, 0.4);
+          color: #E8930C;
+        }
+        .tada-bm-btn-action svg { width: 11px; height: 11px; }
+        .tada-bm-btn-close { padding: 3px 7px; font-size: 11px; }
+
+        .tada-bm-add-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          padding: 8px 10px;
+          background: rgba(255, 255, 255, 0.04);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .tada-bm-btn-pick-action {
+          background: rgba(232, 147, 12, 0.18);
+          border: 1px solid rgba(232, 147, 12, 0.4);
+          color: #FDF6EC;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 4px 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-btn-pick-action:hover {
+          background: #E8930C;
+          color: #1A1410;
+        }
+        .tada-bm-time-pill {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #FDF6EC;
+          font-size: 10px;
+          font-weight: 600;
+          padding: 4px 7px;
+          border-radius: 6px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-time-pill:hover {
+          background: rgba(232, 147, 12, 0.25);
+          border-color: rgba(232, 147, 12, 0.4);
+        }
+
+        .tada-bm-list-container {
+          padding: 6px 10px 10px;
+          overflow-y: auto;
+          max-height: 280px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(232, 147, 12, 0.35) transparent;
+        }
+        .tada-bm-list-container::-webkit-scrollbar { width: 4px; }
+        .tada-bm-list-container::-webkit-scrollbar-thumb {
+          background: rgba(232, 147, 12, 0.35);
+          border-radius: 4px;
+        }
+        .tada-bm-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 6px;
+          padding: 4px 6px;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-item:hover {
+          background: rgba(255, 255, 255, 0.09);
+          border-color: rgba(232, 147, 12, 0.3);
+        }
+        .tada-bm-item-jump {
+          background: rgba(232, 147, 12, 0.18);
+          border: 1px solid rgba(232, 147, 12, 0.35);
+          color: #FDF6EC;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 2px 6px;
+          border-radius: 4px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-item-jump:hover { background: #E8930C; color: #1A1410; }
+        .tada-bm-item-note {
+          flex: 1;
+          min-width: 0;
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.9);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .tada-bm-item-actions {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+        }
+        .tada-bm-item-edit {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 11px;
+          cursor: pointer;
+          padding: 2px 4px;
+          border-radius: 4px;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-item-edit:hover {
+          color: #E8930C;
+          background: rgba(232, 147, 12, 0.15);
+        }
+        .tada-bm-item-delete {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.4);
+          font-size: 11px;
+          cursor: pointer;
+          padding: 2px 5px;
+          border-radius: 4px;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-item-delete:hover {
+          color: #EF4444;
+          background: rgba(239, 68, 68, 0.15);
+        }
+
+        .tada-bm-empty {
+          padding: 24px 10px;
+          text-align: center;
+          color: rgba(255, 255, 255, 0.5);
+        }
+        .tada-bm-empty-icon { font-size: 24px; margin-bottom: 6px; }
+        .tada-bm-empty-text { font-size: 12px; font-weight: 600; color: #FDF6EC; }
+        .tada-bm-empty-sub {
+          font-size: 10px;
+          margin-top: 4px;
+          color: rgba(255, 255, 255, 0.45);
+        }
+        .tada-bm-empty-btn {
+          margin-top: 10px;
+          background: #E8930C;
+          border: none;
+          color: #1A1410;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .tada-bm-empty-btn:hover {
+          background: #F59E0B;
+          transform: scale(1.02);
+        }
+
+        .tada-bm-toast {
+          position: absolute;
+          top: 18px;
+          left: 50%;
+          transform: translate(-50%, -8px);
+          background: rgba(20, 16, 12, 0.92);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(232, 147, 12, 0.6);
+          color: #FDF6EC;
+          padding: 5px 14px;
+          border-radius: 16px;
+          font-size: 12px;
+          font-weight: 600;
+          font-family: "Roboto", "Segoe UI", sans-serif;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+          pointer-events: none;
+          opacity: 0;
+          z-index: 99;
+          transition: all 0.2s ease;
+        }
+        .tada-bm-toast.show {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+        @keyframes tadaBmFadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    ensureBookmarkHotkeys();
+    ensureBookmarkButton();
+    loadBookmarksForCurrentVideo();
+    startBookmarkCheck();
+  } else {
+    existingStyle?.remove();
+    removeBookmarkButton();
+  }
+}
+
 function applyAllSettings() {
   applyFourColumnGridSetting();
   applyHideShortsSetting();
@@ -3451,6 +4888,7 @@ function applyAllSettings() {
   applyAmbientLightSetting();
   applyPipButtonSetting();
   applyAbLooperSetting();
+  applyVideoBookmarksSetting();
   applyHudSetting();
   applyAutoSelectChipsSetting();
 }
@@ -3488,6 +4926,9 @@ if (typeof chrome !== "undefined" && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === "local" && changes.ctfSettings) {
       applySettingsUpdate(changes.ctfSettings.newValue);
+    }
+    if (areaName === "local" && changes.tada_video_bookmarks_v1) {
+      loadBookmarksForCurrentVideo();
     }
   });
 }
@@ -3681,6 +5122,7 @@ async function bootstrap() {
   if (isWatchPage()) {
     startPipButtonCheck();
     startAbCheck();
+    startBookmarkCheck();
   }
 }
 
@@ -3696,6 +5138,8 @@ async function bootstrap() {
       startPipButtonCheck();
       abResetOnNav();
       startAbCheck();
+      onBookmarkNav();
+      startBookmarkCheck();
     }
   }, true);
 });
@@ -3744,6 +5188,9 @@ document.addEventListener("mousemove", () => {
     if (isWatchPage() && currentSettings.abLooper) {
       ensureAbBtn();
     }
+    if (isWatchPage() && currentSettings.videoBookmarks) {
+      ensureBookmarkButton();
+    }
   }
 }, { passive: true });
 
@@ -3753,6 +5200,9 @@ document.addEventListener("mouseenter", (e) => {
   }
   if (isWatchPage() && currentSettings.abLooper && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
     ensureAbBtn();
+  }
+  if (isWatchPage() && currentSettings.videoBookmarks && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
+    ensureBookmarkButton();
   }
 }, true);
 

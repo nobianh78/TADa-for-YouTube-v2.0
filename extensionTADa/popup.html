@@ -183,6 +183,23 @@
         </div>
       </div>
 
+      <!-- 5. Đánh dấu mốc thời gian (Bookmarks & Notes) -->
+      <div class="feature-item">
+        <div class="feature-icon icon-pink">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Đánh dấu mốc & Ghi chú (Bookmarks)</div>
+          <div class="feature-desc">Chọn mốc trên thanh tua · Popup nhập note · Xem tất cả ghi chú</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-videoBookmarks" class="toggle-checkbox">
+          <label for="toggle-videoBookmarks" class="toggle-slider"></label>
+        </div>
+      </div>
+
       <!-- 5. Curate Sidebar -->
       <div class="feature-item">
         <div class="feature-icon icon-purple">
@@ -302,6 +319,53 @@
       </div>
 
 
+    </div>
+
+    <!-- Bookmarks Library Card -->
+    <div class="bm-library-card" id="bm-library-card">
+      <div class="bm-card-header">
+        <div class="bm-card-left">
+          <div class="bm-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <div class="bm-card-text">
+            <span class="bm-card-title">Thư viện Bookmarks</span>
+            <span class="bm-card-count" id="bm-lib-summary">0 mốc đã lưu</span>
+          </div>
+        </div>
+        <button id="btn-open-bm-modal" class="btn-subtle" title="Mở danh sách quản lý tất cả bookmark">
+          Quản lý
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Quản lý Bookmarks -->
+    <div class="bm-modal-backdrop" id="bm-modal-backdrop">
+      <div class="bm-modal">
+        <div class="bm-modal-header">
+          <div class="bm-modal-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="modal-icon">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Tất cả Bookmarks đã lưu</span>
+          </div>
+          <button id="btn-close-bm-modal" class="btn-modal-close" title="Đóng">✕</button>
+        </div>
+        <div class="bm-modal-body" id="bm-modal-body">
+          <!-- Rendered dynamically -->
+        </div>
+        <div class="bm-modal-footer">
+          <button id="btn-export-all-bm" class="btn-subtle" title="Sao chép toàn bộ mốc thành văn bản">
+            📋 Sao chép tất cả
+          </button>
+          <button id="btn-clear-all-bm" class="btn-subtle btn-danger" title="Xóa toàn bộ bookmark đã lưu">
+            🗑️ Xóa hết
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->

@@ -1,6 +1,6 @@
 # TADa for YouTube
 
-Extension Chrome (Manifest V3) chặn quảng cáo YouTube + tiện ích: ẩn Shorts, ẩn thẻ kết thúc, lưới 4 cột, lọc gợi ý sidebar, tăng âm lượng 500%, cố định bình luận.
+Extension Chrome (Manifest V3) chặn quảng cáo YouTube + bộ tiện ích: Đánh dấu mốc thời gian & Ghi chú (Bookmarks), Lặp đoạn A-B (A-B Looper), PiP 1 chạm, tăng âm lượng 500%, Ambient Light, ẩn Shorts, ẩn thẻ kết thúc, lưới 4 cột, lọc gợi ý sidebar, cố định bình luận.
 
 **v2.0.0 — Rebrand TADa:** giao diện theo TADa Manager (kem #FDF6EC, hổ phách #E8930C, chữ nâu #2D1F16). Logo YouTube TADa hiển thị cố định ở thanh điều hướng trên cùng YouTube, thiết kế sắc nét, không viền masthead.
 
