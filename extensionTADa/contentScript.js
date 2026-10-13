@@ -2691,50 +2691,7 @@ function ensurePipHotkeys() {
 }
 
 function ensurePipButton() {
-  if (!currentSettings.pipButton) return;
-  const rightControls = document.querySelector(".ytp-right-controls");
-  if (!rightControls) return;
-
-  let btn = document.getElementById(PIP_BUTTON_ID);
-  if (!btn || !rightControls.contains(btn)) {
-    if (btn) btn.remove();
-
-    btn = document.createElement("button");
-    btn.id = PIP_BUTTON_ID;
-    btn.className = "ytp-button tada-pip-button";
-    btn.setAttribute("aria-label", "Hình trong hình (P)");
-    btn.setAttribute("title", "Hình trong hình (P)");
-    btn.innerHTML = `
-      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
-        <path class="tada-pip-icon-screen" fill="currentColor" d="M26 10H10c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V12c0-1.1-.9-2-2-2zm0 14H10V12h16v12z"/>
-        <rect class="tada-pip-icon-window" x="17" y="16.5" width="8" height="6.5" rx="1.2" fill="currentColor"/>
-      </svg>
-    `;
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      togglePictureInPicture();
-    });
-
-    const ref = rightControls.querySelector(".ytp-size-button") ||
-                rightControls.querySelector(".ytp-miniplayer-button") ||
-                rightControls.querySelector(".ytp-fullscreen-button") ||
-                null;
-    if (ref) {
-      rightControls.insertBefore(btn, ref);
-    } else {
-      rightControls.appendChild(btn);
-    }
-  }
-
-  updatePipButtonState();
-
-  const video = getMainVideoElement();
-  if (video && !video.dataset.tadaPipBound) {
-    video.dataset.tadaPipBound = "true";
-    video.addEventListener("enterpictureinpicture", updatePipButtonState);
-    video.addEventListener("leavepictureinpicture", updatePipButtonState);
-  }
+  removePipButton();
 }
 
 function removePipButton() {
@@ -2745,64 +2702,9 @@ function removePipButton() {
 }
 
 function applyPipButtonSetting() {
-  const existingStyle = document.getElementById(PIP_BUTTON_STYLE_ID);
+  removePipButton();
   if (currentSettings.pipButton) {
-    if (!existingStyle) {
-      const style = document.createElement("style");
-      style.id = PIP_BUTTON_STYLE_ID;
-      style.textContent = `
-        /* ===== TADa PICTURE-IN-PICTURE (PiP) BUTTON ===== */
-        .tada-pip-button {
-          position: relative;
-          display: inline-flex !important;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          background: transparent;
-          border: none;
-          outline: none;
-          padding: 0;
-          width: 48px;
-          height: 100%;
-          color: #fff;
-          opacity: 0.9;
-          transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
-          user-select: none;
-          -webkit-user-select: none;
-          vertical-align: top;
-        }
-        .tada-pip-button:hover {
-          opacity: 1;
-        }
-        .tada-pip-button:active {
-          transform: scale(0.92);
-        }
-        .tada-pip-button svg {
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-        }
-        .tada-pip-button .tada-pip-icon-window {
-          transition: fill 0.2s ease;
-        }
-        .tada-pip-button.tada-pip-active {
-          color: #E8930C !important;
-          opacity: 1 !important;
-        }
-        .tada-pip-button.tada-pip-active svg {
-          filter: drop-shadow(0 0 6px rgba(232, 147, 12, 0.7));
-        }
-        .tada-pip-button.tada-pip-active .tada-pip-icon-window {
-          fill: #E8930C !important;
-        }
-      `;
-      (document.head || document.documentElement).appendChild(style);
-    }
     ensurePipHotkeys();
-    ensurePipButton();
-  } else {
-    existingStyle?.remove();
-    removePipButton();
   }
 }
 
@@ -3106,13 +3008,27 @@ function bindInplayerPopupDismissListeners() {
   inplayerPopupDismissBound = true;
 }
 
+let playerControlInterval = null;
+
 function ensureTadaPopupButton() {
-  if (!currentSettings.tadaPopupButton) return;
-  const rightControls = document.querySelector(".ytp-right-controls");
-  if (!rightControls) return;
+  const isEnabled = currentSettings.tadaPopupButton !== false;
+  if (!isEnabled) {
+    removeTadaPopupButton();
+    return;
+  }
+
+  // Target Settings button directly (the gear with HD in the controls)
+  const settingsBtn = document.querySelector(".ytp-settings-button");
+  const rightControls = document.querySelector(".ytp-right-controls") ||
+                        settingsBtn?.closest?.(".ytp-right-controls") ||
+                        settingsBtn?.parentElement;
+
+  if (!settingsBtn && !rightControls) {
+    return;
+  }
 
   let btn = document.getElementById(TADA_POPUP_BUTTON_ID);
-  if (!btn || !rightControls.contains(btn)) {
+  if (!btn || !document.contains(btn)) {
     if (btn) btn.remove();
 
     btn = document.createElement("button");
@@ -3120,29 +3036,33 @@ function ensureTadaPopupButton() {
     btn.className = "ytp-button tada-popup-button";
     btn.setAttribute("aria-label", "Bảng điều khiển TADa");
     btn.setAttribute("title", "Bảng điều khiển TADa (Cài đặt nhanh)");
-    let iconUrl = "";
-    try {
-      if (typeof chrome !== "undefined" && chrome?.runtime?.id) {
-        iconUrl = chrome.runtime.getURL("icons/icon32.png");
-      }
-    } catch {}
-
-    btn.innerHTML = `<img src="${iconUrl}" class="tada-popup-btn-icon" alt="TADa" />`;
+    btn.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+        <rect x="8.5" y="8.5" width="19" height="19" rx="5" fill="rgba(45, 31, 22, 0.92)" stroke="#E8930C" stroke-width="1.8"/>
+        <path d="M13 14.5h10M18 14.5v8" stroke="#FDF6EC" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="23" cy="13" r="1.5" fill="#E8930C"/>
+      </svg>
+    `;
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
       toggleTadaInplayerPopup();
     });
 
-    const ref = rightControls.querySelector(".ytp-size-button") ||
-                rightControls.querySelector(".ytp-miniplayer-button") ||
-                rightControls.querySelector(".ytp-fullscreen-button") ||
-                null;
-    if (ref) {
-      rightControls.insertBefore(btn, ref);
-    } else {
-      rightControls.appendChild(btn);
+    if (settingsBtn) {
+      settingsBtn.insertAdjacentElement("afterend", btn);
+    } else if (rightControls) {
+      const ref = rightControls.querySelector(".ytp-size-button") ||
+                  rightControls.querySelector(".ytp-fullscreen-button") ||
+                  null;
+      if (ref) {
+        rightControls.insertBefore(btn, ref);
+      } else {
+        rightControls.appendChild(btn);
+      }
     }
+  } else if (settingsBtn && btn.previousElementSibling !== settingsBtn) {
+    settingsBtn.insertAdjacentElement("afterend", btn);
   }
 }
 
@@ -3153,18 +3073,33 @@ function removeTadaPopupButton() {
   }
 }
 
+function startPlayerControlCheck() {
+  if (playerControlInterval) {
+    clearInterval(playerControlInterval);
+    playerControlInterval = null;
+  }
+  let count = 0;
+  ensureTadaPopupButton();
+  playerControlInterval = setInterval(() => {
+    count++;
+    if (isWatchPage()) {
+      ensureTadaPopupButton();
+    }
+    if (count > 25 && document.getElementById(TADA_POPUP_BUTTON_ID)) {
+      clearInterval(playerControlInterval);
+      playerControlInterval = null;
+    }
+  }, 300);
+}
+
 function ensurePlayerControlButtons() {
-  if (currentSettings.pipButton) {
-    ensurePipButton();
-  }
-  if (currentSettings.tadaPopupButton) {
-    ensureTadaPopupButton();
-  }
+  removePipButton(); // Only quick popup button on the player controls
+  ensureTadaPopupButton();
 }
 
 function applyTadaPopupButtonSetting() {
   const existingStyle = document.getElementById(TADA_POPUP_STYLE_ID);
-  if (currentSettings.tadaPopupButton) {
+  if (currentSettings.tadaPopupButton !== false) {
     if (!existingStyle) {
       const style = document.createElement("style");
       style.id = TADA_POPUP_STYLE_ID;
@@ -3182,7 +3117,7 @@ function applyTadaPopupButtonSetting() {
           padding: 0;
           width: 48px;
           height: 100%;
-          opacity: 0.9;
+          opacity: 0.92;
           transition: opacity 0.15s ease, transform 0.15s ease;
           user-select: none;
           -webkit-user-select: none;
@@ -3190,21 +3125,22 @@ function applyTadaPopupButtonSetting() {
         }
         .tada-popup-button:hover {
           opacity: 1;
-          transform: scale(1.08);
         }
         .tada-popup-button:active {
           transform: scale(0.92);
         }
-        .tada-popup-button img.tada-popup-btn-icon {
-          width: 22px;
-          height: 22px;
-          border-radius: 6px;
+        .tada-popup-button svg {
+          width: 100%;
+          height: 100%;
           pointer-events: none;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
           transition: transform 0.2s ease, filter 0.2s ease;
         }
-        .tada-popup-button.tada-popup-active img.tada-popup-btn-icon {
-          filter: drop-shadow(0 0 7px rgba(232, 147, 12, 0.95));
+        .tada-popup-button:hover svg {
+          filter: drop-shadow(0 0 6px rgba(232, 147, 12, 0.85));
+          transform: scale(1.08);
+        }
+        .tada-popup-button.tada-popup-active svg {
+          filter: drop-shadow(0 0 8px rgba(232, 147, 12, 1));
           transform: scale(1.12);
         }
 
@@ -3479,7 +3415,7 @@ function applyTadaPopupButtonSetting() {
       (document.head || document.documentElement).appendChild(style);
     }
     bindInplayerPopupDismissListeners();
-    ensureTadaPopupButton();
+    startPlayerControlCheck();
   } else {
     existingStyle?.remove();
     removeTadaPopupButton();
@@ -3582,6 +3518,10 @@ function teardownOnInvalidation() {
   if (pageEventHandler) {
     window.removeEventListener("message", pageEventHandler);
     pageEventHandler = null;
+  }
+  if (playerControlInterval) {
+    clearInterval(playerControlInterval);
+    playerControlInterval = null;
   }
   removeAmbientLightDom();
   removePipButton();
@@ -3713,6 +3653,9 @@ async function bootstrap() {
   bindSidebarCurator();
   bindPageBridge();
   initMutationObserver();
+  if (isWatchPage()) {
+    startPlayerControlCheck();
+  }
 }
 
 ["yt-navigate-finish", "yt-page-data-updated"].forEach((eventName) => {
@@ -3722,6 +3665,9 @@ async function bootstrap() {
     scrubPlayerAds();
     if (currentSettings.ambientLight && isWatchPage()) {
       ensureAmbientLight();
+    }
+    if (isWatchPage()) {
+      startPlayerControlCheck();
     }
   }, true);
 });
@@ -3769,4 +3715,11 @@ document.addEventListener("mousemove", () => {
     }
   }
 }, { passive: true });
+
+document.addEventListener("mouseenter", (e) => {
+  if (isWatchPage() && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
+    ensurePlayerControlButtons();
+  }
+}, true);
+
 

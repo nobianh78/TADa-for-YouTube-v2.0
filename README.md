@@ -3,8 +3,8 @@
 Extension Chrome (Manifest V3) chặn quảng cáo YouTube cùng bộ tiện ích đa năng:
 - **Tăng âm lượng 500% (Super Volume):** Điều khiển mượt mà với thanh trượt thế hệ mới, tự động căng tràn khung, hiển thị số % âm lượng trực tiếp và hiệu ứng Boost lửa.
 - **Ambient Light (Đèn nền phát sáng):** Tự động phát sáng theo khung hình video chuẩn điện ảnh, điều chỉnh được độ sáng và độ tỏa (Spread).
-- **Hình trong hình (Picture-in-Picture - PiP) 1 chạm:** Tích hợp nút PiP trực tiếp trên thanh điều khiển YouTube (không cần click chuột phải 2 lần) & phím tắt **`[P]`** siêu tiện lợi để vừa làm việc vừa xem video.
-- **Phím Popup TADa trên thanh điều khiển YouTube:** Bấm 1 chạm ngay trên thanh video player để mở bảng điều khiển nhanh TADa (tùy chỉnh âm lượng 500%, ánh sáng Ambient, xem số ads đã chặn, bật tắt tính năng) mà không cần với chuột lên thanh công cụ Chrome.
+- **Phím Popup TADa trên thanh điều khiển YouTube:** Bấm 1 chạm ngay cạnh nút Cài đặt trên video player để mở nhanh bảng điều khiển TADa (tùy chỉnh âm lượng 500%, ánh sáng Ambient, xem số ads đã chặn, bật tắt tính năng) mà không cần với chuột lên thanh công cụ Chrome.
+- **Hình trong hình (Picture-in-Picture - PiP):** Phím tắt **`[P]`** tiện lợi và nút kích hoạt nhanh ngay trong bảng điều khiển TADa để vừa lướt web vừa xem video.
 - **Chặn quảng cáo toàn diện:** Tự động lọc video ads, banner ads, popup và lướt qua quảng cáo tài trợ.
 - **Tối ưu giao diện YouTube:** Ẩn Shorts, ẩn thẻ kết thúc, lưới hiển thị video 4 cột, lọc gợi ý video liên quan thông minh, cố định bình luận.
 - **Thương hiệu TADa:** Tích hợp logo TADa nhận diện tinh tế, cùng hệ sinh thái TADa Manager.
