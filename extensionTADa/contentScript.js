@@ -29,11 +29,10 @@ const AMBIENT_CANVAS_DIFFUSE_ID = "tada-ambient-canvas-diffuse";
 const AMBIENT_CANVAS_GLOW_ID = "tada-ambient-canvas-glow";
 const PIP_BUTTON_STYLE_ID = "tada-pip-button-style";
 const PIP_BUTTON_ID = "tada-pip-button";
-const AB_LOOPER_STYLE_ID = "tada-ab-looper-style";
-const AB_LOOPER_BUTTON_ID = "tada-ab-looper-btn";
-const AB_LOOPER_PANEL_ID = "tada-ab-looper-panel";
-const AB_LOOPER_TRACK_ID = "tada-ab-progress-track";
-const PLAYER_NOTIFICATION_ID = "tada-player-notification";
+const AB_STYLE_ID = "tada-ab-style";
+const AB_BTN_ID = "tada-ab-btn";
+const AB_CLEAR_BTN_ID = "tada-ab-clear-btn";
+const AB_TRACK_ID = "tada-ab-track";
 const AD_SELECTORS = [
   "ytd-promoted-video-renderer",
   "ytd-promoted-sparkles-text-search-renderer",
@@ -954,7 +953,7 @@ function persistSuperVolumePreference(value) {
 
 function resumeSuperVolumeContext() {
   if (superVolumeAudioCtx && superVolumeAudioCtx.state === "suspended") {
-    superVolumeAudioCtx.resume().catch(() => {});
+    superVolumeAudioCtx.resume().catch(() => { });
   }
 }
 
@@ -1437,7 +1436,7 @@ function scrubPlayerAds() {
   if (skipButton) {
     try {
       skipButton.click();
-    } catch (e) {}
+    } catch (e) { }
   }
 
   const isAdShowing = Boolean(
@@ -1452,7 +1451,7 @@ function scrubPlayerAds() {
       if (Number.isFinite(video.duration) && video.duration > 0) {
         video.currentTime = video.duration;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -1559,7 +1558,7 @@ function ensureCommentsVisible() {
       // Remove hidden attribute
       element.removeAttribute("hidden");
       element.removeAttribute("collapsed");
-      
+
       // Force display via inline style as last resort
       if (getComputedStyle(element).display === "none") {
         element.style.setProperty("display", "block", "important");
@@ -2348,14 +2347,14 @@ function renderAmbientSingleFrame(videoEl) {
       diffuseCtx.drawImage(video, 0, 0, 64, 36);
       container.classList.add("tada-ambient-active");
     }
-  } catch {}
+  } catch { }
 }
 
 function cancelAmbientLoop() {
   if (ambientVideoEl && ambientFrameCallbackId && "cancelVideoFrameCallback" in ambientVideoEl) {
     try {
       ambientVideoEl.cancelVideoFrameCallback(ambientFrameCallbackId);
-    } catch (e) {}
+    } catch (e) { }
     ambientFrameCallbackId = null;
   }
   if (ambientRafId) {
@@ -2714,8 +2713,8 @@ function ensurePipButton() {
   // Anchor directly to YouTube's Settings button (gear HD in the pill controls)
   const settingsBtn = document.querySelector(".ytp-settings-button");
   const rightControls = document.querySelector(".ytp-right-controls") ||
-                        settingsBtn?.closest?.(".ytp-right-controls") ||
-                        settingsBtn?.parentElement;
+    settingsBtn?.closest?.(".ytp-right-controls") ||
+    settingsBtn?.parentElement;
 
   if (!settingsBtn && !rightControls) {
     return;
@@ -2748,8 +2747,8 @@ function ensurePipButton() {
       settingsBtn.insertAdjacentElement("afterend", btn);
     } else if (rightControls) {
       const ref = rightControls.querySelector(".ytp-size-button") ||
-                  rightControls.querySelector(".ytp-fullscreen-button") ||
-                  null;
+        rightControls.querySelector(".ytp-fullscreen-button") ||
+        null;
       if (ref) {
         rightControls.insertBefore(btn, ref);
       } else {
@@ -2850,597 +2849,162 @@ function applyPipButtonSetting() {
 }
 
 
-/* ===== TADa A-B LOOPER CONTROLLER ===== */
-const abLoopState = {
-  enabled: false,
-  startTime: null,
-  endTime: null,
-  panelVisible: false
-};
-let abLoopInterval = null;
-let abHotkeysBound = false;
-let abButtonInterval = null;
-let playerNotificationTimer = null;
-let isDraggingPin = null; // "A" | "B" | "RANGE"
-let dragStartX = 0;
-let dragInitialA = 0;
-let dragInitialB = 0;
-let abPickMode = null; // null | "A" | "B" | "AUTO"
+/* ===== TADa SMART A-B LOOPER ===== */
+const ab = { a: null, b: null, on: false };
+let abInterval = null;
+let abBtnInterval = null;
+let abKeysBound = false;
+let abDrag = null; // null | { type: "A"|"B"|"RANGE", startX, initA, initB }
+let abPicking = false; // true = click-on-timeline mode active
 
-function formatTimeAb(seconds) {
-  if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) {
-    return "--:--";
-  }
-  const s = Math.floor(seconds);
-  const ms = Math.floor((seconds - s) * 10);
+function abFmt(sec) {
+  if (sec === null || sec === undefined || isNaN(sec)) return "--:--";
+  const s = Math.floor(sec);
+  const ms = Math.floor((sec - s) * 10);
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const secStr = sec < 10 ? "0" + sec : "" + sec;
-  if (h > 0) {
-    const mStr = m < 10 ? "0" + m : "" + m;
-    return h + ":" + mStr + ":" + secStr + "." + ms;
-  }
-  const mStr = m < 10 ? "0" + m : "" + m;
-  return mStr + ":" + secStr + "." + ms;
+  const ss = s % 60;
+  const pad = (n) => n < 10 ? "0" + n : "" + n;
+  return h > 0 ? h + ":" + pad(m) + ":" + pad(ss) + "." + ms : pad(m) + ":" + pad(ss) + "." + ms;
 }
 
-function showPlayerNotification(text) {
-  const player = document.getElementById("movie_player") || 
-                 document.querySelector(".html5-video-player") || 
-                 document.body;
+function abToast(text) {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
   if (!player) return;
-
-  let toast = document.getElementById(PLAYER_NOTIFICATION_ID);
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = PLAYER_NOTIFICATION_ID;
-    toast.className = "tada-player-toast";
-    player.appendChild(toast);
+  let t = player.querySelector(".tada-ab-toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.className = "tada-ab-toast";
+    player.appendChild(t);
   }
-  toast.textContent = text;
-  toast.classList.add("tada-toast-active");
-
-  if (playerNotificationTimer) clearTimeout(playerNotificationTimer);
-  playerNotificationTimer = setTimeout(() => {
-    toast?.classList.remove("tada-toast-active");
-  }, 1900);
+  t.textContent = text;
+  t.classList.remove("show");
+  void t.offsetWidth; // reflow
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 1800);
 }
 
-function checkAbLoop() {
-  if (!currentSettings.abLooper) return;
-  if (!abLoopState.enabled || abLoopState.startTime === null || abLoopState.endTime === null) return;
-  const video = getMainVideoElement();
-  if (!video || video.paused) return;
-
-  if (video.currentTime >= abLoopState.endTime) {
-    video.currentTime = abLoopState.startTime;
-  }
+function abCheck() {
+  if (!ab.on || ab.a === null || ab.b === null) return;
+  const v = getMainVideoElement();
+  if (!v || v.paused) return;
+  if (v.currentTime >= ab.b) v.currentTime = ab.a;
 }
 
-function startAbLoopMonitoring() {
-  if (abLoopInterval) {
-    clearInterval(abLoopInterval);
-    abLoopInterval = null;
-  }
-  if (abLoopState.enabled && abLoopState.startTime !== null && abLoopState.endTime !== null) {
-    abLoopInterval = setInterval(checkAbLoop, 40);
+function abStartLoop() {
+  abStopLoop();
+  if (ab.on && ab.a !== null && ab.b !== null) {
+    abInterval = setInterval(abCheck, 50);
   }
 }
 
-function stopAbLoopMonitoring() {
-  if (abLoopInterval) {
-    clearInterval(abLoopInterval);
-    abLoopInterval = null;
-  }
+function abStopLoop() {
+  if (abInterval) { clearInterval(abInterval); abInterval = null; }
 }
 
-function setAbPointA(time) {
-  const video = getMainVideoElement();
-  if (!video) return;
-  const t = typeof time === "number" ? time : video.currentTime;
-  abLoopState.startTime = Math.max(0, parseFloat(t.toFixed(1)));
-  if (abLoopState.endTime !== null && abLoopState.startTime >= abLoopState.endTime) {
-    abLoopState.endTime = null;
-    abLoopState.enabled = false;
-    stopAbLoopMonitoring();
-  }
-  updateAbLooperUi();
-  showPlayerNotification("🎯 Đã đặt mốc A: " + formatTimeAb(abLoopState.startTime));
+function abSetA(time) {
+  const v = getMainVideoElement();
+  if (!v) return;
+  const t = typeof time === "number" ? time : v.currentTime;
+  ab.a = Math.max(0, parseFloat(t.toFixed(1)));
+  if (ab.b !== null && ab.a >= ab.b) { ab.b = null; ab.on = false; abStopLoop(); }
+  abUpdateAll();
+  abToast("Đã chọn A · Giờ chọn mốc B");
 }
 
-function setAbPointB(time) {
-  const video = getMainVideoElement();
-  if (!video) return;
-  const t = typeof time === "number" ? time : video.currentTime;
-  if (abLoopState.startTime === null) {
-    abLoopState.startTime = 0;
+function abSetB(time) {
+  const v = getMainVideoElement();
+  if (!v) return;
+  const t = typeof time === "number" ? time : v.currentTime;
+  if (ab.a === null) ab.a = 0;
+  if (t <= ab.a) { abToast("⚠ B phải sau A"); return; }
+  ab.b = parseFloat(t.toFixed(1));
+  ab.on = true;
+  abStartLoop();
+  abUpdateAll();
+  abToast("🔁 Đang lặp");
+}
+
+function abToggle() {
+  if (ab.a === null || ab.b === null) { abToast("⚠ Cần đặt cả A và B"); return; }
+  ab.on = !ab.on;
+  ab.on ? abStartLoop() : abStopLoop();
+  if (ab.on) {
+    const v = getMainVideoElement();
+    if (v && (v.currentTime < ab.a || v.currentTime >= ab.b)) v.currentTime = ab.a;
   }
-  if (t <= abLoopState.startTime) {
-    showPlayerNotification("⚠️ Mốc B phải lớn hơn mốc A");
+  abUpdateAll();
+  abToast(ab.on ? "🔁 Đang lặp" : "⏸ Đang tắt");
+}
+
+function abReset() {
+  ab.a = null; ab.b = null; ab.on = false;
+  abPicking = false;
+  abStopLoop();
+  abUpdateAll();
+  abUpdatePickingUI();
+  abToast("✕ Đã xóa");
+}
+
+/* --- Smart button click handler --- */
+function abSmartClick() {
+  // If both points set → toggle loop
+  if (ab.a !== null && ab.b !== null) {
+    abToggle();
     return;
   }
-  abLoopState.endTime = parseFloat(t.toFixed(1));
-  abLoopState.enabled = true;
-  startAbLoopMonitoring();
-  updateAbLooperUi();
-  showPlayerNotification("🔁 Lặp A-B: " + formatTimeAb(abLoopState.startTime) + " ➜ " + formatTimeAb(abLoopState.endTime));
-}
-
-function toggleAbLoop() {
-  if (abLoopState.startTime === null || abLoopState.endTime === null) {
-    showPlayerNotification("⚠️ Hãy đặt cả mốc [A] và [B] để bật lặp");
-    return;
-  }
-  abLoopState.enabled = !abLoopState.enabled;
-  if (abLoopState.enabled) {
-    startAbLoopMonitoring();
-    const video = getMainVideoElement();
-    if (video && (video.currentTime < abLoopState.startTime || video.currentTime >= abLoopState.endTime)) {
-      video.currentTime = abLoopState.startTime;
-    }
-    showPlayerNotification("🔁 Đã BẬT lặp đoạn A-B");
+  // Otherwise toggle pick mode
+  abPicking = !abPicking;
+  abUpdateAll();
+  abUpdatePickingUI();
+  if (abPicking) {
+    abToast(ab.a === null ? "👆 Click trên thanh tua để chọn A" : "👆 Click trên thanh tua để chọn B");
   } else {
-    stopAbLoopMonitoring();
-    showPlayerNotification("⏸ Đã TẮT lặp đoạn A-B");
-  }
-  updateAbLooperUi();
-}
-
-function resetAbLoop() {
-  abLoopState.startTime = null;
-  abLoopState.endTime = null;
-  abLoopState.enabled = false;
-  abPickMode = null;
-  stopAbLoopMonitoring();
-  updateAbLooperUi();
-  showPlayerNotification("✕ Đã xóa mốc lặp A-B");
-}
-
-function adjustAbPointA(delta) {
-  if (abLoopState.startTime === null) {
-    const video = getMainVideoElement();
-    if (video) setAbPointA(video.currentTime);
-    return;
-  }
-  const newA = Math.max(0, parseFloat((abLoopState.startTime + delta).toFixed(1)));
-  if (abLoopState.endTime !== null && newA >= abLoopState.endTime) return;
-  abLoopState.startTime = newA;
-  updateAbLooperUi();
-}
-
-function adjustAbPointB(delta) {
-  if (abLoopState.endTime === null) {
-    const video = getMainVideoElement();
-    if (video) setAbPointB(video.currentTime);
-    return;
-  }
-  const video = getMainVideoElement();
-  const maxDuration = video?.duration || 999999;
-  const newB = Math.min(maxDuration, parseFloat((abLoopState.endTime + delta).toFixed(1)));
-  if (abLoopState.startTime !== null && newB <= abLoopState.startTime) return;
-  abLoopState.endTime = newB;
-  updateAbLooperUi();
-}
-
-function getTimeFromProgressBarEvent(event) {
-  const progressBar = document.querySelector(".ytp-progress-bar");
-  const video = getMainVideoElement();
-  if (!progressBar || !video || !video.duration) return null;
-
-  const rect = progressBar.getBoundingClientRect();
-  if (rect.width <= 0) return null;
-
-  const clientX = event.clientX;
-  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-  return parseFloat((ratio * video.duration).toFixed(1));
-}
-
-function handleProgressBarClick(event) {
-  if (!currentSettings.abLooper) return;
-
-  const time = getTimeFromProgressBarEvent(event);
-  if (time === null) return;
-
-  // 1. Shift + Click => Set Point A
-  if (event.shiftKey) {
-    event.preventDefault();
-    event.stopPropagation();
-    setAbPointA(time);
-    abLoopState.panelVisible = true;
-    updateAbLooperUi();
-    return;
-  }
-
-  // 2. Alt + Click or Ctrl + Click => Set Point B
-  if (event.altKey || event.ctrlKey || event.metaKey) {
-    event.preventDefault();
-    event.stopPropagation();
-    setAbPointB(time);
-    abLoopState.panelVisible = true;
-    updateAbLooperUi();
-    return;
-  }
-
-  // 3. Selection mode active
-  if (abPickMode) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (abPickMode === "A") {
-      setAbPointA(time);
-      abPickMode = null;
-      showPlayerNotification("🎯 Đã chọn mốc A: " + formatTimeAb(time));
-    } else if (abPickMode === "B") {
-      setAbPointB(time);
-      abPickMode = null;
-      showPlayerNotification("🎯 Đã chọn mốc B: " + formatTimeAb(time));
-    } else if (abPickMode === "AUTO") {
-      if (abLoopState.startTime === null) {
-        setAbPointA(time);
-        showPlayerNotification("🎯 Đã chọn mốc A: " + formatTimeAb(time) + ". 👉 Hãy click tiếp mốc B");
-      } else {
-        setAbPointB(time);
-        abPickMode = null;
-      }
-    }
-    abLoopState.panelVisible = true;
-    updateAbLooperUi();
-    return;
+    abToast("Đã tắt chế độ chọn");
   }
 }
 
-function startDragging(type, startClientX) {
-  isDraggingPin = type;
-  dragStartX = startClientX;
-  dragInitialA = abLoopState.startTime ?? 0;
-  dragInitialB = abLoopState.endTime ?? 0;
-
-  const onMouseMove = (moveEvent) => {
-    if (!isDraggingPin) return;
-    moveEvent.preventDefault();
-    moveEvent.stopPropagation();
-
-    const progressBar = document.querySelector(".ytp-progress-bar");
-    const video = getMainVideoElement();
-    if (!progressBar || !video || !video.duration) return;
-
-    const rect = progressBar.getBoundingClientRect();
-    if (rect.width <= 0) return;
-
-    const duration = video.duration;
-
-    if (isDraggingPin === "A") {
-      const ratio = Math.max(0, Math.min(1, (moveEvent.clientX - rect.left) / rect.width));
-      let newA = parseFloat((ratio * duration).toFixed(1));
-      const maxA = abLoopState.endTime !== null ? Math.max(0, abLoopState.endTime - 0.2) : duration;
-      newA = Math.min(newA, maxA);
-      abLoopState.startTime = newA;
-      updateAbLooperUi();
-      showPlayerNotification("📍 Mốc A: " + formatTimeAb(newA));
-    } else if (isDraggingPin === "B") {
-      const ratio = Math.max(0, Math.min(1, (moveEvent.clientX - rect.left) / rect.width));
-      let newB = parseFloat((ratio * duration).toFixed(1));
-      const minB = abLoopState.startTime !== null ? abLoopState.startTime + 0.2 : 0;
-      newB = Math.max(newB, minB);
-      abLoopState.endTime = newB;
-      abLoopState.enabled = true;
-      updateAbLooperUi();
-      showPlayerNotification("📍 Mốc B: " + formatTimeAb(newB));
-    } else if (isDraggingPin === "RANGE") {
-      const deltaRatio = (moveEvent.clientX - dragStartX) / rect.width;
-      const deltaTime = deltaRatio * duration;
-      const rangeLen = Math.max(0.5, dragInitialB - dragInitialA);
-
-      let newA = Math.max(0, Math.min(duration - rangeLen, dragInitialA + deltaTime));
-      let newB = newA + rangeLen;
-
-      abLoopState.startTime = parseFloat(newA.toFixed(1));
-      abLoopState.endTime = parseFloat(newB.toFixed(1));
-      updateAbLooperUi();
-      showPlayerNotification("↔️ Đoạn lặp: " + formatTimeAb(abLoopState.startTime) + " - " + formatTimeAb(abLoopState.endTime));
-    }
-  };
-
-  const onMouseUp = (upEvent) => {
-    upEvent.preventDefault();
-    upEvent.stopPropagation();
-    document.removeEventListener("mousemove", onMouseMove, true);
-    document.removeEventListener("mouseup", onMouseUp, true);
-
-    if (isDraggingPin) {
-      isDraggingPin = null;
-      if (abLoopState.enabled && abLoopState.startTime !== null && abLoopState.endTime !== null) {
-        startAbLoopMonitoring();
-      }
-      updateAbLooperUi();
-      showPlayerNotification("🔁 Đã lưu mốc lặp: " + formatTimeAb(abLoopState.startTime) + " ➜ " + formatTimeAb(abLoopState.endTime));
-    }
-  };
-
-  document.addEventListener("mousemove", onMouseMove, true);
-  document.addEventListener("mouseup", onMouseUp, true);
+function abUpdatePickingUI() {
+  const bar = document.querySelector(".ytp-progress-bar");
+  if (bar) {
+    bar.classList.toggle("tada-ab-picking", abPicking);
+  }
+  const btn = document.getElementById(AB_BTN_ID);
+  if (btn) {
+    btn.classList.toggle("picking", abPicking);
+  }
 }
 
-function setupProgressBarInteractions() {
-  const progressBar = document.querySelector(".ytp-progress-bar");
-  if (!progressBar || progressBar.dataset.tadaAbBound) return;
-  progressBar.dataset.tadaAbBound = "true";
-
-  progressBar.addEventListener("click", handleProgressBarClick, true);
-
-  progressBar.addEventListener("mousedown", (e) => {
-    if (!currentSettings.abLooper) return;
-    const target = e.target;
-
-    const pinA = target.closest(".pin-a");
-    const pinB = target.closest(".pin-b");
-    const range = target.closest(".tada-ab-range");
-
-    if (pinA) {
-      e.preventDefault();
-      e.stopPropagation();
-      startDragging("A", e.clientX);
-      return;
-    }
-
-    if (pinB) {
-      e.preventDefault();
-      e.stopPropagation();
-      startDragging("B", e.clientX);
-      return;
-    }
-
-    if (range) {
-      e.preventDefault();
-      e.stopPropagation();
-      startDragging("RANGE", e.clientX);
-      return;
-    }
-  }, true);
+/* --- Button UI --- */
+function abBtnLabel() {
+  if (ab.a !== null && ab.b !== null) {
+    return ab.on ? "Đang lặp" : "Đang tắt";
+  }
+  if (abPicking && ab.a !== null) return "Chọn B...";
+  if (abPicking) return "Chọn A...";
+  return "A-B";
 }
 
-function updateAbProgressBarHighlight() {
-  const progressBar = document.querySelector(".ytp-progress-bar");
-  if (!progressBar) return;
-
-  setupProgressBarInteractions();
-
-  // Toggle selection guide class on progress bar
-  if (abPickMode) {
-    progressBar.classList.add("tada-picking-mode");
-  } else {
-    progressBar.classList.remove("tada-picking-mode");
-  }
-
-  let track = document.getElementById(AB_LOOPER_TRACK_ID);
-  if (!currentSettings.abLooper || (abLoopState.startTime === null && abLoopState.endTime === null)) {
-    if (track) track.remove();
-    return;
-  }
-
-  const video = getMainVideoElement();
-  const duration = video?.duration;
-  if (!duration || isNaN(duration) || duration <= 0) {
-    if (track) track.remove();
-    return;
-  }
-
-  if (!track) {
-    track = document.createElement("div");
-    track.id = AB_LOOPER_TRACK_ID;
-    track.className = "tada-ab-track";
-    progressBar.appendChild(track);
-  }
-
-  const aPct = abLoopState.startTime !== null ? (abLoopState.startTime / duration) * 100 : null;
-  const bPct = abLoopState.endTime !== null ? (abLoopState.endTime / duration) * 100 : null;
-
-  let html = "";
-  if (aPct !== null && bPct !== null && bPct > aPct) {
-    html += `<div class="tada-ab-range ${abLoopState.enabled ? "is-looping" : ""}" style="left: ${aPct}%; width: ${bPct - aPct}%;" title="Kéo cả đoạn lặp (${formatTimeAb(abLoopState.startTime)} - ${formatTimeAb(abLoopState.endTime)})"></div>`;
-  }
-  if (aPct !== null) {
-    html += `<div class="tada-ab-pin pin-a" style="left: ${aPct}%;" title="Kéo để chỉnh mốc A (${formatTimeAb(abLoopState.startTime)})"><span>A</span></div>`;
-  }
-  if (bPct !== null) {
-    html += `<div class="tada-ab-pin pin-b" style="left: ${bPct}%;" title="Kéo để chỉnh mốc B (${formatTimeAb(abLoopState.endTime)})"><span>B</span></div>`;
-  }
-  track.innerHTML = html;
-}
-
-function renderAbLooperPanel() {
-  let panel = document.getElementById(AB_LOOPER_PANEL_ID);
-  const player = document.getElementById("movie_player") || 
-                 document.querySelector(".html5-video-player");
-  if (!player) return;
-
-  if (!abLoopState.panelVisible || !currentSettings.abLooper) {
-    if (panel) panel.remove();
-    return;
-  }
-
-  if (!panel) {
-    panel = document.createElement("div");
-    panel.id = AB_LOOPER_PANEL_ID;
-    panel.className = "tada-ab-panel";
-    player.appendChild(panel);
-
-    panel.addEventListener("click", (e) => e.stopPropagation());
-    panel.addEventListener("mousedown", (e) => e.stopPropagation());
-    panel.addEventListener("keydown", (e) => e.stopPropagation());
-  }
-
-  panel.innerHTML = `
-    <div class="tada-ab-p-header">
-      <div class="tada-ab-p-title">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#E8930C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 2l4 4-4 4"/>
-          <path d="M3 11v-1a4 4 0 0 1 4-4h14"/>
-          <path d="M7 22l-4-4 4-4"/>
-          <path d="M21 13v1a4 4 0 0 1-4 4H3"/>
-        </svg>
-        <span>Lặp đoạn A - B</span>
-        <span class="tada-ab-p-status ${abLoopState.enabled ? "on" : "off"}">
-          ${abLoopState.enabled ? "ĐANG LẶP" : "TẮT"}
-        </span>
-      </div>
-      <button class="tada-ab-p-close" id="tada-ab-p-close-btn" title="Ẩn bảng">&times;</button>
-    </div>
-
-    <!-- Quick timeline selection bar -->
-    <div class="tada-ab-pick-toolbar ${abPickMode ? "is-picking" : ""}" id="tada-ab-pick-toolbar">
-      <button class="tada-ab-pick-toggle-btn" id="tada-ab-pick-auto-btn">
-        <span class="pick-icon">${abPickMode ? "🎯" : "🖱️"}</span>
-        <span class="pick-label">
-          ${abPickMode === "A" ? "Click thanh thời gian để đặt mốc A..." :
-            abPickMode === "B" ? "Click thanh thời gian để đặt mốc B..." :
-            abPickMode === "AUTO" ? (abLoopState.startTime === null ? "Click thanh tua để chọn mốc A..." : "Click thanh tua để chọn mốc B...") :
-            "Chọn mốc trực tiếp trên thanh tua"}
-        </span>
-        <span class="pick-badge">${abPickMode ? "ĐANG CHỌN" : "CHỌN NHANH"}</span>
-      </button>
-    </div>
-
-    <div class="tada-ab-p-body">
-      <!-- Point A -->
-      <div class="tada-ab-p-row">
-        <button class="tada-ab-p-btn point-a-btn" id="tada-ab-btn-set-a" title="Chốt mốc A tại thời điểm hiện tại (Phím [)">
-          <span class="tada-ab-p-badge">A</span> Đặt mốc A
-        </button>
-        <button class="tada-ab-p-pick-btn ${abPickMode === "A" ? "active" : ""}" id="tada-ab-pick-a" title="Nhấp trên thanh thời gian để chọn mốc A">📍 Chọn A</button>
-        <div class="tada-ab-p-stepper">
-          <button class="tada-ab-p-step" id="tada-ab-a-minus" title="-0.5s">-</button>
-          <span class="tada-ab-p-val" id="tada-ab-a-val" title="Nhấp để nhảy tới mốc A">${formatTimeAb(abLoopState.startTime)}</span>
-          <button class="tada-ab-p-step" id="tada-ab-a-plus" title="+0.5s">+</button>
-        </div>
-      </div>
-
-      <!-- Point B -->
-      <div class="tada-ab-p-row">
-        <button class="tada-ab-p-btn point-b-btn" id="tada-ab-btn-set-b" title="Chốt mốc B tại thời điểm hiện tại (Phím ])">
-          <span class="tada-ab-p-badge">B</span> Đặt mốc B
-        </button>
-        <button class="tada-ab-p-pick-btn ${abPickMode === "B" ? "active" : ""}" id="tada-ab-pick-b" title="Nhấp trên thanh thời gian để chọn mốc B">📍 Chọn B</button>
-        <div class="tada-ab-p-stepper">
-          <button class="tada-ab-p-step" id="tada-ab-b-minus" title="-0.5s">-</button>
-          <span class="tada-ab-p-val" id="tada-ab-b-val" title="Nhấp để nhảy tới mốc B">${formatTimeAb(abLoopState.endTime)}</span>
-          <button class="tada-ab-p-step" id="tada-ab-b-plus" title="+0.5s">+</button>
-        </div>
-      </div>
-
-      <!-- Action buttons -->
-      <div class="tada-ab-p-actions">
-        <button class="tada-ab-p-act-btn loop-toggle-btn ${abLoopState.enabled ? "active" : ""}" id="tada-ab-btn-toggle" title="Bật/Tắt lặp (Phím \\)">
-          ${abLoopState.enabled ? "⏸ Tắt lặp" : "🔁 Bật lặp A-B"}
-        </button>
-        <button class="tada-ab-p-act-btn reset-btn" id="tada-ab-btn-reset" title="Xóa mốc A và B">
-          ✕ Xóa
-        </button>
-      </div>
-    </div>
-
-    <div class="tada-ab-p-footer">
-      <span>💡 <b>Kéo thả [A] & [B]</b> trên thanh tua · <b>Shift+Click</b> (mốc A) · <b>Alt+Click</b> (mốc B)</span>
-    </div>
-  `;
-
-  panel.querySelector("#tada-ab-p-close-btn")?.addEventListener("click", () => {
-    abLoopState.panelVisible = false;
-    abPickMode = null;
-    renderAbLooperPanel();
-    updateAbProgressBarHighlight();
-  });
-
-  // Pick on timeline buttons
-  panel.querySelector("#tada-ab-pick-auto-btn")?.addEventListener("click", () => {
-    abPickMode = abPickMode === "AUTO" ? null : "AUTO";
-    if (abPickMode) {
-      showPlayerNotification("👉 Hãy click vị trí mốc [A] trên thanh thời gian");
-    }
-    updateAbLooperUi();
-  });
-
-  panel.querySelector("#tada-ab-pick-a")?.addEventListener("click", () => {
-    abPickMode = abPickMode === "A" ? null : "A";
-    if (abPickMode) {
-      showPlayerNotification("👉 Hãy click vị trí mốc [A] trên thanh thời gian");
-    }
-    updateAbLooperUi();
-  });
-
-  panel.querySelector("#tada-ab-pick-b")?.addEventListener("click", () => {
-    abPickMode = abPickMode === "B" ? null : "B";
-    if (abPickMode) {
-      showPlayerNotification("👉 Hãy click vị trí mốc [B] trên thanh thời gian");
-    }
-    updateAbLooperUi();
-  });
-
-  panel.querySelector("#tada-ab-btn-set-a")?.addEventListener("click", () => setAbPointA());
-  panel.querySelector("#tada-ab-btn-set-b")?.addEventListener("click", () => setAbPointB());
-
-  panel.querySelector("#tada-ab-a-minus")?.addEventListener("click", () => adjustAbPointA(-0.5));
-  panel.querySelector("#tada-ab-a-plus")?.addEventListener("click", () => adjustAbPointA(0.5));
-  panel.querySelector("#tada-ab-a-val")?.addEventListener("click", () => {
-    const video = getMainVideoElement();
-    if (video && abLoopState.startTime !== null) video.currentTime = abLoopState.startTime;
-  });
-
-  panel.querySelector("#tada-ab-b-minus")?.addEventListener("click", () => adjustAbPointB(-0.5));
-  panel.querySelector("#tada-ab-b-plus")?.addEventListener("click", () => adjustAbPointB(0.5));
-  panel.querySelector("#tada-ab-b-val")?.addEventListener("click", () => {
-    const video = getMainVideoElement();
-    if (video && abLoopState.endTime !== null) video.currentTime = abLoopState.endTime;
-  });
-
-  panel.querySelector("#tada-ab-btn-toggle")?.addEventListener("click", () => toggleAbLoop());
-  panel.querySelector("#tada-ab-btn-reset")?.addEventListener("click", () => resetAbLoop());
-}
-
-function ensureAbButton() {
-  if (!currentSettings.abLooper) {
-    removeAbButton();
-    return;
-  }
-
+function ensureAbBtn() {
+  if (!currentSettings.abLooper) { removeAbBtn(); return; }
   const timeDisplay = document.querySelector(".ytp-time-display");
   const leftControls = document.querySelector(".ytp-left-controls") || timeDisplay?.parentElement;
-
   if (!timeDisplay && !leftControls) return;
 
-  let btn = document.getElementById(AB_LOOPER_BUTTON_ID);
+  let btn = document.getElementById(AB_BTN_ID);
   if (!btn || !document.contains(btn)) {
     if (btn) btn.remove();
-
     btn = document.createElement("button");
-    btn.id = AB_LOOPER_BUTTON_ID;
-    btn.className = "ytp-button tada-ab-control-btn";
-    btn.setAttribute("aria-label", "Lặp đoạn A-B");
-    btn.setAttribute("title", "Lặp đoạn A-B (Phím [ và ])");
-    btn.innerHTML = `
-      <span class="tada-ab-c-badge">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 2l4 4-4 4"/>
-          <path d="M3 11v-1a4 4 0 0 1 4-4h14"/>
-          <path d="M7 22l-4-4 4-4"/>
-          <path d="M21 13v1a4 4 0 0 1-4 4H3"/>
-        </svg>
-        <span class="tada-ab-c-text">A-B</span>
-      </span>
-    `;
-
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      abLoopState.panelVisible = !abLoopState.panelVisible;
-      // Auto prompt to pick on timeline if points are empty
-      if (abLoopState.panelVisible && abLoopState.startTime === null) {
-        abPickMode = "AUTO";
-        showPlayerNotification("👉 Hãy click vị trí mốc [A] trên thanh thời gian");
-      }
-      updateAbLooperUi();
+    btn.id = AB_BTN_ID;
+    btn.className = "ytp-button tada-ab-btn";
+    btn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); abSmartClick(); });
+    btn.addEventListener("dblclick", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      abReset();
+      abSmartClick();
     });
+    btn.addEventListener("contextmenu", (e) => { e.preventDefault(); e.stopPropagation(); abReset(); });
 
     if (timeDisplay) {
       timeDisplay.insertAdjacentElement("afterend", btn);
@@ -3449,128 +3013,240 @@ function ensureAbButton() {
     }
   }
 
-  updateAbButtonState();
-  setupProgressBarInteractions();
-}
+  btn.textContent = abBtnLabel();
+  btn.title = ab.a !== null && ab.b !== null
+    ? (ab.on ? "Đang lặp · Click: Tắt lặp · Chuột phải: Xóa" : "Đang tắt · Click: Bật lặp · Chuột phải: Xóa")
+    : abPicking ? "Đang chọn trên thanh tua · Click để hủy" : "A-B Looper · Click để chọn mốc";
+  btn.classList.toggle("active", ab.on);
+  btn.classList.toggle("has-points", ab.a !== null && ab.b !== null);
+  btn.classList.toggle("picking", abPicking);
 
-function removeAbButton() {
-  const btn = document.getElementById(AB_LOOPER_BUTTON_ID);
-  if (btn) btn.remove();
-}
-
-function removeAbLooperDom() {
-  removeAbButton();
-  document.getElementById(AB_LOOPER_PANEL_ID)?.remove();
-  document.getElementById(AB_LOOPER_TRACK_ID)?.remove();
-  document.getElementById(PLAYER_NOTIFICATION_ID)?.remove();
-  document.querySelector(".ytp-progress-bar")?.classList.remove("tada-picking-mode");
-}
-
-function updateAbButtonState() {
-  const btn = document.getElementById(AB_LOOPER_BUTTON_ID);
-  if (!btn) return;
-  if (abLoopState.enabled) {
-    btn.classList.add("tada-ab-active");
-    btn.setAttribute("title", "Đang lặp A-B (" + formatTimeAb(abLoopState.startTime) + " - " + formatTimeAb(abLoopState.endTime) + ")");
-  } else {
-    btn.classList.remove("tada-ab-active");
-    btn.setAttribute("title", "Lặp đoạn A-B (Phím [ và ])");
-  }
-}
-
-function updateAbLooperUi() {
-  updateAbButtonState();
-  renderAbLooperPanel();
-  updateAbProgressBarHighlight();
-}
-
-function handleAbLoopHotkeys(event) {
-  if (!currentSettings.abLooper) return;
-  if (event.defaultPrevented) return;
-  if (event.altKey || event.ctrlKey || event.metaKey) return;
-
-  if (shouldIgnoreKeyEvent(event) || event.target?.closest?.("ytd-comments, #comments, #search-input, [role='textbox']")) {
-    return;
-  }
-
-  if (event.key === "[") {
-    event.preventDefault();
-    event.stopPropagation();
-    setAbPointA();
-    abLoopState.panelVisible = true;
-    updateAbLooperUi();
-    return;
-  }
-
-  if (event.key === "]") {
-    event.preventDefault();
-    event.stopPropagation();
-    setAbPointB();
-    abLoopState.panelVisible = true;
-    updateAbLooperUi();
-    return;
-  }
-
-  if (event.key === "\\") {
-    event.preventDefault();
-    event.stopPropagation();
-    toggleAbLoop();
-    return;
-  }
-}
-
-function ensureAbHotkeys() {
-  if (abHotkeysBound) return;
-  window.addEventListener("keydown", handleAbLoopHotkeys, true);
-  abHotkeysBound = true;
-}
-
-function bindVideoAbListeners() {
-  const video = getMainVideoElement();
-  if (!video || video.dataset.tadaAbBound) return;
-  video.dataset.tadaAbBound = "true";
-  video.addEventListener("timeupdate", checkAbLoop);
-  video.addEventListener("play", () => {
-    if (abLoopState.enabled) startAbLoopMonitoring();
-  });
-  video.addEventListener("pause", () => {
-    stopAbLoopMonitoring();
-  });
-  video.addEventListener("durationchange", () => {
-    updateAbProgressBarHighlight();
-  });
-}
-
-function startAbLooperCheck() {
-  if (abButtonInterval) {
-    clearInterval(abButtonInterval);
-    abButtonInterval = null;
-  }
-  let count = 0;
-  ensureAbButton();
-  abButtonInterval = setInterval(() => {
-    count++;
-    if (isWatchPage()) {
-      ensureAbButton();
-      updateAbProgressBarHighlight();
+  // Clear / Cancel button
+  let clearBtn = document.getElementById(AB_CLEAR_BTN_ID);
+  const showClear = abPicking || (ab.a !== null || ab.b !== null);
+  if (showClear) {
+    if (!clearBtn || !document.contains(clearBtn)) {
+      if (clearBtn) clearBtn.remove();
+      clearBtn = document.createElement("button");
+      clearBtn.id = AB_CLEAR_BTN_ID;
+      clearBtn.className = "ytp-button tada-ab-clear-btn";
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault(); e.stopPropagation();
+        abReset();
+      });
+      btn.insertAdjacentElement("afterend", clearBtn);
     }
-    if (count > 25 && document.getElementById(AB_LOOPER_BUTTON_ID)) {
-      clearInterval(abButtonInterval);
-      abButtonInterval = null;
+    clearBtn.textContent = abPicking ? "✕ Hủy" : "✕ Xóa";
+    clearBtn.title = abPicking ? "Hủy chọn mốc" : "Xóa mốc lặp";
+  } else if (clearBtn) {
+    clearBtn.remove();
+  }
+}
+
+function removeAbBtn() {
+  document.getElementById(AB_BTN_ID)?.remove();
+  document.getElementById(AB_CLEAR_BTN_ID)?.remove();
+}
+
+/* --- Timeline markers (draggable) --- */
+function abTimeFromEvent(e) {
+  const bar = document.querySelector(".ytp-progress-bar");
+  const v = getMainVideoElement();
+  if (!bar || !v || !v.duration) return null;
+  const r = bar.getBoundingClientRect();
+  if (r.width <= 0) return null;
+  return parseFloat((Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * v.duration).toFixed(1));
+}
+
+function abSetupTimeline() {
+  const bar = document.querySelector(".ytp-progress-bar");
+  if (!bar || bar.dataset.tadaAb) return;
+  bar.dataset.tadaAb = "1";
+
+  bar.addEventListener("click", (e) => {
+    if (!currentSettings.abLooper) return;
+    // Shift/Alt+Click shortcuts always work
+    if (e.shiftKey) { e.preventDefault(); e.stopPropagation(); const t = abTimeFromEvent(e); if (t !== null) abSetA(t); return; }
+    if (e.altKey || e.ctrlKey || e.metaKey) { e.preventDefault(); e.stopPropagation(); const t = abTimeFromEvent(e); if (t !== null) abSetB(t); return; }
+    // Pick mode: intercept clicks to set A then B
+    if (abPicking) {
+      e.preventDefault(); e.stopPropagation();
+      const t = abTimeFromEvent(e);
+      if (t === null) return;
+      if (ab.a === null) {
+        abSetA(t);
+        abToast("Đã chọn A · Giờ click chọn mốc B");
+      } else {
+        const timeA = ab.a;
+        if (t < timeA) {
+          ab.a = t;
+          ab.b = timeA;
+        } else {
+          ab.b = t;
+        }
+        ab.on = true;
+        abPicking = false;
+        abUpdatePickingUI();
+        const v = getMainVideoElement();
+        if (v) v.currentTime = ab.a;
+        abStartLoop();
+        abToast("🔁 Đang lặp");
+      }
+      abUpdateAll();
+      return;
     }
+  }, true);
+
+  bar.addEventListener("mousedown", (e) => {
+    if (!currentSettings.abLooper) return;
+    const pinA = e.target.closest(".tada-ab-pin-a");
+    const pinB = e.target.closest(".tada-ab-pin-b");
+    const range = e.target.closest(".tada-ab-range");
+    if (!pinA && !pinB && !range) return;
+
+    e.preventDefault(); e.stopPropagation();
+    abDrag = {
+      type: pinA ? "A" : pinB ? "B" : "RANGE",
+      startX: e.clientX,
+      initA: ab.a ?? 0,
+      initB: ab.b ?? 0
+    };
+
+    const onMove = (me) => {
+      if (!abDrag) return;
+      me.preventDefault(); me.stopPropagation();
+      const bar2 = document.querySelector(".ytp-progress-bar");
+      const v = getMainVideoElement();
+      if (!bar2 || !v || !v.duration) return;
+      const rect = bar2.getBoundingClientRect();
+      if (rect.width <= 0) return;
+      const dur = v.duration;
+
+      if (abDrag.type === "A") {
+        let nA = parseFloat(((me.clientX - rect.left) / rect.width * dur).toFixed(1));
+        nA = Math.max(0, Math.min(nA, ab.b !== null ? ab.b - 0.2 : dur));
+        ab.a = nA;
+      } else if (abDrag.type === "B") {
+        let nB = parseFloat(((me.clientX - rect.left) / rect.width * dur).toFixed(1));
+        nB = Math.max(ab.a !== null ? ab.a + 0.2 : 0, Math.min(nB, dur));
+        ab.b = nB; ab.on = true;
+      } else if (abDrag.type === "RANGE") {
+        const delta = (me.clientX - abDrag.startX) / rect.width * dur;
+        const len = Math.max(0.5, abDrag.initB - abDrag.initA);
+        let nA = Math.max(0, Math.min(dur - len, abDrag.initA + delta));
+        ab.a = parseFloat(nA.toFixed(1));
+        ab.b = parseFloat((nA + len).toFixed(1));
+      }
+      abUpdateAll();
+      abToast(abDrag.type === "A" ? "A: " + abFmt(ab.a) : abDrag.type === "B" ? "B: " + abFmt(ab.b) : "Đoạn: " + abFmt(ab.a) + " ↔ " + abFmt(ab.b));
+    };
+
+    const onUp = (ue) => {
+      ue.preventDefault(); ue.stopPropagation();
+      document.removeEventListener("mousemove", onMove, true);
+      document.removeEventListener("mouseup", onUp, true);
+      abDrag = null;
+      if (ab.on) abStartLoop();
+      abUpdateAll();
+      abToast("🔁 Đang lặp");
+    };
+
+    document.addEventListener("mousemove", onMove, true);
+    document.addEventListener("mouseup", onUp, true);
+  }, true);
+}
+
+function abUpdateTrack() {
+  const bar = document.querySelector(".ytp-progress-bar");
+  if (!bar) return;
+  abSetupTimeline();
+
+  let track = document.getElementById(AB_TRACK_ID);
+  if (!currentSettings.abLooper || (ab.a === null && ab.b === null)) {
+    if (track) track.remove();
+    return;
+  }
+
+  const v = getMainVideoElement();
+  const dur = v?.duration;
+  if (!dur || isNaN(dur) || dur <= 0) { if (track) track.remove(); return; }
+
+  if (!track) {
+    track = document.createElement("div");
+    track.id = AB_TRACK_ID;
+    track.className = "tada-ab-track";
+    bar.appendChild(track);
+  }
+
+  const aPct = ab.a !== null ? (ab.a / dur) * 100 : null;
+  const bPct = ab.b !== null ? (ab.b / dur) * 100 : null;
+
+  let html = "";
+  if (aPct !== null && bPct !== null && bPct > aPct) {
+    html += `<div class="tada-ab-range ${ab.on ? "looping" : ""}" style="left:${aPct}%;width:${bPct - aPct}%" title="Kéo đoạn"></div>`;
+  }
+  if (aPct !== null) html += `<div class="tada-ab-pin tada-ab-pin-a" style="left:${aPct}%" title="A: ${abFmt(ab.a)}"><span>A</span></div>`;
+  if (bPct !== null) html += `<div class="tada-ab-pin tada-ab-pin-b" style="left:${bPct}%" title="B: ${abFmt(ab.b)}"><span>B</span></div>`;
+  track.innerHTML = html;
+}
+
+function abUpdateAll() {
+  ensureAbBtn();
+  abUpdateTrack();
+}
+
+/* --- Hotkeys --- */
+function abHotkey(e) {
+  if (!currentSettings.abLooper || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (shouldIgnoreKeyEvent(e)) return;
+  if (e.key === "[") { e.preventDefault(); e.stopPropagation(); abSetA(); }
+  else if (e.key === "]") { e.preventDefault(); e.stopPropagation(); abSetB(); }
+  else if (e.key === "\\") { e.preventDefault(); e.stopPropagation(); abToggle(); }
+}
+
+function abEnsureKeys() {
+  if (abKeysBound) return;
+  window.addEventListener("keydown", abHotkey, true);
+  abKeysBound = true;
+}
+
+function abBindVideo() {
+  const v = getMainVideoElement();
+  if (!v || v.dataset.tadaAbV) return;
+  v.dataset.tadaAbV = "1";
+  v.addEventListener("timeupdate", abCheck);
+  v.addEventListener("play", () => { if (ab.on) abStartLoop(); });
+  v.addEventListener("pause", abStopLoop);
+}
+
+function startAbCheck() {
+  if (abBtnInterval) { clearInterval(abBtnInterval); abBtnInterval = null; }
+  let c = 0;
+  ensureAbBtn();
+  abBtnInterval = setInterval(() => {
+    c++;
+    if (isWatchPage()) { ensureAbBtn(); abUpdateTrack(); }
+    if (c > 25 && document.getElementById(AB_BTN_ID)) { clearInterval(abBtnInterval); abBtnInterval = null; }
   }, 300);
 }
 
+function abResetOnNav() {
+  ab.a = null; ab.b = null; ab.on = false;
+  abPicking = false;
+  abStopLoop();
+  abUpdateAll();
+  abUpdatePickingUI();
+}
+
 function applyAbLooperSetting() {
-  const existingStyle = document.getElementById(AB_LOOPER_STYLE_ID);
+  const existing = document.getElementById(AB_STYLE_ID);
   if (currentSettings.abLooper) {
-    if (!existingStyle) {
-      const style = document.createElement("style");
-      style.id = AB_LOOPER_STYLE_ID;
-      style.textContent = `
-        /* ===== TADa A-B LOOPER STYLES ===== */
-        .tada-ab-control-btn {
-          position: relative;
+    if (!existing) {
+      const s = document.createElement("style");
+      s.id = AB_STYLE_ID;
+      s.textContent = `
+        /* ===== TADa Smart A-B Looper ===== */
+        .tada-ab-btn {
           display: inline-flex !important;
           align-items: center;
           justify-content: center;
@@ -3578,441 +3254,189 @@ function applyAbLooperSetting() {
           background: transparent;
           border: none;
           outline: none;
-          padding: 0 4px;
+          padding: 0 6px;
           height: 100%;
-          opacity: 0.9;
-          transition: opacity 0.15s ease, transform 0.15s ease;
+          opacity: 0.85;
+          transition: all 0.18s ease;
           user-select: none;
           -webkit-user-select: none;
           vertical-align: top;
-        }
-        .tada-ab-control-btn:hover {
-          opacity: 1;
-        }
-        .tada-ab-control-btn:active {
-          transform: scale(0.92);
-        }
-        .tada-ab-c-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 3px;
-          background: rgba(255, 255, 255, 0.12);
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          color: #fff;
-          padding: 2px 7px;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.3px;
-          transition: all 0.2s ease;
-        }
-        .tada-ab-control-btn.tada-ab-active .tada-ab-c-badge {
-          background: rgba(232, 147, 12, 0.25);
-          border-color: #E8930C;
-          color: #E8930C;
-          box-shadow: 0 0 10px rgba(232, 147, 12, 0.55);
-        }
-
-        .tada-ab-panel {
-          position: absolute;
-          left: 16px;
-          bottom: 58px;
-          width: 300px;
-          background: rgba(24, 18, 14, 0.95);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(232, 147, 12, 0.35);
-          border-radius: 12px;
-          box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), 0 0 16px rgba(232, 147, 12, 0.18);
-          z-index: 60;
           font-family: "Roboto", "Segoe UI", sans-serif;
-          color: #FDF6EC;
-          overflow: hidden;
-          animation: tadaAbSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-          transition: opacity 0.2s ease;
-        }
-        .ytp-autohide .tada-ab-panel {
-          opacity: 0;
-          pointer-events: none;
-        }
-        @keyframes tadaAbSlideUp {
-          from { opacity: 0; transform: translateY(10px) scale(0.96); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .tada-ab-p-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 9px 12px;
-          background: rgba(232, 147, 12, 0.1);
-          border-bottom: 1px solid rgba(232, 147, 12, 0.2);
-        }
-        .tada-ab-p-title {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
-          color: #FDF6EC;
-        }
-        .tada-ab-p-status {
-          font-size: 9px;
-          font-weight: 800;
-          padding: 1px 5px;
-          border-radius: 4px;
-          letter-spacing: 0.4px;
-        }
-        .tada-ab-p-status.on {
-          background: #E8930C;
-          color: #1A1410;
-          box-shadow: 0 0 6px rgba(232, 147, 12, 0.8);
-        }
-        .tada-ab-p-status.off {
-          background: rgba(255, 255, 255, 0.15);
-          color: rgba(253, 246, 236, 0.7);
-        }
-        .tada-ab-p-close {
-          background: transparent;
-          border: none;
-          color: rgba(253, 246, 236, 0.7);
-          font-size: 16px;
-          cursor: pointer;
-          line-height: 1;
-          padding: 1px 5px;
-          border-radius: 4px;
-          transition: all 0.15s ease;
-        }
-        .tada-ab-p-close:hover {
-          color: #fff;
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Timeline Pick Toolbar */
-        .tada-ab-pick-toolbar {
-          padding: 6px 12px;
-          background: rgba(232, 147, 12, 0.08);
-          border-bottom: 1px solid rgba(232, 147, 12, 0.15);
-        }
-        .tada-ab-pick-toolbar.is-picking {
-          background: rgba(232, 147, 12, 0.2);
-        }
-        .tada-ab-pick-toggle-btn {
-          width: 100%;
-          background: transparent;
-          border: 1px dashed rgba(232, 147, 12, 0.4);
-          color: #FDF6EC;
-          padding: 5px 8px;
-          border-radius: 6px;
-          font-size: 11px;
-          font-weight: 600;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 6px;
-          transition: all 0.15s ease;
-        }
-        .tada-ab-pick-toggle-btn:hover,
-        .tada-ab-pick-toolbar.is-picking .tada-ab-pick-toggle-btn {
-          border-color: #E8930C;
-          background: rgba(232, 147, 12, 0.15);
-          color: #E8930C;
-        }
-        .tada-ab-pick-toggle-btn .pick-badge {
-          background: #E8930C;
-          color: #1A1410;
-          font-size: 9px;
-          font-weight: 800;
-          padding: 1px 6px;
-          border-radius: 4px;
-          letter-spacing: 0.4px;
-        }
-
-        .tada-ab-p-body {
-          padding: 10px 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .tada-ab-p-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 6px;
-        }
-        .tada-ab-p-btn {
-          flex: 1;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          color: #FDF6EC;
-          font-size: 11px;
-          font-weight: 600;
-          padding: 5px 8px;
-          border-radius: 6px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          transition: all 0.15s ease;
+          color: rgba(255,255,255,0.85);
+          letter-spacing: 0.3px;
           white-space: nowrap;
+          border-radius: 4px;
         }
-        .tada-ab-p-btn:hover {
-          background: rgba(232, 147, 12, 0.18);
-          border-color: #E8930C;
+        .tada-ab-btn:hover {
+          opacity: 1;
+          background: rgba(255,255,255,0.1);
+        }
+        .tada-ab-btn:active { transform: scale(0.94); }
+        .tada-ab-btn.has-points {
+          color: #fbbf24;
+        }
+        .tada-ab-btn.active {
           color: #E8930C;
+          text-shadow: 0 0 8px rgba(232,147,12,0.7);
         }
-        .tada-ab-p-btn.point-a-btn:hover {
-          border-color: #38bdf8;
+        .tada-ab-btn.picking {
           color: #38bdf8;
-          background: rgba(56, 189, 248, 0.15);
+          background: rgba(56,189,248,0.15);
+          animation: tadaAbBlink 1s ease-in-out infinite;
         }
-        .tada-ab-p-pick-btn {
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          color: rgba(253, 246, 236, 0.85);
-          font-size: 10px;
-          font-weight: 600;
-          padding: 5px 6px;
-          border-radius: 6px;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: all 0.15s ease;
+        @keyframes tadaAbBlink {
+          0%,100% { opacity: 0.85; }
+          50% { opacity: 1; }
         }
-        .tada-ab-p-pick-btn:hover,
-        .tada-ab-p-pick-btn.active {
-          background: #E8930C;
-          border-color: #E8930C;
-          color: #1A1410;
-        }
-        .tada-ab-p-badge {
-          background: #E8930C;
-          color: #1A1410;
-          font-size: 10px;
-          font-weight: 800;
-          width: 15px;
-          height: 15px;
-          border-radius: 50%;
-          display: inline-flex;
+
+        .tada-ab-clear-btn {
+          display: inline-flex !important;
           align-items: center;
           justify-content: center;
-        }
-        .point-a-btn .tada-ab-p-badge {
-          background: #38bdf8;
-          color: #0c4a6e;
-        }
-        .tada-ab-p-stepper {
-          display: inline-flex;
-          align-items: center;
-          background: rgba(0, 0, 0, 0.35);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 6px;
-          overflow: hidden;
-        }
-        .tada-ab-p-step {
-          background: transparent;
-          border: none;
-          color: rgba(253, 246, 236, 0.8);
-          font-size: 11px;
-          font-weight: 700;
-          width: 18px;
-          height: 24px;
           cursor: pointer;
-          transition: all 0.1s ease;
-        }
-        .tada-ab-p-step:hover {
-          background: rgba(255, 255, 255, 0.15);
-          color: #fff;
-        }
-        .tada-ab-p-val {
+          background: rgba(239, 68, 68, 0.16) !important;
+          border: 1px solid rgba(239, 68, 68, 0.35) !important;
+          outline: none;
+          padding: 0 6px;
+          height: 22px;
+          margin-left: 4px;
+          opacity: 0.85;
+          transition: all 0.18s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          font-family: "Roboto", "Segoe UI", sans-serif;
           font-size: 11px;
-          font-weight: 700;
-          color: #E8930C;
-          font-variant-numeric: tabular-nums;
-          padding: 0 3px;
-          min-width: 52px;
-          text-align: center;
-          cursor: pointer;
+          font-weight: 600;
+          color: #fca5a5 !important;
+          border-radius: 4px;
+          vertical-align: middle;
         }
-        .tada-ab-p-val:hover {
-          text-decoration: underline;
+        .tada-ab-clear-btn:hover {
+          opacity: 1;
+          background: rgba(239, 68, 68, 0.35) !important;
+          color: #ffffff !important;
+          border-color: rgba(239, 68, 68, 0.6) !important;
         }
-        .tada-ab-p-actions {
-          display: flex;
-          gap: 6px;
-          margin-top: 2px;
-        }
-        .tada-ab-p-act-btn {
-          flex: 1;
-          padding: 6px 10px;
-          font-size: 11px;
-          font-weight: 700;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .tada-ab-p-act-btn.loop-toggle-btn {
-          background: rgba(232, 147, 12, 0.15);
-          border: 1px solid rgba(232, 147, 12, 0.45);
-          color: #E8930C;
-        }
-        .tada-ab-p-act-btn.loop-toggle-btn:hover {
-          background: #E8930C;
-          color: #1A1410;
-        }
-        .tada-ab-p-act-btn.loop-toggle-btn.active {
-          background: #E8930C;
-          color: #1A1410;
-          box-shadow: 0 0 10px rgba(232, 147, 12, 0.6);
-        }
-        .tada-ab-p-act-btn.reset-btn {
-          flex: 0 0 60px;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          color: rgba(253, 246, 236, 0.8);
-        }
-        .tada-ab-p-act-btn.reset-btn:hover {
-          background: rgba(239, 68, 68, 0.2);
-          border-color: #ef4444;
-          color: #ef4444;
-        }
-        .tada-ab-p-footer {
-          padding: 6px 12px;
-          background: rgba(20, 14, 10, 0.6);
-          border-top: 1px solid rgba(232, 147, 12, 0.15);
-          font-size: 10px;
-          color: rgba(253, 246, 236, 0.6);
-          line-height: 1.4;
+        .tada-ab-clear-btn:active {
+          transform: scale(0.94);
         }
 
-        /* Progress Bar Range & Interactive Pins */
-        .ytp-progress-bar.tada-picking-mode {
+        /* Pick mode - progress bar glow */
+        .ytp-progress-bar.tada-ab-picking {
           cursor: crosshair !important;
-          box-shadow: 0 0 0 2px #E8930C, 0 0 12px rgba(232, 147, 12, 0.7) !important;
+          box-shadow: 0 0 0 2px #38bdf8, 0 0 12px rgba(56,189,248,0.6) !important;
           border-radius: 4px;
         }
+
+        /* Toast */
+        .tada-ab-toast {
+          position: absolute;
+          top: 18px;
+          left: 50%;
+          transform: translate(-50%, -8px);
+          background: rgba(20,16,12,0.92);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(232,147,12,0.6);
+          color: #FDF6EC;
+          padding: 5px 14px;
+          border-radius: 16px;
+          font-size: 12px;
+          font-weight: 600;
+          font-family: "Roboto", "Segoe UI", sans-serif;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+          z-index: 100;
+          white-space: nowrap;
+        }
+        .tada-ab-toast.show {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+
+        /* Timeline track */
         .tada-ab-track {
           position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
           pointer-events: none;
           z-index: 35;
         }
         .tada-ab-range {
           position: absolute;
-          top: 0;
-          height: 100%;
-          background: rgba(232, 147, 12, 0.35);
+          top: 0; height: 100%;
+          background: rgba(232,147,12,0.30);
           border-left: 2px solid #38bdf8;
           border-right: 2px solid #E8930C;
-          box-shadow: 0 0 8px rgba(232, 147, 12, 0.6);
-          border-radius: 1px;
-          pointer-events: auto !important;
-          cursor: ew-resize !important;
+          pointer-events: auto;
+          cursor: grab;
+          transition: background 0.15s ease;
         }
-        .tada-ab-range:hover {
-          background: rgba(232, 147, 12, 0.52);
-        }
-        .tada-ab-range.is-looping {
-          background: rgba(232, 147, 12, 0.48);
-          animation: tadaAbPulse 1.8s ease-in-out infinite;
+        .tada-ab-range:hover { background: rgba(232,147,12,0.48); }
+        .tada-ab-range.looping {
+          background: rgba(232,147,12,0.42);
+          animation: tadaAbPulse 2s ease-in-out infinite;
         }
         @keyframes tadaAbPulse {
-          0%, 100% { opacity: 0.85; }
+          0%,100% { opacity: 0.85; }
           50% { opacity: 1; }
         }
         .tada-ab-pin {
           position: absolute;
-          top: -15px;
+          top: -16px;
           transform: translateX(-50%);
-          width: 18px;
-          height: 18px;
+          width: 18px; height: 18px;
           border-radius: 4px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 10px;
           font-weight: 800;
-          color: #1A1410;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-          pointer-events: auto !important;
-          cursor: grab !important;
+          pointer-events: auto;
+          cursor: grab;
           user-select: none;
           -webkit-user-select: none;
           z-index: 40;
-          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          transition: transform 0.1s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.7);
         }
-        .tada-ab-pin:hover {
-          transform: translateX(-50%) scale(1.22);
-          box-shadow: 0 0 10px rgba(232, 147, 12, 0.85);
+        .tada-ab-pin::before {
+          content: "";
+          position: absolute;
+          top: -8px; bottom: -8px; left: -8px; right: -8px;
         }
-        .tada-ab-pin:active {
-          cursor: grabbing !important;
-          transform: translateX(-50%) scale(1.28);
-        }
+        .tada-ab-pin:hover { transform: translateX(-50%) scale(1.15); }
+        .tada-ab-pin:active { cursor: grabbing; transform: translateX(-50%) scale(1.22); }
         .tada-ab-pin::after {
           content: "";
           position: absolute;
-          bottom: -4px;
+          bottom: -20px;
           left: 50%;
           transform: translateX(-50%);
-          width: 0;
-          height: 0;
-          border-left: 4px solid transparent;
-          border-right: 4px solid transparent;
-        }
-        .tada-ab-pin.pin-a {
-          background: #38bdf8;
-          color: #0c4a6e;
-        }
-        .tada-ab-pin.pin-a::after {
-          border-top: 4px solid #38bdf8;
-        }
-        .tada-ab-pin.pin-b {
-          background: #E8930C;
-          color: #1A1410;
-        }
-        .tada-ab-pin.pin-b::after {
-          border-top: 4px solid #E8930C;
-        }
-
-        .tada-player-toast {
-          position: absolute;
-          top: 24px;
-          left: 50%;
-          transform: translate(-50%, -10px);
-          background: rgba(26, 20, 16, 0.94);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid #E8930C;
-          color: #FDF6EC;
-          padding: 6px 16px;
-          border-radius: 20px;
-          font-size: 13px;
-          font-weight: 600;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(232, 147, 12, 0.35);
+          width: 2px;
+          height: 20px;
           pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.2s ease, transform 0.2s ease;
-          z-index: 100;
-          font-family: "Roboto", "Segoe UI", sans-serif;
         }
-        .tada-player-toast.tada-toast-active {
-          opacity: 1;
-          transform: translate(-50%, 0);
-        }
+        .tada-ab-pin-a { background: #38bdf8; color: #0c4a6e; }
+        .tada-ab-pin-a::after { background: #38bdf8; box-shadow: 0 0 5px #38bdf8; }
+        .tada-ab-pin-b { background: #E8930C; color: #1A1410; }
+        .tada-ab-pin-b::after { background: #E8930C; box-shadow: 0 0 5px #E8930C; }
       `;
-      (document.head || document.documentElement).appendChild(style);
+      (document.head || document.documentElement).appendChild(s);
     }
-    ensureAbHotkeys();
-    bindVideoAbListeners();
-    ensureAbButton();
-    startAbLooperCheck();
+    abEnsureKeys();
+    abBindVideo();
+    ensureAbBtn();
+    startAbCheck();
   } else {
-    existingStyle?.remove();
-    stopAbLoopMonitoring();
-    removeAbLooperDom();
+    existing?.remove();
+    abStopLoop();
+    removeAbBtn();
+    document.getElementById(AB_TRACK_ID)?.remove();
+    document.querySelector(".tada-ab-toast")?.remove();
   }
 }
 
@@ -4049,7 +3473,7 @@ async function loadStoredSettings() {
       if (data?.ctfSettings) {
         if (data.ctfSettings.showHud !== undefined) {
           delete data.ctfSettings.showHud;
-          chrome.storage.local.set({ ctfSettings: data.ctfSettings }).catch(() => {});
+          chrome.storage.local.set({ ctfSettings: data.ctfSettings }).catch(() => { });
         }
         currentSettings = { ...DEFAULT_SETTINGS, ...data.ctfSettings };
         delete currentSettings.showHud;
@@ -4116,14 +3540,15 @@ function teardownOnInvalidation() {
     clearInterval(pipControlInterval);
     pipControlInterval = null;
   }
-  if (abButtonInterval) {
-    clearInterval(abButtonInterval);
-    abButtonInterval = null;
+  if (abBtnInterval) {
+    clearInterval(abBtnInterval);
+    abBtnInterval = null;
   }
-  stopAbLoopMonitoring();
+  abStopLoop();
   removeAmbientLightDom();
   removePipButton();
-  removeAbLooperDom();
+  removeAbBtn();
+  document.getElementById(AB_TRACK_ID)?.remove();
   ensureHud();
 }
 
@@ -4222,8 +3647,7 @@ function initMutationObserver() {
         ensurePipButton();
       }
       if (currentSettings.abLooper && isWatchPage()) {
-        ensureAbButton();
-        updateAbProgressBarHighlight();
+        ensureAbBtn();
       }
       if (isWatchPage() && currentSettings.ensureComments) {
         ensureCommentsVisible();
@@ -4256,7 +3680,7 @@ async function bootstrap() {
   initMutationObserver();
   if (isWatchPage()) {
     startPipButtonCheck();
-    startAbLooperCheck();
+    startAbCheck();
   }
 }
 
@@ -4270,8 +3694,8 @@ async function bootstrap() {
     }
     if (isWatchPage()) {
       startPipButtonCheck();
-      resetAbLoop();
-      startAbLooperCheck();
+      abResetOnNav();
+      startAbCheck();
     }
   }, true);
 });
@@ -4318,7 +3742,7 @@ document.addEventListener("mousemove", () => {
       ensurePipButton();
     }
     if (isWatchPage() && currentSettings.abLooper) {
-      ensureAbButton();
+      ensureAbBtn();
     }
   }
 }, { passive: true });
@@ -4328,7 +3752,7 @@ document.addEventListener("mouseenter", (e) => {
     ensurePipButton();
   }
   if (isWatchPage() && currentSettings.abLooper && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
-    ensureAbButton();
+    ensureAbBtn();
   }
 }, true);
 
