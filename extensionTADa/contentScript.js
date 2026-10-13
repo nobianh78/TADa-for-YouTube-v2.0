@@ -2861,6 +2861,11 @@ let abLoopInterval = null;
 let abHotkeysBound = false;
 let abButtonInterval = null;
 let playerNotificationTimer = null;
+let isDraggingPin = null; // "A" | "B" | "RANGE"
+let dragStartX = 0;
+let dragInitialA = 0;
+let dragInitialB = 0;
+let abPickMode = null; // null | "A" | "B" | "AUTO"
 
 function formatTimeAb(seconds) {
   if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) {
@@ -2986,6 +2991,7 @@ function resetAbLoop() {
   abLoopState.startTime = null;
   abLoopState.endTime = null;
   abLoopState.enabled = false;
+  abPickMode = null;
   stopAbLoopMonitoring();
   updateAbLooperUi();
   showPlayerNotification("✕ Đã xóa mốc lặp A-B");
@@ -3017,9 +3023,195 @@ function adjustAbPointB(delta) {
   updateAbLooperUi();
 }
 
+function getTimeFromProgressBarEvent(event) {
+  const progressBar = document.querySelector(".ytp-progress-bar");
+  const video = getMainVideoElement();
+  if (!progressBar || !video || !video.duration) return null;
+
+  const rect = progressBar.getBoundingClientRect();
+  if (rect.width <= 0) return null;
+
+  const clientX = event.clientX;
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  return parseFloat((ratio * video.duration).toFixed(1));
+}
+
+function handleProgressBarClick(event) {
+  if (!currentSettings.abLooper) return;
+
+  const time = getTimeFromProgressBarEvent(event);
+  if (time === null) return;
+
+  // 1. Shift + Click => Set Point A
+  if (event.shiftKey) {
+    event.preventDefault();
+    event.stopPropagation();
+    setAbPointA(time);
+    abLoopState.panelVisible = true;
+    updateAbLooperUi();
+    return;
+  }
+
+  // 2. Alt + Click or Ctrl + Click => Set Point B
+  if (event.altKey || event.ctrlKey || event.metaKey) {
+    event.preventDefault();
+    event.stopPropagation();
+    setAbPointB(time);
+    abLoopState.panelVisible = true;
+    updateAbLooperUi();
+    return;
+  }
+
+  // 3. Selection mode active
+  if (abPickMode) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (abPickMode === "A") {
+      setAbPointA(time);
+      abPickMode = null;
+      showPlayerNotification("🎯 Đã chọn mốc A: " + formatTimeAb(time));
+    } else if (abPickMode === "B") {
+      setAbPointB(time);
+      abPickMode = null;
+      showPlayerNotification("🎯 Đã chọn mốc B: " + formatTimeAb(time));
+    } else if (abPickMode === "AUTO") {
+      if (abLoopState.startTime === null) {
+        setAbPointA(time);
+        showPlayerNotification("🎯 Đã chọn mốc A: " + formatTimeAb(time) + ". 👉 Hãy click tiếp mốc B");
+      } else {
+        setAbPointB(time);
+        abPickMode = null;
+      }
+    }
+    abLoopState.panelVisible = true;
+    updateAbLooperUi();
+    return;
+  }
+}
+
+function startDragging(type, startClientX) {
+  isDraggingPin = type;
+  dragStartX = startClientX;
+  dragInitialA = abLoopState.startTime ?? 0;
+  dragInitialB = abLoopState.endTime ?? 0;
+
+  const onMouseMove = (moveEvent) => {
+    if (!isDraggingPin) return;
+    moveEvent.preventDefault();
+    moveEvent.stopPropagation();
+
+    const progressBar = document.querySelector(".ytp-progress-bar");
+    const video = getMainVideoElement();
+    if (!progressBar || !video || !video.duration) return;
+
+    const rect = progressBar.getBoundingClientRect();
+    if (rect.width <= 0) return;
+
+    const duration = video.duration;
+
+    if (isDraggingPin === "A") {
+      const ratio = Math.max(0, Math.min(1, (moveEvent.clientX - rect.left) / rect.width));
+      let newA = parseFloat((ratio * duration).toFixed(1));
+      const maxA = abLoopState.endTime !== null ? Math.max(0, abLoopState.endTime - 0.2) : duration;
+      newA = Math.min(newA, maxA);
+      abLoopState.startTime = newA;
+      updateAbLooperUi();
+      showPlayerNotification("📍 Mốc A: " + formatTimeAb(newA));
+    } else if (isDraggingPin === "B") {
+      const ratio = Math.max(0, Math.min(1, (moveEvent.clientX - rect.left) / rect.width));
+      let newB = parseFloat((ratio * duration).toFixed(1));
+      const minB = abLoopState.startTime !== null ? abLoopState.startTime + 0.2 : 0;
+      newB = Math.max(newB, minB);
+      abLoopState.endTime = newB;
+      abLoopState.enabled = true;
+      updateAbLooperUi();
+      showPlayerNotification("📍 Mốc B: " + formatTimeAb(newB));
+    } else if (isDraggingPin === "RANGE") {
+      const deltaRatio = (moveEvent.clientX - dragStartX) / rect.width;
+      const deltaTime = deltaRatio * duration;
+      const rangeLen = Math.max(0.5, dragInitialB - dragInitialA);
+
+      let newA = Math.max(0, Math.min(duration - rangeLen, dragInitialA + deltaTime));
+      let newB = newA + rangeLen;
+
+      abLoopState.startTime = parseFloat(newA.toFixed(1));
+      abLoopState.endTime = parseFloat(newB.toFixed(1));
+      updateAbLooperUi();
+      showPlayerNotification("↔️ Đoạn lặp: " + formatTimeAb(abLoopState.startTime) + " - " + formatTimeAb(abLoopState.endTime));
+    }
+  };
+
+  const onMouseUp = (upEvent) => {
+    upEvent.preventDefault();
+    upEvent.stopPropagation();
+    document.removeEventListener("mousemove", onMouseMove, true);
+    document.removeEventListener("mouseup", onMouseUp, true);
+
+    if (isDraggingPin) {
+      isDraggingPin = null;
+      if (abLoopState.enabled && abLoopState.startTime !== null && abLoopState.endTime !== null) {
+        startAbLoopMonitoring();
+      }
+      updateAbLooperUi();
+      showPlayerNotification("🔁 Đã lưu mốc lặp: " + formatTimeAb(abLoopState.startTime) + " ➜ " + formatTimeAb(abLoopState.endTime));
+    }
+  };
+
+  document.addEventListener("mousemove", onMouseMove, true);
+  document.addEventListener("mouseup", onMouseUp, true);
+}
+
+function setupProgressBarInteractions() {
+  const progressBar = document.querySelector(".ytp-progress-bar");
+  if (!progressBar || progressBar.dataset.tadaAbBound) return;
+  progressBar.dataset.tadaAbBound = "true";
+
+  progressBar.addEventListener("click", handleProgressBarClick, true);
+
+  progressBar.addEventListener("mousedown", (e) => {
+    if (!currentSettings.abLooper) return;
+    const target = e.target;
+
+    const pinA = target.closest(".pin-a");
+    const pinB = target.closest(".pin-b");
+    const range = target.closest(".tada-ab-range");
+
+    if (pinA) {
+      e.preventDefault();
+      e.stopPropagation();
+      startDragging("A", e.clientX);
+      return;
+    }
+
+    if (pinB) {
+      e.preventDefault();
+      e.stopPropagation();
+      startDragging("B", e.clientX);
+      return;
+    }
+
+    if (range) {
+      e.preventDefault();
+      e.stopPropagation();
+      startDragging("RANGE", e.clientX);
+      return;
+    }
+  }, true);
+}
+
 function updateAbProgressBarHighlight() {
   const progressBar = document.querySelector(".ytp-progress-bar");
   if (!progressBar) return;
+
+  setupProgressBarInteractions();
+
+  // Toggle selection guide class on progress bar
+  if (abPickMode) {
+    progressBar.classList.add("tada-picking-mode");
+  } else {
+    progressBar.classList.remove("tada-picking-mode");
+  }
 
   let track = document.getElementById(AB_LOOPER_TRACK_ID);
   if (!currentSettings.abLooper || (abLoopState.startTime === null && abLoopState.endTime === null)) {
@@ -3046,13 +3238,13 @@ function updateAbProgressBarHighlight() {
 
   let html = "";
   if (aPct !== null && bPct !== null && bPct > aPct) {
-    html += `<div class="tada-ab-range ${abLoopState.enabled ? "is-looping" : ""}" style="left: ${aPct}%; width: ${bPct - aPct}%;"></div>`;
+    html += `<div class="tada-ab-range ${abLoopState.enabled ? "is-looping" : ""}" style="left: ${aPct}%; width: ${bPct - aPct}%;" title="Kéo cả đoạn lặp (${formatTimeAb(abLoopState.startTime)} - ${formatTimeAb(abLoopState.endTime)})"></div>`;
   }
   if (aPct !== null) {
-    html += `<div class="tada-ab-pin pin-a" style="left: ${aPct}%;"><span>A</span></div>`;
+    html += `<div class="tada-ab-pin pin-a" style="left: ${aPct}%;" title="Kéo để chỉnh mốc A (${formatTimeAb(abLoopState.startTime)})"><span>A</span></div>`;
   }
   if (bPct !== null) {
-    html += `<div class="tada-ab-pin pin-b" style="left: ${bPct}%;"><span>B</span></div>`;
+    html += `<div class="tada-ab-pin pin-b" style="left: ${bPct}%;" title="Kéo để chỉnh mốc B (${formatTimeAb(abLoopState.endTime)})"><span>B</span></div>`;
   }
   track.innerHTML = html;
 }
@@ -3096,12 +3288,27 @@ function renderAbLooperPanel() {
       <button class="tada-ab-p-close" id="tada-ab-p-close-btn" title="Ẩn bảng">&times;</button>
     </div>
 
+    <!-- Quick timeline selection bar -->
+    <div class="tada-ab-pick-toolbar ${abPickMode ? "is-picking" : ""}" id="tada-ab-pick-toolbar">
+      <button class="tada-ab-pick-toggle-btn" id="tada-ab-pick-auto-btn">
+        <span class="pick-icon">${abPickMode ? "🎯" : "🖱️"}</span>
+        <span class="pick-label">
+          ${abPickMode === "A" ? "Click thanh thời gian để đặt mốc A..." :
+            abPickMode === "B" ? "Click thanh thời gian để đặt mốc B..." :
+            abPickMode === "AUTO" ? (abLoopState.startTime === null ? "Click thanh tua để chọn mốc A..." : "Click thanh tua để chọn mốc B...") :
+            "Chọn mốc trực tiếp trên thanh tua"}
+        </span>
+        <span class="pick-badge">${abPickMode ? "ĐANG CHỌN" : "CHỌN NHANH"}</span>
+      </button>
+    </div>
+
     <div class="tada-ab-p-body">
       <!-- Point A -->
       <div class="tada-ab-p-row">
-        <button class="tada-ab-p-btn point-a-btn" id="tada-ab-btn-set-a" title="Đặt mốc A tại thời điểm hiện tại (Phím [)">
+        <button class="tada-ab-p-btn point-a-btn" id="tada-ab-btn-set-a" title="Chốt mốc A tại thời điểm hiện tại (Phím [)">
           <span class="tada-ab-p-badge">A</span> Đặt mốc A
         </button>
+        <button class="tada-ab-p-pick-btn ${abPickMode === "A" ? "active" : ""}" id="tada-ab-pick-a" title="Nhấp trên thanh thời gian để chọn mốc A">📍 Chọn A</button>
         <div class="tada-ab-p-stepper">
           <button class="tada-ab-p-step" id="tada-ab-a-minus" title="-0.5s">-</button>
           <span class="tada-ab-p-val" id="tada-ab-a-val" title="Nhấp để nhảy tới mốc A">${formatTimeAb(abLoopState.startTime)}</span>
@@ -3111,9 +3318,10 @@ function renderAbLooperPanel() {
 
       <!-- Point B -->
       <div class="tada-ab-p-row">
-        <button class="tada-ab-p-btn point-b-btn" id="tada-ab-btn-set-b" title="Đặt mốc B tại thời điểm hiện tại (Phím ])">
+        <button class="tada-ab-p-btn point-b-btn" id="tada-ab-btn-set-b" title="Chốt mốc B tại thời điểm hiện tại (Phím ])">
           <span class="tada-ab-p-badge">B</span> Đặt mốc B
         </button>
+        <button class="tada-ab-p-pick-btn ${abPickMode === "B" ? "active" : ""}" id="tada-ab-pick-b" title="Nhấp trên thanh thời gian để chọn mốc B">📍 Chọn B</button>
         <div class="tada-ab-p-stepper">
           <button class="tada-ab-p-step" id="tada-ab-b-minus" title="-0.5s">-</button>
           <span class="tada-ab-p-val" id="tada-ab-b-val" title="Nhấp để nhảy tới mốc B">${formatTimeAb(abLoopState.endTime)}</span>
@@ -3133,13 +3341,40 @@ function renderAbLooperPanel() {
     </div>
 
     <div class="tada-ab-p-footer">
-      <span>Phím tắt: <b>[</b> (mốc A) · <b>]</b> (mốc B) · <b>\\</b> (Lặp)</span>
+      <span>💡 <b>Kéo thả [A] & [B]</b> trên thanh tua · <b>Shift+Click</b> (mốc A) · <b>Alt+Click</b> (mốc B)</span>
     </div>
   `;
 
   panel.querySelector("#tada-ab-p-close-btn")?.addEventListener("click", () => {
     abLoopState.panelVisible = false;
+    abPickMode = null;
     renderAbLooperPanel();
+    updateAbProgressBarHighlight();
+  });
+
+  // Pick on timeline buttons
+  panel.querySelector("#tada-ab-pick-auto-btn")?.addEventListener("click", () => {
+    abPickMode = abPickMode === "AUTO" ? null : "AUTO";
+    if (abPickMode) {
+      showPlayerNotification("👉 Hãy click vị trí mốc [A] trên thanh thời gian");
+    }
+    updateAbLooperUi();
+  });
+
+  panel.querySelector("#tada-ab-pick-a")?.addEventListener("click", () => {
+    abPickMode = abPickMode === "A" ? null : "A";
+    if (abPickMode) {
+      showPlayerNotification("👉 Hãy click vị trí mốc [A] trên thanh thời gian");
+    }
+    updateAbLooperUi();
+  });
+
+  panel.querySelector("#tada-ab-pick-b")?.addEventListener("click", () => {
+    abPickMode = abPickMode === "B" ? null : "B";
+    if (abPickMode) {
+      showPlayerNotification("👉 Hãy click vị trí mốc [B] trên thanh thời gian");
+    }
+    updateAbLooperUi();
   });
 
   panel.querySelector("#tada-ab-btn-set-a")?.addEventListener("click", () => setAbPointA());
@@ -3199,6 +3434,11 @@ function ensureAbButton() {
       e.preventDefault();
       e.stopPropagation();
       abLoopState.panelVisible = !abLoopState.panelVisible;
+      // Auto prompt to pick on timeline if points are empty
+      if (abLoopState.panelVisible && abLoopState.startTime === null) {
+        abPickMode = "AUTO";
+        showPlayerNotification("👉 Hãy click vị trí mốc [A] trên thanh thời gian");
+      }
       updateAbLooperUi();
     });
 
@@ -3210,6 +3450,7 @@ function ensureAbButton() {
   }
 
   updateAbButtonState();
+  setupProgressBarInteractions();
 }
 
 function removeAbButton() {
@@ -3222,6 +3463,7 @@ function removeAbLooperDom() {
   document.getElementById(AB_LOOPER_PANEL_ID)?.remove();
   document.getElementById(AB_LOOPER_TRACK_ID)?.remove();
   document.getElementById(PLAYER_NOTIFICATION_ID)?.remove();
+  document.querySelector(".ytp-progress-bar")?.classList.remove("tada-picking-mode");
 }
 
 function updateAbButtonState() {
@@ -3375,7 +3617,7 @@ function applyAbLooperSetting() {
           position: absolute;
           left: 16px;
           bottom: 58px;
-          width: 280px;
+          width: 300px;
           background: rgba(24, 18, 14, 0.95);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
@@ -3444,6 +3686,48 @@ function applyAbLooperSetting() {
           color: #fff;
           background: rgba(255, 255, 255, 0.1);
         }
+
+        /* Timeline Pick Toolbar */
+        .tada-ab-pick-toolbar {
+          padding: 6px 12px;
+          background: rgba(232, 147, 12, 0.08);
+          border-bottom: 1px solid rgba(232, 147, 12, 0.15);
+        }
+        .tada-ab-pick-toolbar.is-picking {
+          background: rgba(232, 147, 12, 0.2);
+        }
+        .tada-ab-pick-toggle-btn {
+          width: 100%;
+          background: transparent;
+          border: 1px dashed rgba(232, 147, 12, 0.4);
+          color: #FDF6EC;
+          padding: 5px 8px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          transition: all 0.15s ease;
+        }
+        .tada-ab-pick-toggle-btn:hover,
+        .tada-ab-pick-toolbar.is-picking .tada-ab-pick-toggle-btn {
+          border-color: #E8930C;
+          background: rgba(232, 147, 12, 0.15);
+          color: #E8930C;
+        }
+        .tada-ab-pick-toggle-btn .pick-badge {
+          background: #E8930C;
+          color: #1A1410;
+          font-size: 9px;
+          font-weight: 800;
+          padding: 1px 6px;
+          border-radius: 4px;
+          letter-spacing: 0.4px;
+        }
+
         .tada-ab-p-body {
           padding: 10px 12px;
           display: flex;
@@ -3454,7 +3738,7 @@ function applyAbLooperSetting() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 8px;
+          gap: 6px;
         }
         .tada-ab-p-btn {
           flex: 1;
@@ -3463,13 +3747,14 @@ function applyAbLooperSetting() {
           color: #FDF6EC;
           font-size: 11px;
           font-weight: 600;
-          padding: 6px 10px;
+          padding: 5px 8px;
           border-radius: 6px;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 4px;
           transition: all 0.15s ease;
+          white-space: nowrap;
         }
         .tada-ab-p-btn:hover {
           background: rgba(232, 147, 12, 0.18);
@@ -3481,13 +3766,31 @@ function applyAbLooperSetting() {
           color: #38bdf8;
           background: rgba(56, 189, 248, 0.15);
         }
+        .tada-ab-p-pick-btn {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: rgba(253, 246, 236, 0.85);
+          font-size: 10px;
+          font-weight: 600;
+          padding: 5px 6px;
+          border-radius: 6px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+        }
+        .tada-ab-p-pick-btn:hover,
+        .tada-ab-p-pick-btn.active {
+          background: #E8930C;
+          border-color: #E8930C;
+          color: #1A1410;
+        }
         .tada-ab-p-badge {
           background: #E8930C;
           color: #1A1410;
           font-size: 10px;
           font-weight: 800;
-          width: 16px;
-          height: 16px;
+          width: 15px;
+          height: 15px;
           border-radius: 50%;
           display: inline-flex;
           align-items: center;
@@ -3509,10 +3812,10 @@ function applyAbLooperSetting() {
           background: transparent;
           border: none;
           color: rgba(253, 246, 236, 0.8);
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
-          width: 22px;
-          height: 26px;
+          width: 18px;
+          height: 24px;
           cursor: pointer;
           transition: all 0.1s ease;
         }
@@ -3525,8 +3828,8 @@ function applyAbLooperSetting() {
           font-weight: 700;
           color: #E8930C;
           font-variant-numeric: tabular-nums;
-          padding: 0 4px;
-          min-width: 58px;
+          padding: 0 3px;
+          min-width: 52px;
           text-align: center;
           cursor: pointer;
         }
@@ -3577,9 +3880,16 @@ function applyAbLooperSetting() {
           background: rgba(20, 14, 10, 0.6);
           border-top: 1px solid rgba(232, 147, 12, 0.15);
           font-size: 10px;
-          color: rgba(253, 246, 236, 0.55);
+          color: rgba(253, 246, 236, 0.6);
+          line-height: 1.4;
         }
 
+        /* Progress Bar Range & Interactive Pins */
+        .ytp-progress-bar.tada-picking-mode {
+          cursor: crosshair !important;
+          box-shadow: 0 0 0 2px #E8930C, 0 0 12px rgba(232, 147, 12, 0.7) !important;
+          border-radius: 4px;
+        }
         .tada-ab-track {
           position: absolute;
           top: 0;
@@ -3594,10 +3904,15 @@ function applyAbLooperSetting() {
           top: 0;
           height: 100%;
           background: rgba(232, 147, 12, 0.35);
-          border-left: 2px solid #E8930C;
+          border-left: 2px solid #38bdf8;
           border-right: 2px solid #E8930C;
           box-shadow: 0 0 8px rgba(232, 147, 12, 0.6);
           border-radius: 1px;
+          pointer-events: auto !important;
+          cursor: ew-resize !important;
+        }
+        .tada-ab-range:hover {
+          background: rgba(232, 147, 12, 0.52);
         }
         .tada-ab-range.is-looping {
           background: rgba(232, 147, 12, 0.48);
@@ -3609,26 +3924,57 @@ function applyAbLooperSetting() {
         }
         .tada-ab-pin {
           position: absolute;
-          top: -12px;
+          top: -15px;
           transform: translateX(-50%);
-          width: 14px;
-          height: 14px;
-          border-radius: 3px;
+          width: 18px;
+          height: 18px;
+          border-radius: 4px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 9px;
+          font-size: 10px;
           font-weight: 800;
           color: #1A1410;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+          pointer-events: auto !important;
+          cursor: grab !important;
+          user-select: none;
+          -webkit-user-select: none;
+          z-index: 40;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .tada-ab-pin:hover {
+          transform: translateX(-50%) scale(1.22);
+          box-shadow: 0 0 10px rgba(232, 147, 12, 0.85);
+        }
+        .tada-ab-pin:active {
+          cursor: grabbing !important;
+          transform: translateX(-50%) scale(1.28);
+        }
+        .tada-ab-pin::after {
+          content: "";
+          position: absolute;
+          bottom: -4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
         }
         .tada-ab-pin.pin-a {
           background: #38bdf8;
           color: #0c4a6e;
         }
+        .tada-ab-pin.pin-a::after {
+          border-top: 4px solid #38bdf8;
+        }
         .tada-ab-pin.pin-b {
           background: #E8930C;
           color: #1A1410;
+        }
+        .tada-ab-pin.pin-b::after {
+          border-top: 4px solid #E8930C;
         }
 
         .tada-player-toast {
