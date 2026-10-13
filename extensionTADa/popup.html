@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TADa for YouTube - Cài đặt tính năng</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-brand">
+        <div class="logo-badge">
+          <img class="app-icon" src="icons/icon128.png" alt="TADa">
+          <div class="brand-block">
+            <span class="brand-text">TADa</span>
+            <span class="brand-sub">for YouTube</span>
+          </div>
+        </div>
+        <span class="version-badge">v2.0</span>
+      </div>
+      <p class="header-subtitle">Tùy chỉnh tính năng YouTube theo ý bạn</p>
+    </header>
+
+    <!-- Core Security Card (Ad Blocker - Always Active) -->
+    <div class="core-card">
+      <div class="core-card-header">
+        <div class="core-icon-wrap">
+          <svg class="core-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div class="core-info">
+          <div class="core-title-row">
+            <span class="core-title">Chặn quảng cáo</span>
+            <span class="locked-badge" title="Tính năng cốt lõi luôn luôn bật để bảo vệ bạn">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="lock-icon">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              LUÔN BẬT
+            </span>
+          </div>
+          <p class="core-desc">Chặn video ads, banner, mid-roll & bộ theo dõi</p>
+        </div>
+        <div class="toggle-wrap locked-toggle" id="lock-tooltip-trigger">
+          <input type="checkbox" id="toggle-adBlocker" checked disabled class="toggle-checkbox">
+          <label for="toggle-adBlocker" class="toggle-slider locked"></label>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <div class="stats-item">
+          <span class="stats-dot"></span>
+          <span class="stats-label">Đã chặn:</span>
+          <span class="stats-value" id="blocked-count">0</span>
+          <span class="stats-unit">yêu cầu</span>
+        </div>
+        <button id="btn-reset-stats" class="btn-subtle" title="Đặt lại bộ đếm quảng cáo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="subtle-icon">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          Đặt lại
+        </button>
+      </div>
+    </div>
+
+    <!-- Feature Section Header & Quick Actions -->
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <span class="section-title">Tính năng bổ sung</span>
+        <span class="active-count-badge" id="active-features-count">8/10 bật</span>
+      </div>
+      <div class="quick-actions">
+        <button id="btn-enable-all" class="btn-quick" title="Bật tất cả tính năng bổ sung">Bật hết</button>
+        <button id="btn-disable-all" class="btn-quick" title="Tắt tất cả tính năng bổ sung">Tắt hết</button>
+      </div>
+    </div>
+
+    <!-- Features List -->
+    <div class="features-list">
+      <!-- 1. Super Volume -->
+      <div class="feature-item">
+        <div class="feature-icon icon-cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Booster âm lượng 500%</div>
+          <div class="feature-desc">Khuếch đại âm thanh lên đến 500% & phím tắt</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-superVolume" class="toggle-checkbox">
+          <label for="toggle-superVolume" class="toggle-slider"></label>
+        </div>
+      </div>
+
+      <!-- 2. Ambient Light (Ambilight) -->
+      <div class="feature-item feature-item-expandable" id="feature-ambientLight-item">
+        <div class="feature-main-row">
+          <div class="feature-icon icon-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </div>
+          <div class="feature-info">
+            <div class="feature-name">Ambient Light (Ánh sáng viền)</div>
+            <div class="feature-desc">Mở rộng ánh sáng màu sắc của video ra xung quanh sống động</div>
+          </div>
+          <div class="toggle-wrap">
+            <input type="checkbox" id="toggle-ambientLight" class="toggle-checkbox">
+            <label for="toggle-ambientLight" class="toggle-slider"></label>
+          </div>
+        </div>
+
+        <!-- Sub-settings: Tinh chỉnh đơn giản -->
+        <div class="ambient-sub-settings" id="ambient-sub-settings">
+          <div class="ambient-slider-row">
+            <div class="ambient-slider-label">
+              <span>Độ sáng viền</span>
+              <span class="ambient-val-badge" id="ambient-brightness-val">100%</span>
+            </div>
+            <input type="range" id="ambient-brightness" class="ambient-range-slider" min="50" max="200" step="5" value="100">
+          </div>
+
+          <div class="ambient-slider-row">
+            <div class="ambient-slider-label">
+              <span>Độ lan tỏa</span>
+              <span class="ambient-val-badge" id="ambient-spread-val">100%</span>
+            </div>
+            <input type="range" id="ambient-spread" class="ambient-range-slider" min="50" max="200" step="5" value="100">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Curate Sidebar -->
+      <div class="feature-item">
+        <div class="feature-icon icon-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Lọc gợi ý Sidebar</div>
+          <div class="feature-desc">Loại bỏ video rác, trùng lặp và video đã xem</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-curateSidebar" class="toggle-checkbox">
+          <label for="toggle-curateSidebar" class="toggle-slider"></label>
+        </div>
+      </div>
+
+      <!-- 3. Four Column Grid -->
+      <div class="feature-item">
+        <div class="feature-icon icon-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Lưới 4 video / hàng</div>
+          <div class="feature-desc">Bố cục trang chủ 4 cột cân đối, tối ưu màn hình</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-fourColumnGrid" class="toggle-checkbox">
+          <label for="toggle-fourColumnGrid" class="toggle-slider"></label>
+        </div>
+      </div>
+
+      <!-- 4. Hide Shorts -->
+      <div class="feature-item">
+        <div class="feature-icon icon-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+            <line x1="4" y1="4" x2="20" y2="20" stroke-width="2.5" stroke="#ff4d4d"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Ẩn YouTube Shorts</div>
+          <div class="feature-desc">Ẩn kệ video ngắn Shorts gây xao nhãng</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-hideShorts" class="toggle-checkbox">
+          <label for="toggle-hideShorts" class="toggle-slider"></label>
+        </div>
+      </div>
+
+      <!-- 5. Hide End Screens -->
+      <div class="feature-item">
+        <div class="feature-icon icon-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+            <line x1="7" y1="2" x2="7" y2="22"/>
+            <line x1="17" y1="2" x2="17" y2="22"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <line x1="2" y1="7" x2="7" y2="7"/>
+            <line x1="2" y1="17" x2="7" y2="17"/>
+            <line x1="17" y1="17" x2="22" y2="17"/>
+            <line x1="17" y1="7" x2="22" y2="7"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Ẩn thẻ kết thúc (End Screens)</div>
+          <div class="feature-desc">Chặn các ô video che màn hình cuối clip</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-hideEndScreens" class="toggle-checkbox">
+          <label for="toggle-hideEndScreens" class="toggle-slider"></label>
+        </div>
+      </div>
+
+
+      <!-- 7. Ensure Comments -->
+      <div class="feature-item">
+        <div class="feature-info-wrap">
+          <div class="feature-icon icon-emerald">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div class="feature-info">
+            <div class="feature-name">Cố định bình luận</div>
+            <div class="feature-desc">Luôn hiện khung bình luận bên dưới video</div>
+          </div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-ensureComments" class="toggle-checkbox">
+          <label for="toggle-ensureComments" class="toggle-slider"></label>
+        </div>
+      </div>
+
+      <!-- 8. Auto Select Chips -->
+      <div class="feature-item">
+        <div class="feature-icon icon-indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <div class="feature-name">Tự chọn Tab chủ đề</div>
+          <div class="feature-desc">Tự động kích hoạt chip phân loại video liên quan</div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="toggle-autoSelectChips" class="toggle-checkbox">
+          <label for="toggle-autoSelectChips" class="toggle-slider"></label>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-status">
+        <span class="status-indicator"></span>
+        <span class="status-text">Đồng bộ tự động</span>
+      </div>
+      <button id="btn-reload-tab" class="btn-reload" title="Tải lại tab YouTube hiện tại">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="reload-icon">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Làm mới trang
+      </button>
+    </footer>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

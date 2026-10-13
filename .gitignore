@@ -1,0 +1,11 @@
+# Chrome extension generated files
+_metadata/
+**/_metadata/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+*.tmp
