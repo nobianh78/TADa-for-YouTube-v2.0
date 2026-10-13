@@ -9,7 +9,8 @@ const DEFAULT_SETTINGS = {
   hideEndScreens: true,
   premiumBranding: true,
   ensureComments: true,
-  autoSelectChips: false
+  autoSelectChips: false,
+  pipButton: true
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -25,6 +26,8 @@ const AMBIENT_LIGHT_STYLE_ID = "ctf-ambient-light-style";
 const AMBIENT_LIGHT_CONTAINER_ID = "tada-ambient-light-container";
 const AMBIENT_CANVAS_DIFFUSE_ID = "tada-ambient-canvas-diffuse";
 const AMBIENT_CANVAS_GLOW_ID = "tada-ambient-canvas-glow";
+const PIP_BUTTON_STYLE_ID = "tada-pip-button-style";
+const PIP_BUTTON_ID = "tada-pip-button";
 const AD_SELECTORS = [
   "ytd-promoted-video-renderer",
   "ytd-promoted-sparkles-text-search-renderer",
@@ -1348,11 +1351,17 @@ function shouldIgnoreKeyEvent(event) {
   if (!target) {
     return false;
   }
-  if (target.isContentEditable) {
+  if (target.isContentEditable || target.getAttribute?.("role") === "textbox") {
     return true;
   }
   const tagName = target.tagName;
-  return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
+  if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
+    return true;
+  }
+  if (target.closest?.("[contenteditable='true'], [role='textbox'], input, textarea, select")) {
+    return true;
+  }
+  return false;
 }
 
 function handleNativeVolumeChange(event) {
@@ -2605,6 +2614,190 @@ function applyAmbientLightSetting() {
   }
 }
 
+/* ===== TADa PICTURE-IN-PICTURE (PiP) CONTROLLER ===== */
+let pipHotkeysBound = false;
+
+function getMainVideoElement() {
+  return document.querySelector("video.html5-main-video") || document.querySelector("video");
+}
+
+async function togglePictureInPicture() {
+  const video = getMainVideoElement();
+  if (!video) {
+    console.debug("[TADa] No video element found to toggle PiP");
+    return;
+  }
+
+  if (video.disablePictureInPicture) {
+    video.disablePictureInPicture = false;
+  }
+
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+    } else if (document.pictureInPictureEnabled) {
+      await video.requestPictureInPicture();
+    } else {
+      console.warn("[TADa] Picture-in-Picture is not supported in this browser");
+    }
+  } catch (error) {
+    console.warn("[TADa] PiP toggle failed:", error);
+  }
+}
+
+function updatePipButtonState() {
+  const btn = document.getElementById(PIP_BUTTON_ID);
+  if (!btn) return;
+  const isPipActive = Boolean(document.pictureInPictureElement);
+  if (isPipActive) {
+    btn.classList.add("tada-pip-active");
+    btn.setAttribute("aria-label", "Thoát hình trong hình (P)");
+    btn.setAttribute("title", "Thoát hình trong hình (P)");
+  } else {
+    btn.classList.remove("tada-pip-active");
+    btn.setAttribute("aria-label", "Hình trong hình (P)");
+    btn.setAttribute("title", "Hình trong hình (P)");
+  }
+}
+
+function handleGlobalPipHotkeys(event) {
+  if (!currentSettings.pipButton) return;
+  if (event.defaultPrevented) return;
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  // Shortcut is 'p' or 'P' (without Shift)
+  if (event.key !== "p" && event.key !== "P") return;
+  if (event.shiftKey) return;
+
+  if (shouldIgnoreKeyEvent(event) || event.target?.closest?.("ytd-comments, #comments, #search-input, [role='textbox']")) {
+    return;
+  }
+
+  const video = getMainVideoElement();
+  if (!video) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  togglePictureInPicture();
+}
+
+function ensurePipHotkeys() {
+  if (pipHotkeysBound) return;
+  window.addEventListener("keydown", handleGlobalPipHotkeys, true);
+  pipHotkeysBound = true;
+}
+
+function ensurePipButton() {
+  if (!currentSettings.pipButton) return;
+  const rightControls = document.querySelector(".ytp-right-controls");
+  if (!rightControls) return;
+
+  let btn = document.getElementById(PIP_BUTTON_ID);
+  if (!btn || !rightControls.contains(btn)) {
+    if (btn) btn.remove();
+
+    btn = document.createElement("button");
+    btn.id = PIP_BUTTON_ID;
+    btn.className = "ytp-button tada-pip-button";
+    btn.setAttribute("aria-label", "Hình trong hình (P)");
+    btn.setAttribute("title", "Hình trong hình (P)");
+    btn.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+        <path class="tada-pip-icon-screen" fill="currentColor" d="M26 10H10c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V12c0-1.1-.9-2-2-2zm0 14H10V12h16v12z"/>
+        <rect class="tada-pip-icon-window" x="17" y="16.5" width="8" height="6.5" rx="1.2" fill="currentColor"/>
+      </svg>
+    `;
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      togglePictureInPicture();
+    });
+
+    const ref = rightControls.querySelector(".ytp-size-button") ||
+                rightControls.querySelector(".ytp-miniplayer-button") ||
+                rightControls.querySelector(".ytp-fullscreen-button") ||
+                rightControls.firstChild;
+    rightControls.insertBefore(btn, ref);
+  }
+
+  updatePipButtonState();
+
+  const video = getMainVideoElement();
+  if (video && !video.dataset.tadaPipBound) {
+    video.dataset.tadaPipBound = "true";
+    video.addEventListener("enterpictureinpicture", updatePipButtonState);
+    video.addEventListener("leavepictureinpicture", updatePipButtonState);
+  }
+}
+
+function removePipButton() {
+  const btn = document.getElementById(PIP_BUTTON_ID);
+  if (btn) {
+    btn.remove();
+  }
+}
+
+function applyPipButtonSetting() {
+  const existingStyle = document.getElementById(PIP_BUTTON_STYLE_ID);
+  if (currentSettings.pipButton) {
+    if (!existingStyle) {
+      const style = document.createElement("style");
+      style.id = PIP_BUTTON_STYLE_ID;
+      style.textContent = `
+        /* ===== TADa PICTURE-IN-PICTURE (PiP) BUTTON ===== */
+        .tada-pip-button {
+          position: relative;
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0;
+          width: 48px;
+          height: 100%;
+          color: #fff;
+          opacity: 0.9;
+          transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          vertical-align: top;
+        }
+        .tada-pip-button:hover {
+          opacity: 1;
+        }
+        .tada-pip-button:active {
+          transform: scale(0.92);
+        }
+        .tada-pip-button svg {
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+        .tada-pip-button .tada-pip-icon-window {
+          transition: fill 0.2s ease;
+        }
+        .tada-pip-button.tada-pip-active {
+          color: #E8930C !important;
+          opacity: 1 !important;
+        }
+        .tada-pip-button.tada-pip-active svg {
+          filter: drop-shadow(0 0 6px rgba(232, 147, 12, 0.7));
+        }
+        .tada-pip-button.tada-pip-active .tada-pip-icon-window {
+          fill: #E8930C !important;
+        }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    ensurePipHotkeys();
+    ensurePipButton();
+  } else {
+    existingStyle?.remove();
+    removePipButton();
+  }
+}
+
 function applyAllSettings() {
   applyFourColumnGridSetting();
   applyHideShortsSetting();
@@ -2614,6 +2807,7 @@ function applyAllSettings() {
   applyCurateSidebarSetting();
   applySuperVolumeSetting();
   applyAmbientLightSetting();
+  applyPipButtonSetting();
   applyHudSetting();
   applyAutoSelectChipsSetting();
 }
@@ -2700,6 +2894,7 @@ function teardownOnInvalidation() {
     pageEventHandler = null;
   }
   removeAmbientLightDom();
+  removePipButton();
   ensureHud();
 }
 
@@ -2793,6 +2988,9 @@ function initMutationObserver() {
       }
       if (currentSettings.ambientLight && isWatchPage()) {
         ensureAmbientLight();
+      }
+      if (currentSettings.pipButton) {
+        ensurePipButton();
       }
       if (isWatchPage() && currentSettings.ensureComments) {
         ensureCommentsVisible();

@@ -14,12 +14,14 @@ const DEFAULT_SETTINGS = {
   hideEndScreens: true,
   premiumBranding: true,
   ensureComments: true,
-  autoSelectChips: false
+  autoSelectChips: false,
+  pipButton: true
 };
 
 const TOGGLE_FEATURE_KEYS = [
   "superVolume",
   "ambientLight",
+  "pipButton",
   "curateSidebar",
   "fourColumnGrid",
   "hideShorts",
