@@ -15,13 +15,15 @@ const DEFAULT_SETTINGS = {
   premiumBranding: true,
   ensureComments: true,
   autoSelectChips: false,
-  pipButton: true
+  pipButton: true,
+  tadaPopupButton: true
 };
 
 const TOGGLE_FEATURE_KEYS = [
   "superVolume",
   "ambientLight",
   "pipButton",
+  "tadaPopupButton",
   "curateSidebar",
   "fourColumnGrid",
   "hideShorts",

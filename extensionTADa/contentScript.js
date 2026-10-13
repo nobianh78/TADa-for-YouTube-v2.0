@@ -10,7 +10,8 @@ const DEFAULT_SETTINGS = {
   premiumBranding: true,
   ensureComments: true,
   autoSelectChips: false,
-  pipButton: true
+  pipButton: true,
+  tadaPopupButton: true
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -28,6 +29,9 @@ const AMBIENT_CANVAS_DIFFUSE_ID = "tada-ambient-canvas-diffuse";
 const AMBIENT_CANVAS_GLOW_ID = "tada-ambient-canvas-glow";
 const PIP_BUTTON_STYLE_ID = "tada-pip-button-style";
 const PIP_BUTTON_ID = "tada-pip-button";
+const TADA_POPUP_STYLE_ID = "tada-inplayer-popup-style";
+const TADA_POPUP_BUTTON_ID = "tada-popup-button";
+const TADA_INPLAYER_POPUP_ID = "tada-inplayer-popup";
 const AD_SELECTORS = [
   "ytd-promoted-video-renderer",
   "ytd-promoted-sparkles-text-search-renderer",
@@ -2715,8 +2719,12 @@ function ensurePipButton() {
     const ref = rightControls.querySelector(".ytp-size-button") ||
                 rightControls.querySelector(".ytp-miniplayer-button") ||
                 rightControls.querySelector(".ytp-fullscreen-button") ||
-                rightControls.firstChild;
-    rightControls.insertBefore(btn, ref);
+                null;
+    if (ref) {
+      rightControls.insertBefore(btn, ref);
+    } else {
+      rightControls.appendChild(btn);
+    }
   }
 
   updatePipButtonState();
@@ -2798,6 +2806,687 @@ function applyPipButtonSetting() {
   }
 }
 
+/* ===== TADa IN-PLAYER QUICK POPUP CONTROLLER ===== */
+let tadaInplayerPopupOpen = false;
+let inplayerPopupDismissBound = false;
+
+function persistSettingsChange() {
+  try {
+    if (typeof chrome !== "undefined" && chrome?.storage?.local) {
+      chrome.storage.local.set({ ctfSettings: currentSettings }).catch(() => {});
+    }
+  } catch {}
+}
+
+function closeTadaInplayerPopup() {
+  const popup = document.getElementById(TADA_INPLAYER_POPUP_ID);
+  const btn = document.getElementById(TADA_POPUP_BUTTON_ID);
+  btn?.classList.remove("tada-popup-active");
+  if (popup) {
+    popup.remove();
+  }
+  tadaInplayerPopupOpen = false;
+}
+
+async function toggleTadaInplayerPopup() {
+  const existing = document.getElementById(TADA_INPLAYER_POPUP_ID);
+  if (existing) {
+    closeTadaInplayerPopup();
+    return;
+  }
+  await openTadaInplayerPopup();
+}
+
+async function openTadaInplayerPopup() {
+  closeTadaInplayerPopup();
+
+  const player = document.getElementById("movie_player") || 
+                 document.querySelector(".html5-video-player") || 
+                 document.querySelector("#player") || 
+                 document.body;
+  if (!player) return;
+
+  const btn = document.getElementById(TADA_POPUP_BUTTON_ID);
+  btn?.classList.add("tada-popup-active");
+
+  let blockedCount = 0;
+  try {
+    if (typeof chrome !== "undefined" && chrome?.storage?.local) {
+      const data = await chrome.storage.local.get(["blockedRequestCount"]);
+      blockedCount = data.blockedRequestCount || 0;
+    }
+  } catch {}
+
+  const popup = document.createElement("div");
+  popup.id = TADA_INPLAYER_POPUP_ID;
+
+  let logoUrl = "";
+  try {
+    if (typeof chrome !== "undefined" && chrome?.runtime?.id) {
+      logoUrl = chrome.runtime.getURL("icons/icon32.png");
+    }
+  } catch {}
+
+  const vol = superVolumePercent || 100;
+  const isBoost = vol > 100;
+  const volBadgeText = isBoost ? `🔥 ${vol}%` : `${vol}%`;
+
+  popup.innerHTML = `
+    <div class="tada-ipp-header">
+      <div class="tada-ipp-title-wrap">
+        <img src="${logoUrl}" class="tada-ipp-logo" alt="TADa" />
+        <span class="tada-ipp-title">TADa for YouTube</span>
+        <span class="tada-ipp-badge">v2.0</span>
+      </div>
+      <button class="tada-ipp-close-btn" id="tada-ipp-close" title="Đóng">✕</button>
+    </div>
+
+    <div class="tada-ipp-body">
+      <div class="tada-ipp-stats-bar">
+        <div class="tada-ipp-stats-left">
+          <span class="tada-ipp-dot"></span>
+          <span>Bảo vệ & Chặn quảng cáo</span>
+        </div>
+        <span class="tada-ipp-stats-count">${blockedCount.toLocaleString()} ads</span>
+      </div>
+
+      <div class="tada-ipp-item tada-ipp-item-col">
+        <div class="tada-ipp-item-header">
+          <div class="tada-ipp-label">🔊 Booster âm lượng 500%</div>
+          <span class="tada-ipp-val-badge" id="tada-ipp-vol-badge">${volBadgeText}</span>
+        </div>
+        <input type="range" class="tada-ipp-slider" id="tada-ipp-vol-slider" min="0" max="500" step="5" value="${vol}" />
+      </div>
+
+      <div class="tada-ipp-item tada-ipp-item-col">
+        <div class="tada-ipp-item-header">
+          <div>
+            <div class="tada-ipp-label">✨ Ambient Light (Ánh sáng viền)</div>
+            <div class="tada-ipp-desc">Tỏa ánh sáng màn hình ra nền</div>
+          </div>
+          <label class="tada-ipp-switch">
+            <input type="checkbox" id="tada-ipp-ambient-toggle" ${currentSettings.ambientLight ? "checked" : ""} />
+            <span class="tada-ipp-slider-round"></span>
+          </label>
+        </div>
+        <div id="tada-ipp-ambient-sliders" style="display: ${currentSettings.ambientLight ? "flex" : "none"}; flex-direction: column; gap: 8px; margin-top: 4px; padding-top: 6px; border-top: 1px dashed rgba(232, 147, 12, 0.25);">
+          <div>
+            <div class="tada-ipp-item-header" style="margin-bottom: 3px;">
+              <span class="tada-ipp-desc" style="font-weight: 600; color: #FDF6EC;">Độ sáng viền</span>
+              <span class="tada-ipp-val-badge" id="tada-ipp-bright-badge">${currentSettings.ambientBrightness || 100}%</span>
+            </div>
+            <input type="range" class="tada-ipp-slider" id="tada-ipp-bright-slider" min="50" max="200" step="5" value="${currentSettings.ambientBrightness || 100}" />
+          </div>
+          <div>
+            <div class="tada-ipp-item-header" style="margin-bottom: 3px;">
+              <span class="tada-ipp-desc" style="font-weight: 600; color: #FDF6EC;">Độ lan tỏa</span>
+              <span class="tada-ipp-val-badge" id="tada-ipp-spread-badge">${currentSettings.ambientSpread || 100}%</span>
+            </div>
+            <input type="range" class="tada-ipp-slider" id="tada-ipp-spread-slider" min="50" max="200" step="5" value="${currentSettings.ambientSpread || 100}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="tada-ipp-item">
+        <div>
+          <div class="tada-ipp-label">🖼️ Hình trong hình (PiP)</div>
+          <div class="tada-ipp-desc">Xem góc màn hình & phím tắt [P]</div>
+        </div>
+        <button class="tada-ipp-pip-quick-btn" id="tada-ipp-launch-pip" title="Kích hoạt PiP ngay">Bật PiP</button>
+      </div>
+
+      <div class="tada-ipp-item">
+        <div>
+          <div class="tada-ipp-label">📐 Lưới 4 video / hàng</div>
+          <div class="tada-ipp-desc">Bố cục trang chủ cân đối</div>
+        </div>
+        <label class="tada-ipp-switch">
+          <input type="checkbox" id="tada-ipp-grid-toggle" ${currentSettings.fourColumnGrid ? "checked" : ""} />
+          <span class="tada-ipp-slider-round"></span>
+        </label>
+      </div>
+
+      <div class="tada-ipp-item">
+        <div>
+          <div class="tada-ipp-label">🚫 Ẩn YouTube Shorts</div>
+          <div class="tada-ipp-desc">Loại bỏ kệ video ngắn</div>
+        </div>
+        <label class="tada-ipp-switch">
+          <input type="checkbox" id="tada-ipp-shorts-toggle" ${currentSettings.hideShorts ? "checked" : ""} />
+          <span class="tada-ipp-slider-round"></span>
+        </label>
+      </div>
+
+      <div class="tada-ipp-item">
+        <div>
+          <div class="tada-ipp-label">🛑 Ẩn thẻ kết thúc</div>
+          <div class="tada-ipp-desc">Chặn ô che màn hình cuối clip</div>
+        </div>
+        <label class="tada-ipp-switch">
+          <input type="checkbox" id="tada-ipp-endscreen-toggle" ${currentSettings.hideEndScreens ? "checked" : ""} />
+          <span class="tada-ipp-slider-round"></span>
+        </label>
+      </div>
+
+      <div class="tada-ipp-item">
+        <div>
+          <div class="tada-ipp-label">🎯 Lọc gợi ý Sidebar</div>
+          <div class="tada-ipp-desc">Ẩn video trùng & đã xem</div>
+        </div>
+        <label class="tada-ipp-switch">
+          <input type="checkbox" id="tada-ipp-sidebar-toggle" ${currentSettings.curateSidebar ? "checked" : ""} />
+          <span class="tada-ipp-slider-round"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="tada-ipp-footer">
+      <span>Đồng bộ tự động</span>
+      <span>Phím tắt: <b>P</b> (PiP) · <b>↑/↓</b> (Âm)</span>
+    </div>
+  `;
+
+  popup.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+  popup.addEventListener("mousedown", (e) => {
+    e.stopPropagation();
+  });
+  popup.addEventListener("touchstart", (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+
+  popup.querySelector("#tada-ipp-close")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeTadaInplayerPopup();
+  });
+
+  const volSlider = popup.querySelector("#tada-ipp-vol-slider");
+  const volBadge = popup.querySelector("#tada-ipp-vol-badge");
+  if (volSlider) {
+    volSlider.addEventListener("input", (e) => {
+      e.stopPropagation();
+      const val = parseInt(e.target.value, 10);
+      setSuperVolumePercent(val);
+      resumeSuperVolumeContext();
+      if (volBadge) {
+        volBadge.textContent = val > 100 ? `🔥 ${val}%` : `${val}%`;
+      }
+    });
+  }
+
+  const ambientToggle = popup.querySelector("#tada-ipp-ambient-toggle");
+  const ambientSlidersWrap = popup.querySelector("#tada-ipp-ambient-sliders");
+  const brightSlider = popup.querySelector("#tada-ipp-bright-slider");
+  const brightBadge = popup.querySelector("#tada-ipp-bright-badge");
+  const spreadSlider = popup.querySelector("#tada-ipp-spread-slider");
+  const spreadBadge = popup.querySelector("#tada-ipp-spread-badge");
+
+  if (ambientToggle) {
+    ambientToggle.addEventListener("change", (e) => {
+      e.stopPropagation();
+      const isChecked = e.target.checked;
+      currentSettings.ambientLight = isChecked;
+      if (ambientSlidersWrap) {
+        ambientSlidersWrap.style.display = isChecked ? "flex" : "none";
+      }
+      persistSettingsChange();
+      applyAmbientLightSetting();
+      if (isChecked && isWatchPage()) {
+        ensureAmbientLight();
+      }
+    });
+  }
+
+  if (brightSlider) {
+    brightSlider.addEventListener("input", (e) => {
+      e.stopPropagation();
+      const val = parseInt(e.target.value, 10);
+      currentSettings.ambientBrightness = val;
+      if (brightBadge) brightBadge.textContent = `${val}%`;
+      updateAmbientLightVariables();
+      persistSettingsChange();
+    });
+  }
+
+  if (spreadSlider) {
+    spreadSlider.addEventListener("input", (e) => {
+      e.stopPropagation();
+      const val = parseInt(e.target.value, 10);
+      currentSettings.ambientSpread = val;
+      if (spreadBadge) spreadBadge.textContent = `${val}%`;
+      updateAmbientLightVariables();
+      persistSettingsChange();
+    });
+  }
+
+  popup.querySelector("#tada-ipp-launch-pip")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePictureInPicture();
+    closeTadaInplayerPopup();
+  });
+
+  const bindToggle = (id, settingKey, applyFn) => {
+    popup.querySelector(id)?.addEventListener("change", (e) => {
+      e.stopPropagation();
+      currentSettings[settingKey] = e.target.checked;
+      persistSettingsChange();
+      applyFn?.();
+    });
+  };
+
+  bindToggle("#tada-ipp-grid-toggle", "fourColumnGrid", applyFourColumnGridSetting);
+  bindToggle("#tada-ipp-shorts-toggle", "hideShorts", applyHideShortsSetting);
+  bindToggle("#tada-ipp-endscreen-toggle", "hideEndScreens", applyHideEndScreensSetting);
+  bindToggle("#tada-ipp-sidebar-toggle", "curateSidebar", applyCurateSidebarSetting);
+
+  player.appendChild(popup);
+  tadaInplayerPopupOpen = true;
+}
+
+function bindInplayerPopupDismissListeners() {
+  if (inplayerPopupDismissBound) return;
+  document.addEventListener("click", (event) => {
+    if (!tadaInplayerPopupOpen) return;
+    const target = event.target;
+    if (target?.closest?.(`#${TADA_INPLAYER_POPUP_ID}`) || target?.closest?.(`#${TADA_POPUP_BUTTON_ID}`)) {
+      return;
+    }
+    closeTadaInplayerPopup();
+  }, true);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && tadaInplayerPopupOpen) {
+      event.preventDefault();
+      closeTadaInplayerPopup();
+    }
+  }, true);
+  inplayerPopupDismissBound = true;
+}
+
+function ensureTadaPopupButton() {
+  if (!currentSettings.tadaPopupButton) return;
+  const rightControls = document.querySelector(".ytp-right-controls");
+  if (!rightControls) return;
+
+  let btn = document.getElementById(TADA_POPUP_BUTTON_ID);
+  if (!btn || !rightControls.contains(btn)) {
+    if (btn) btn.remove();
+
+    btn = document.createElement("button");
+    btn.id = TADA_POPUP_BUTTON_ID;
+    btn.className = "ytp-button tada-popup-button";
+    btn.setAttribute("aria-label", "Bảng điều khiển TADa");
+    btn.setAttribute("title", "Bảng điều khiển TADa (Cài đặt nhanh)");
+    let iconUrl = "";
+    try {
+      if (typeof chrome !== "undefined" && chrome?.runtime?.id) {
+        iconUrl = chrome.runtime.getURL("icons/icon32.png");
+      }
+    } catch {}
+
+    btn.innerHTML = `<img src="${iconUrl}" class="tada-popup-btn-icon" alt="TADa" />`;
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleTadaInplayerPopup();
+    });
+
+    const ref = rightControls.querySelector(".ytp-size-button") ||
+                rightControls.querySelector(".ytp-miniplayer-button") ||
+                rightControls.querySelector(".ytp-fullscreen-button") ||
+                null;
+    if (ref) {
+      rightControls.insertBefore(btn, ref);
+    } else {
+      rightControls.appendChild(btn);
+    }
+  }
+}
+
+function removeTadaPopupButton() {
+  const btn = document.getElementById(TADA_POPUP_BUTTON_ID);
+  if (btn) {
+    btn.remove();
+  }
+}
+
+function ensurePlayerControlButtons() {
+  if (currentSettings.pipButton) {
+    ensurePipButton();
+  }
+  if (currentSettings.tadaPopupButton) {
+    ensureTadaPopupButton();
+  }
+}
+
+function applyTadaPopupButtonSetting() {
+  const existingStyle = document.getElementById(TADA_POPUP_STYLE_ID);
+  if (currentSettings.tadaPopupButton) {
+    if (!existingStyle) {
+      const style = document.createElement("style");
+      style.id = TADA_POPUP_STYLE_ID;
+      style.textContent = `
+        /* ===== TADa IN-PLAYER QUICK POPUP & BUTTON STYLES ===== */
+        .tada-popup-button {
+          position: relative;
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0;
+          width: 48px;
+          height: 100%;
+          opacity: 0.9;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          vertical-align: top;
+        }
+        .tada-popup-button:hover {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+        .tada-popup-button:active {
+          transform: scale(0.92);
+        }
+        .tada-popup-button img.tada-popup-btn-icon {
+          width: 22px;
+          height: 22px;
+          border-radius: 6px;
+          pointer-events: none;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+          transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        .tada-popup-button.tada-popup-active img.tada-popup-btn-icon {
+          filter: drop-shadow(0 0 7px rgba(232, 147, 12, 0.95));
+          transform: scale(1.12);
+        }
+
+        #tada-inplayer-popup {
+          position: absolute;
+          bottom: 60px;
+          right: 14px;
+          width: 320px;
+          max-width: calc(100% - 28px);
+          max-height: 480px;
+          background: rgba(26, 20, 16, 0.95);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border: 1px solid rgba(232, 147, 12, 0.35);
+          border-radius: 16px;
+          box-shadow: 0 16px 44px rgba(0, 0, 0, 0.7), 0 0 24px rgba(232, 147, 12, 0.18);
+          color: #FDF6EC;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          z-index: 99999;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          user-select: none;
+          animation: tadaPopupSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes tadaPopupSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        #tada-inplayer-popup * {
+          box-sizing: border-box;
+        }
+
+        .tada-ipp-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 14px;
+          background: rgba(45, 31, 22, 0.6);
+          border-bottom: 1px solid rgba(232, 147, 12, 0.2);
+        }
+        .tada-ipp-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .tada-ipp-logo {
+          width: 22px;
+          height: 22px;
+          border-radius: 5px;
+        }
+        .tada-ipp-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: #FDF6EC;
+          letter-spacing: -0.2px;
+        }
+        .tada-ipp-badge {
+          font-size: 9px;
+          font-weight: 700;
+          padding: 1px 5px;
+          border-radius: 10px;
+          background: rgba(232, 147, 12, 0.2);
+          color: #E8930C;
+          border: 1px solid rgba(232, 147, 12, 0.4);
+        }
+        .tada-ipp-close-btn {
+          background: transparent;
+          border: none;
+          color: rgba(253, 246, 236, 0.6);
+          font-size: 16px;
+          line-height: 1;
+          cursor: pointer;
+          padding: 4px 6px;
+          border-radius: 6px;
+          transition: all 0.15s ease;
+        }
+        .tada-ipp-close-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+        }
+
+        .tada-ipp-body {
+          padding: 10px 14px;
+          overflow-y: auto;
+          max-height: 380px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .tada-ipp-body::-webkit-scrollbar {
+          width: 4px;
+        }
+        .tada-ipp-body::-webkit-scrollbar-thumb {
+          background: rgba(232, 147, 12, 0.3);
+          border-radius: 4px;
+        }
+
+        .tada-ipp-stats-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 6px 10px;
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          border-radius: 8px;
+          font-size: 11px;
+        }
+        .tada-ipp-stats-left {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #A7F3D0;
+        }
+        .tada-ipp-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10B981;
+          animation: tadaPulseDot 2s infinite;
+        }
+        @keyframes tadaPulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        .tada-ipp-stats-count {
+          font-weight: 700;
+          color: #fff;
+          font-family: monospace;
+        }
+
+        .tada-ipp-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 10px;
+          background: rgba(45, 31, 22, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 10px;
+          transition: border-color 0.15s ease;
+        }
+        .tada-ipp-item:hover {
+          border-color: rgba(232, 147, 12, 0.3);
+        }
+        .tada-ipp-item-col {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .tada-ipp-item-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+        }
+        .tada-ipp-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #FDF6EC;
+        }
+        .tada-ipp-desc {
+          font-size: 10px;
+          color: rgba(253, 246, 236, 0.55);
+        }
+        .tada-ipp-val-badge {
+          font-size: 11px;
+          font-weight: 700;
+          color: #E8930C;
+          font-family: monospace;
+        }
+
+        .tada-ipp-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 5px;
+          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.15);
+          outline: none;
+          cursor: pointer;
+        }
+        .tada-ipp-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: #E8930C;
+          box-shadow: 0 0 6px rgba(232, 147, 12, 0.8);
+          cursor: pointer;
+          transition: transform 0.15s ease;
+        }
+        .tada-ipp-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.2);
+        }
+
+        .tada-ipp-switch {
+          position: relative;
+          display: inline-block;
+          width: 34px;
+          height: 18px;
+          flex-shrink: 0;
+        }
+        .tada-ipp-switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .tada-ipp-slider-round {
+          position: absolute;
+          cursor: pointer;
+          inset: 0;
+          background-color: rgba(255, 255, 255, 0.2);
+          transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          border-radius: 18px;
+        }
+        .tada-ipp-slider-round:before {
+          position: absolute;
+          content: "";
+          height: 14px;
+          width: 14px;
+          left: 2px;
+          bottom: 2px;
+          background-color: white;
+          transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          border-radius: 50%;
+        }
+        .tada-ipp-switch input:checked + .tada-ipp-slider-round {
+          background-color: #E8930C;
+        }
+        .tada-ipp-switch input:checked + .tada-ipp-slider-round:before {
+          transform: translateX(16px);
+        }
+
+        .tada-ipp-footer {
+          padding: 8px 14px;
+          background: rgba(20, 14, 10, 0.6);
+          border-top: 1px solid rgba(232, 147, 12, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 10px;
+          color: rgba(253, 246, 236, 0.5);
+        }
+        .tada-ipp-pip-quick-btn {
+          background: rgba(232, 147, 12, 0.15);
+          border: 1px solid rgba(232, 147, 12, 0.4);
+          color: #E8930C;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 10px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.15s ease;
+        }
+        .tada-ipp-pip-quick-btn:hover {
+          background: #E8930C;
+          color: #1A1410;
+        }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    bindInplayerPopupDismissListeners();
+    ensureTadaPopupButton();
+  } else {
+    existingStyle?.remove();
+    removeTadaPopupButton();
+    closeTadaInplayerPopup();
+  }
+}
+
 function applyAllSettings() {
   applyFourColumnGridSetting();
   applyHideShortsSetting();
@@ -2808,6 +3497,7 @@ function applyAllSettings() {
   applySuperVolumeSetting();
   applyAmbientLightSetting();
   applyPipButtonSetting();
+  applyTadaPopupButtonSetting();
   applyHudSetting();
   applyAutoSelectChipsSetting();
 }
@@ -2895,6 +3585,8 @@ function teardownOnInvalidation() {
   }
   removeAmbientLightDom();
   removePipButton();
+  removeTadaPopupButton();
+  closeTadaInplayerPopup();
   ensureHud();
 }
 
@@ -2989,8 +3681,8 @@ function initMutationObserver() {
       if (currentSettings.ambientLight && isWatchPage()) {
         ensureAmbientLight();
       }
-      if (currentSettings.pipButton) {
-        ensurePipButton();
+      if (currentSettings.pipButton || currentSettings.tadaPopupButton) {
+        ensurePlayerControlButtons();
       }
       if (isWatchPage() && currentSettings.ensureComments) {
         ensureCommentsVisible();
@@ -3066,3 +3758,15 @@ document.addEventListener("visibilitychange", () => {
     renderAmbientFrame();
   }
 });
+
+let lastControlCheck = 0;
+document.addEventListener("mousemove", () => {
+  const now = Date.now();
+  if (now - lastControlCheck > 1200) {
+    lastControlCheck = now;
+    if (isWatchPage()) {
+      ensurePlayerControlButtons();
+    }
+  }
+}, { passive: true });
+
