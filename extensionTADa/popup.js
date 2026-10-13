@@ -15,13 +15,15 @@ const DEFAULT_SETTINGS = {
   premiumBranding: true,
   ensureComments: true,
   autoSelectChips: false,
-  pipButton: true
+  pipButton: true,
+  abLooper: true
 };
 
 const TOGGLE_FEATURE_KEYS = [
   "superVolume",
   "ambientLight",
   "pipButton",
+  "abLooper",
   "curateSidebar",
   "fourColumnGrid",
   "hideShorts",
