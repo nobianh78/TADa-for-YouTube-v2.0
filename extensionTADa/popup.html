@@ -25,12 +25,21 @@
               <div class="brand-sub">Tùy chỉnh thông minh</div>
             </div>
           </div>
-          <button id="btn-reload-tab" class="btn-icon-top" title="Tải lại tab YouTube">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-              <path d="M3 3v5h5"/>
-            </svg>
-          </button>
+          <div class="header-actions">
+            <button id="btn-header-about" class="btn-icon-top" title="Giới thiệu TADa & Tác giả">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </button>
+            <button id="btn-reload-tab" class="btn-icon-top" title="Tải lại tab YouTube">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+            </button>
+          </div>
         </header>
 
         <!-- Ad Block Status Bar -->
@@ -117,6 +126,24 @@
           </div>
           <span class="cat-label">Thư viện Bookmarks</span>
           <span class="bm-count-badge" id="bm-lib-summary">0 mốc</span>
+          <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <!-- About TADa -->
+        <button class="cat-row about-row" id="btn-open-about-modal">
+          <div class="cat-icon-wrap about-bg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
+          <div class="about-row-text">
+            <span class="cat-label">Giới thiệu TADa</span>
+            <span class="about-row-sub">Nguyễn Tuấn Anh • TADa Team</span>
+          </div>
           <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
@@ -407,6 +434,61 @@
         <div class="bm-modal-footer">
           <button id="btn-export-all-bm" class="btn-subtle">Sao chép tất cả</button>
           <button id="btn-clear-all-bm" class="btn-subtle btn-danger">Xóa hết</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Giới thiệu TADa -->
+    <div class="about-modal-backdrop" id="about-modal-backdrop">
+      <div class="about-modal">
+        <div class="about-modal-header">
+          <div class="about-modal-title">
+            <img class="about-logo-mini" src="icons/icon48.png" alt="TADa">
+            <span>Giới thiệu TADa for YouTube</span>
+          </div>
+          <button id="btn-close-about-modal" class="btn-modal-close" title="Đóng">×</button>
+        </div>
+        <div class="about-modal-body">
+          <div class="about-hero-card">
+            <div class="about-badge-row">
+              <span class="about-tag">Official Extension</span>
+              <span class="about-ver">v2.0.0</span>
+            </div>
+            <h3 class="about-app-title">TADa for YouTube</h3>
+            <p class="about-app-desc">
+              Tiện ích mở rộng thông minh, tối ưu trải nghiệm xem video YouTube sạch sẽ, không quảng cáo, tích hợp bộ công cụ hỗ trợ người dùng toàn diện. Thuộc hệ sinh thái <strong>TADa Manager</strong>.
+            </p>
+          </div>
+
+          <div class="about-dev-card">
+            <div class="dev-avatar">TA</div>
+            <div class="dev-info">
+              <span class="dev-role">Phát triển bởi</span>
+              <h4 class="dev-name">Nguyễn Tuấn Anh</h4>
+              <span class="dev-team">Thành viên Team TADa</span>
+            </div>
+          </div>
+
+          <div class="about-links-section">
+            <a href="https://github.com/nobianh78/TADa-for-YouTube-v2.0" target="_blank" rel="noopener noreferrer" class="btn-github-link" id="link-github-repo">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+              <div class="github-link-text">
+                <span class="github-link-title">Mã nguồn trên GitHub</span>
+                <span class="github-link-url">nobianh78/TADa-for-YouTube-v2.0</span>
+              </div>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" class="arrow-icon">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="about-modal-footer">
+          <span class="about-copyright">© 2026 TADa Team</span>
+          <button id="btn-close-about-modal-footer" class="btn-subtle">Đóng</button>
         </div>
       </div>
     </div>

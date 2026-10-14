@@ -1,11 +1,1306 @@
-< !DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TADa for YouTube - Cài đặt tính năng</title><link rel="stylesheet" href="popup.css"></head><body><div class="popup-container">< !-- Header --><header class="header"><div class="header-brand"><div class="logo-badge"><img class="app-icon" src="icons/icon128.png" alt="TADa"><div class="brand-block"><div class="brand-title-row"><span class="brand-text">TADa</span><span class="version-badge">v2.0</span></div><span class="brand-sub">for YouTube · Tùy chỉnh thông minh</span></div></div></div></header>< !-- Core Security Card (Ad Blocker - Always Active) --><div class="core-card"><div class="core-glow"></div><div class="core-card-header"><div class="core-icon-wrap"><svg class="core-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg></div><div class="core-info"><div class="core-title-row"><span class="core-title">Chặn quảng cáo</span><span class="locked-badge" title="Tính năng cốt lõi luôn luôn bật để bảo vệ bạn"><svg viewBox="0 0 24 24" fill="currentColor" class="lock-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>LUÔN BẬT </span></div><p class="core-desc">Chặn video ads,
-banner,
-mid-roll & bộ theo dõi</p></div><div class="toggle-wrap locked-toggle" id="lock-tooltip-trigger"><input type="checkbox" id="toggle-adBlocker" checked disabled class="toggle-checkbox"><label for="toggle-adBlocker" class="toggle-slider locked"></label></div></div><div class="stats-bar"><div class="stats-item"><span class="stats-dot"></span><span class="stats-label">Đã chặn:</span><span class="stats-value" id="blocked-count">0</span><span class="stats-unit">yêu cầu</span></div><button id="btn-reset-stats" class="btn-subtle" title="Đặt lại bộ đếm quảng cáo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="subtle-icon"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Đặt lại </button></div></div>< !-- Feature Section Header & Quick Actions --><div class="section-header"><div class="section-title-wrap"><span class="section-title">Danh mục tính năng</span><span class="active-count-badge" id="active-features-count">13/14 bật</span></div><div class="quick-actions"><button id="btn-enable-all" class="btn-quick" title="Bật tất cả tính năng bổ sung">Bật hết</button><button id="btn-disable-all" class="btn-quick" title="Tắt tất cả tính năng bổ sung">Tắt hết</button></div></div>< !-- Categorized Accordion List --><div class="categories-container" id="categories-container">< !--=================MỤC 1: TRÌNH PHÁT & ÂM THANH=================--><div class="category-card open" data-category="player"><button type="button" class="category-header" aria-expanded="true"><div class="category-header-left"><div class="category-icon cat-icon-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg></div><div class="category-meta"><span class="category-name">Trình phát & Âm thanh</span><span class="category-desc">Âm lượng,
-ánh sáng viền,
-tốc độ & điều khiển</span></div></div><div class="category-header-right"><span class="category-count-pill" id="cat-count-player">5/5</span><span class="category-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg></span></div></button><div class="category-body-wrap"><div class="category-body"><div class="features-list">< !-- 1. Super Volume --><div class="feature-item"><div class="feature-icon icon-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></svg></div><div class="feature-info"><div class="feature-name">Booster âm lượng 500%</div><div class="feature-desc">Khuếch đại âm thanh lên đến 500% & phím tắt</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-superVolume" class="toggle-checkbox"><label for="toggle-superVolume" class="toggle-slider"></label></div></div>< !-- 2. Ambient Light (Ambilight) --><div class="feature-item feature-item-expandable" id="feature-ambientLight-item"><div class="feature-main-row"><div class="feature-icon icon-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg></div><div class="feature-info"><div class="feature-name">Ambient Light (Ánh sáng viền)</div><div class="feature-desc">Mở rộng ánh sáng màu sắc video ra xung quanh</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-ambientLight" class="toggle-checkbox"><label for="toggle-ambientLight" class="toggle-slider"></label></div></div>< !-- Sub-settings: Tinh chỉnh mượt mà --><div class="ambient-sub-settings" id="ambient-sub-settings"><div class="ambient-sub-inner"><div class="ambient-slider-row"><div class="ambient-slider-label"><span>Độ sáng viền</span><span class="ambient-val-badge" id="ambient-brightness-val">100%</span></div><input type="range" id="ambient-brightness" class="ambient-range-slider" min="50" max="200" step="5" value="100"></div><div class="ambient-slider-row"><div class="ambient-slider-label"><span>Độ lan tỏa</span><span class="ambient-val-badge" id="ambient-spread-val">100%</span></div><input type="range" id="ambient-spread" class="ambient-range-slider" min="50" max="200" step="5" value="100"></div></div></div></div>< !-- 3. Tốc độ phát vi chỉnh (0.1x - 4.0x) --><div class="feature-item"><div class="feature-icon icon-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg></div><div class="feature-info"><div class="feature-name">Tốc độ phát vi chỉnh (0.1x – 4.0x)</div><div class="feature-desc">Bước nhảy 0.1x · Phím [&gt;
-] [&lt;
-] [=] · HUD tốc độ</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-customSpeed" class="toggle-checkbox"><label for="toggle-customSpeed" class="toggle-slider"></label></div></div>< !-- 4. Picture-in-Picture (PiP) 1 chạm --><div class="feature-item"><div class="feature-icon icon-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="15" rx="2" /><rect x="12" y="10" width="8" height="6" rx="1" fill="currentColor" stroke="none" /></svg></div><div class="feature-info"><div class="feature-name">Hình trong hình (PiP) 1 chạm</div><div class="feature-desc">Nút PiP trên thanh điều khiển & phím tắt [P]</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-pipButton" class="toggle-checkbox"><label for="toggle-pipButton" class="toggle-slider"></label></div></div>< !-- 5. Lặp đoạn A-B --><div class="feature-item"><div class="feature-icon icon-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg></div><div class="feature-info"><div class="feature-name">Lặp đoạn A-B</div><div class="feature-desc">Click nút A-B để đặt mốc · Phím tắt [] \</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-abLooper" class="toggle-checkbox"><label for="toggle-abLooper" class="toggle-slider"></label></div></div></div></div></div></div>< !--=================MỤC 2: CÔNG CỤ & TIỆN ÍCH=================--><div class="category-card" data-category="tools"><button type="button" class="category-header" aria-expanded="false"><div class="category-header-left"><div class="category-icon cat-icon-emerald"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></div><div class="category-meta"><span class="category-name">Công cụ & Tiện ích</span><span class="category-desc">Chụp màn hình 4K,
-tải MP4/MP3 & lưu ghi chú</span></div></div><div class="category-header-right"><span class="category-count-pill" id="cat-count-tools">3/3</span><span class="category-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg></span></div></button><div class="category-body-wrap"><div class="category-body"><div class="features-list">< !-- 6. Chụp ảnh màn hình Video (Screenshot HD/4K) --><div class="feature-item"><div class="feature-icon icon-camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg></div><div class="feature-info"><div class="feature-name">Chụp ảnh màn hình (HD / 4K)</div><div class="feature-desc">Ảnh sạch chuẩn nét gốc · Phím [S] tải · Shift+Click chép</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-videoScreenshot" class="toggle-checkbox"><label for="toggle-videoScreenshot" class="toggle-slider"></label></div></div>< !-- 7. Tải Video MP4 & Nhạc MP3 --><div class="feature-item"><div class="feature-icon icon-download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg></div><div class="feature-info"><div class="feature-name">Tải Video MP4 & Nhạc MP3</div><div class="feature-desc">Tải nhanh MP4 (1080p, 720p, 360p) & MP3 · Phím [D]</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-videoDownloader" class="toggle-checkbox"><label for="toggle-videoDownloader" class="toggle-slider"></label></div></div>< !-- 8. Đánh dấu mốc thời gian (Bookmarks & Notes) --><div class="feature-item"><div class="feature-icon icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg></div><div class="feature-info"><div class="feature-name">Đánh dấu mốc & Ghi chú (Bookmarks)</div><div class="feature-desc">Chọn mốc trên thanh tua · Nhập note & xem lại</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-videoBookmarks" class="toggle-checkbox"><label for="toggle-videoBookmarks" class="toggle-slider"></label></div></div></div></div></div></div>< !--=================MỤC 3: GIAO DIỆN & TẬP TRUNG=================--><div class="category-card" data-category="layout"><button type="button" class="category-header" aria-expanded="false"><div class="category-header-left"><div class="category-icon cat-icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg></div><div class="category-meta"><span class="category-name">Giao diện & Tập trung</span><span class="category-desc">Tối ưu bố cục 4 cột,
-ẩn Shorts & chống xao nhãng</span></div></div><div class="category-header-right"><span class="category-count-pill" id="cat-count-layout">5/6</span><span class="category-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg></span></div></button><div class="category-body-wrap"><div class="category-body"><div class="features-list">< !-- 9. Curate Sidebar --><div class="feature-item"><div class="feature-icon icon-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg></div><div class="feature-info"><div class="feature-name">Lọc gợi ý Sidebar</div><div class="feature-desc">Loại bỏ video rác,
-trùng lặp và video đã xem</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-curateSidebar" class="toggle-checkbox"><label for="toggle-curateSidebar" class="toggle-slider"></label></div></div>< !-- 10. Four Column Grid --><div class="feature-item"><div class="feature-icon icon-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg></div><div class="feature-info"><div class="feature-name">Lưới 4 video / hàng</div><div class="feature-desc">Bố cục trang chủ 4 cột cân đối,
-tối ưu màn hình</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-fourColumnGrid" class="toggle-checkbox"><label for="toggle-fourColumnGrid" class="toggle-slider"></label></div></div>< !-- 11. Hide Shorts --><div class="feature-item"><div class="feature-icon icon-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /><line x1="4" y1="4" x2="20" y2="20" stroke-width="2.5" stroke="#ff4d4d" /></svg></div><div class="feature-info"><div class="feature-name">Ẩn YouTube Shorts</div><div class="feature-desc">Ẩn kệ video ngắn Shorts gây xao nhãng</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-hideShorts" class="toggle-checkbox"><label for="toggle-hideShorts" class="toggle-slider"></label></div></div>< !-- 12. Hide End Screens --><div class="feature-item"><div class="feature-icon icon-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" /><line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" /><line x1="2" y1="12" x2="22" y2="12" /><line x1="2" y1="7" x2="7" y2="7" /><line x1="2" y1="17" x2="7" y2="17" /><line x1="17" y1="17" x2="22" y2="17" /><line x1="17" y1="7" x2="22" y2="7" /></svg></div><div class="feature-info"><div class="feature-name">Ẩn thẻ kết thúc (End Screens)</div><div class="feature-desc">Chặn các ô video che màn hình cuối clip</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-hideEndScreens" class="toggle-checkbox"><label for="toggle-hideEndScreens" class="toggle-slider"></label></div></div>< !-- 13. Ensure Comments --><div class="feature-item"><div class="feature-info-wrap"><div class="feature-icon icon-emerald"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg></div><div class="feature-info"><div class="feature-name">Cố định bình luận</div><div class="feature-desc">Luôn hiện khung bình luận bên dưới video</div></div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-ensureComments" class="toggle-checkbox"><label for="toggle-ensureComments" class="toggle-slider"></label></div></div>< !-- 14. Auto Select Chips --><div class="feature-item"><div class="feature-icon icon-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg></div><div class="feature-info"><div class="feature-name">Tự chọn Tab chủ đề</div><div class="feature-desc">Tự động kích hoạt chip phân loại video liên quan</div></div><div class="toggle-wrap"><input type="checkbox" id="toggle-autoSelectChips" class="toggle-checkbox"><label for="toggle-autoSelectChips" class="toggle-slider"></label></div></div></div></div></div></div></div>< !-- Bookmarks Library Card --><div class="bm-library-card" id="bm-library-card"><div class="bm-card-header"><div class="bm-card-left"><div class="bm-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg></div><div class="bm-card-text"><span class="bm-card-title">Thư viện Bookmarks</span><span class="bm-card-count" id="bm-lib-summary">0 mốc đã lưu</span></div></div><button id="btn-open-bm-modal" class="btn-subtle btn-manage-bm" title="Mở danh sách quản lý tất cả bookmark"><span>Quản lý</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="subtle-icon"><polyline points="9 18 15 12 9 6" /></svg></button></div></div>< !-- Modal: Quản lý Bookmarks --><div class="bm-modal-backdrop" id="bm-modal-backdrop"><div class="bm-modal"><div class="bm-modal-header"><div class="bm-modal-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="modal-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg><span>Tất cả Bookmarks đã lưu</span></div><button id="btn-close-bm-modal" class="btn-modal-close" title="Đóng">×</button></div><div class="bm-modal-body" id="bm-modal-body">< !-- Rendered dynamically --></div><div class="bm-modal-footer"><button id="btn-export-all-bm" class="btn-subtle" title="Sao chép toàn bộ mốc thành văn bản">Sao chép tất cả</button><button id="btn-clear-all-bm" class="btn-subtle btn-danger" title="Xóa toàn bộ bookmark đã lưu">Xóa hết</button></div></div></div>< !-- Footer --><footer class="footer"><div class="footer-status"><span class="status-indicator"></span><span class="status-text">Đồng bộ tự động</span></div><button id="btn-reload-tab" class="btn-reload" title="Tải lại tab YouTube hiện tại"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="reload-icon"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>Làm mới trang </button></footer>< !-- Notification Toast --><div id="toast" class="toast"></div></div><script src="popup.js"></script></body></html>
+/* ===== TADa for YouTube — Minimal Material You Style ===== */
+
+:root {
+  --brand: #e8930c;
+  --brand-dim: rgba(232, 147, 12, 0.12);
+  --brand-text: #b46200;
+
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f5f5f5;
+  --border: #ebebeb;
+  --border-focus: rgba(232, 147, 12, 0.4);
+
+  --text-1: #1a1a1a;
+  --text-2: #666666;
+  --text-3: #9e9e9e;
+
+  --green: #2e7d32;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== RESET & BASE STYLES ===== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 385px;
+  height: 520px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+/* ===== VIEWPORT & SLIDER ===== */
+
+.popup-viewport {
+  width: 385px;
+  height: 520px;
+  overflow: hidden;
+  position: relative;
+}
+
+.views-slider {
+  display: flex;
+  width: 770px;
+  height: 100%;
+  transform: translateX(0);
+  transition: transform 0.28s var(--ease);
+  will-change: transform;
+}
+
+.views-slider.show-detail {
+  transform: translateX(-385px);
+}
+
+.view-screen {
+  width: 385px;
+  height: 100%;
+  flex: 0 0 385px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 14px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.view-screen::-webkit-scrollbar {
+  width: 4px;
+}
+
+.view-screen::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+/* ===== HEADER ===== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+.brand-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.brand-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-1);
+  letter-spacing: -0.3px;
+}
+
+.brand-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-text);
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon-top {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.btn-icon-top svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-icon-top:hover {
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  border-color: var(--border-focus);
+}
+
+/* ===== STATUS BAR ===== */
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.status-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.status-always-on {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--green);
+  background: rgba(46, 125, 50, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.blocked-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-text);
+}
+
+.blocked-unit {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.btn-reset {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s;
+  padding: 0;
+}
+
+.btn-reset svg {
+  width: 13px;
+  height: 13px;
+}
+
+.btn-reset:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+/* ===== SECTION HEADER ===== */
+
+.section-hdr {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.section-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  flex: 1;
+}
+
+.global-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-dim);
+  padding: 1.5px 7px;
+  border-radius: 20px;
+}
+
+.section-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ===== CHIPS ===== */
+
+.btn-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-chip:hover {
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  border-color: var(--border-focus);
+}
+
+.btn-chip-off {
+  color: var(--text-3);
+}
+
+/* ===== CATEGORY LIST ===== */
+
+.cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.cat-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.cat-row:hover {
+  background: var(--brand-dim);
+  border-color: var(--border-focus);
+}
+
+.cat-row:active {
+  opacity: 0.8;
+}
+
+.cat-icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cat-icon-wrap svg {
+  width: 15px;
+  height: 15px;
+}
+
+.brand-bg {
+  background: var(--brand-dim);
+  color: var(--brand-text);
+}
+
+.bm-bg {
+  background: rgba(232, 147, 12, 0.08);
+  color: var(--brand-text);
+}
+
+.cat-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.cat-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: var(--surface-2);
+  padding: 1px 7px;
+  border-radius: 20px;
+  min-width: 24px;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.cat-pill.has-active {
+  color: var(--brand-text);
+  background: var(--brand-dim);
+}
+
+.bm-count-badge {
+  font-size: 11px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.chevron-r {
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition:
+    transform 0.15s,
+    color 0.15s;
+}
+
+.cat-row:hover .chevron-r {
+  transform: translateX(2px);
+  color: var(--brand-text);
+}
+
+.bm-row {
+  margin-top: 2px;
+}
+
+/* ===== SUB-VIEW HEADER ===== */
+
+.sub-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.btn-back {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-back svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-back:hover {
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  border-color: var(--border-focus);
+}
+
+.sub-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+  flex: 1;
+}
+
+.sub-hdr-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.sub-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-dim);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ===== FEATURE PANELS ===== */
+
+.feat-panel {
+  display: none;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex: 1;
+}
+
+.feat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.feat-row:last-child {
+  border-bottom: none;
+}
+
+.feat-row:hover {
+  background: var(--surface-2);
+}
+
+.feat-expandable {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.feat-main-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.feat-icon-sm {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feat-icon-sm svg {
+  width: 13px;
+  height: 13px;
+}
+
+.feat-name {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+/* ===== AMBIENT SLIDERS ===== */
+
+.ambient-sub-settings {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s var(--ease);
+}
+
+.ambient-sub-settings.show {
+  grid-template-rows: 1fr;
+}
+
+.ambient-sub-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  transition: padding 0.25s var(--ease);
+}
+
+.ambient-sub-settings.show .ambient-sub-inner {
+  padding: 8px 0 4px 0;
+}
+
+.ambient-slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ambient-slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.ambient-val-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-dim);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.ambient-range-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  accent-color: var(--brand);
+}
+
+.ambient-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--brand);
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== TOGGLE SWITCH ===== */
+
+.toggle-wrap {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle-checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #d5d5d5;
+  border-radius: 20px;
+  transition: background 0.22s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.22s var(--ease);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+  background: var(--brand);
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+  transform: translateX(16px);
+}
+
+.toggle-slider.locked {
+  background: var(--green) !important;
+  cursor: not-allowed;
+}
+
+.toggle-slider.locked::before {
+  transform: translateX(16px);
+}
+
+/* ===== SUB FOOTER ===== */
+
+.sub-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
+.btn-reload-sub {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px;
+  background: var(--brand);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-reload-sub svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-reload-sub:hover {
+  opacity: 0.88;
+}
+
+/* ===== BOOKMARKS MODAL ===== */
+
+.bm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 900;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.bm-modal-backdrop.show {
+  display: flex;
+  opacity: 1;
+}
+
+.bm-modal {
+  width: 100%;
+  max-height: 86vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transform: scale(0.96);
+  transition: transform 0.2s var(--ease);
+}
+
+.bm-modal-backdrop.show .bm-modal {
+  transform: scale(1);
+}
+
+.bm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bm-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.modal-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--brand-text);
+}
+
+.btn-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.btn-modal-close:hover {
+  color: var(--text-1);
+  background: var(--surface-2);
+}
+
+.bm-modal-body {
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bm-video-group {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bm-video-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bm-video-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.btn-del-video-bm {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.btn-del-video-bm:hover {
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.08);
+}
+
+.bm-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bm-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  padding: 5px 7px;
+  background: var(--surface);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.bm-item-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bm-pill-time {
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  font-weight: 700;
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.bm-pill-time:hover {
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.bm-item-note-text {
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-del-single-bm {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.btn-del-single-bm:hover {
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.08);
+}
+
+.bm-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.bm-empty-modal {
+  text-align: center;
+  padding: 28px 10px;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+/* ===== BUTTONS ===== */
+
+.btn-subtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-subtle:hover {
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  border-color: var(--border-focus);
+}
+
+.btn-danger {
+  color: #c62828 !important;
+}
+
+.btn-danger:hover {
+  background: rgba(198, 40, 40, 0.08) !important;
+  border-color: rgba(198, 40, 40, 0.3) !important;
+}
+
+/* ===== ABOUT MODAL ===== */
+
+.about-bg {
+  background: rgba(124, 58, 237, 0.12);
+  color: #7C3AED;
+}
+
+.about-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.about-row-sub {
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.about-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 950;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.about-modal-backdrop.show {
+  display: flex;
+  opacity: 1;
+}
+
+.about-modal {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  transform: scale(0.95);
+  transition: transform 0.2s var(--ease);
+}
+
+.about-modal-backdrop.show .about-modal {
+  transform: scale(1);
+}
+
+.about-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.about-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.about-logo-mini {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.about-modal-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.about-hero-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 12px;
+}
+
+.about-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.about-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: var(--brand-dim);
+  color: var(--brand-text);
+  padding: 1.5px 6px;
+  border-radius: 12px;
+}
+
+.about-ver {
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+.about-app-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+
+.about-app-desc {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.about-dev-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.dev-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E8930C, #F59E0B);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(232, 147, 12, 0.35);
+  flex-shrink: 0;
+}
+
+.dev-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dev-role {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+.dev-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-1);
+}
+
+.dev-team {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-text);
+}
+
+.about-links-section {
+  margin-top: 1px;
+}
+
+.btn-github-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  text-decoration: none;
+  transition: all 0.16s var(--ease);
+  cursor: pointer;
+}
+
+.btn-github-link:hover {
+  background: var(--brand-dim);
+  border-color: var(--border-focus);
+  color: var(--brand-text);
+  transform: translateY(-1px);
+}
+
+.btn-github-link svg {
+  flex-shrink: 0;
+}
+
+.github-link-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.github-link-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.github-link-url {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+.arrow-icon {
+  color: var(--text-3);
+  transition: transform 0.15s;
+}
+
+.btn-github-link:hover .arrow-icon {
+  transform: translateX(2px);
+  color: var(--brand-text);
+}
+
+.about-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.about-copyright {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+/* ===== TOAST ===== */
+
+.toast {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(50px);
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s var(--ease);
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ===== DARK MODE ===== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --surface: #1e1e1e;
+    --surface-2: #2a2a2a;
+    --border: #333333;
+    --border-focus: rgba(232, 147, 12, 0.5);
+
+    --text-1: #f0f0f0;
+    --text-2: #a0a0a0;
+    --text-3: #666666;
+
+    --brand-text: #f59e0b;
+    --brand-dim: rgba(232, 147, 12, 0.14);
+  }
+
+  .toggle-slider {
+    background: #444444;
+  }
+
+  .bm-modal,
+  .about-modal {
+    background: #1e1e1e;
+    border-color: #333333;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  }
+
+  .about-hero-card,
+  .about-modal-footer,
+  .btn-github-link {
+    background: #262626;
+    border-color: #333333;
+  }
+
+  .about-dev-card {
+    background: #1e1e1e;
+    border-color: #333333;
+  }
+
+  .toast {
+    background: #f0f0f0;
+    color: #1a1a1a;
+  }
+}

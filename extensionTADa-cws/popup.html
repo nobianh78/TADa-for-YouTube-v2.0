@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TADa for YouTube</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-viewport">
+    <div class="views-slider" id="views-slider">
+
+      <!-- ===== SCREEN 1: MAIN ===== -->
+      <div class="view-screen" id="view-main">
+
+        <!-- Header -->
+        <header class="header">
+          <div class="logo-wrap">
+            <img class="app-icon" src="icons/icon128.png" alt="TADa">
+            <div>
+              <div class="brand-row">
+                <span class="brand-name">TADa</span>
+                <span class="brand-tag">for YouTube</span>
+              </div>
+              <div class="brand-sub">Tùy chỉnh thông minh</div>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button id="btn-header-about" class="btn-icon-top" title="Giới thiệu TADa & Tác giả">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </button>
+            <button id="btn-reload-tab" class="btn-icon-top" title="Tải lại tab YouTube">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Ad Block Status Bar -->
+        <div class="status-row">
+          <div class="status-left">
+            <span class="status-dot"></span>
+            <span class="status-label">Chặn quảng cáo</span>
+            <span class="status-always-on">LUÔN BẬT</span>
+          </div>
+          <div class="status-right">
+            <span class="blocked-num" id="blocked-count">0</span>
+            <span class="blocked-unit">đã chặn</span>
+            <button id="btn-reset-stats" class="btn-reset" title="Đặt lại">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category List -->
+        <div class="section-hdr">
+          <span class="section-label">Tính năng</span>
+          <span class="global-count" id="active-features-count">13/13</span>
+          <div class="section-actions">
+            <button id="btn-enable-all" class="btn-chip">Bật hết</button>
+            <button id="btn-disable-all" class="btn-chip">Tắt hết</button>
+          </div>
+        </div>
+
+        <div class="cat-list">
+          <!-- Player -->
+          <button class="cat-row" data-category="player">
+            <div class="cat-icon-wrap brand-bg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+            <span class="cat-label">Trình phát &amp; Âm thanh</span>
+            <span class="cat-pill" id="cat-count-player">5</span>
+            <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          <!-- Tools -->
+          <button class="cat-row" data-category="tools">
+            <div class="cat-icon-wrap brand-bg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <span class="cat-label">Công cụ &amp; Tiện ích</span>
+            <span class="cat-pill" id="cat-count-tools">2</span>
+            <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          <!-- Layout -->
+          <button class="cat-row" data-category="layout">
+            <div class="cat-icon-wrap brand-bg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+                <line x1="9" y1="21" x2="9" y2="9"/>
+              </svg>
+            </div>
+            <span class="cat-label">Giao diện &amp; Tập trung</span>
+            <span class="cat-pill" id="cat-count-layout">6</span>
+            <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Bookmarks -->
+        <button class="cat-row bm-row" id="btn-open-bm-modal">
+          <div class="cat-icon-wrap bm-bg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <span class="cat-label">Thư viện Bookmarks</span>
+          <span class="bm-count-badge" id="bm-lib-summary">0 mốc</span>
+          <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <!-- About TADa -->
+        <button class="cat-row about-row" id="btn-open-about-modal">
+          <div class="cat-icon-wrap about-bg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
+          <div class="about-row-text">
+            <span class="cat-label">Giới thiệu TADa</span>
+            <span class="about-row-sub">Nguyễn Tuấn Anh • TADa Team</span>
+          </div>
+          <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+      </div><!-- end view-main -->
+
+      <!-- ===== SCREEN 2: DETAIL ===== -->
+      <div class="view-screen" id="view-detail">
+
+        <!-- Sub Header -->
+        <div class="sub-hdr">
+          <button class="btn-back" id="btn-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span class="sub-title" id="sub-header-title">Trình phát</span>
+          <div class="sub-hdr-right">
+            <span class="sub-badge" id="sub-count-badge">5/5</span>
+            <button id="btn-sub-enable-all" class="btn-chip">Bật</button>
+            <button id="btn-sub-disable-all" class="btn-chip btn-chip-off">Tắt</button>
+          </div>
+        </div>
+
+        <!-- Feature Panels -->
+        <!-- PANEL: player -->
+        <div class="feat-panel" id="panel-player">
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            </div>
+            <span class="feat-name">Booster âm lượng 500%</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-superVolume" class="toggle-checkbox">
+              <label for="toggle-superVolume" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row feat-expandable" id="feature-ambientLight-item">
+            <div class="feat-main-row">
+              <div class="feat-icon-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              </div>
+              <span class="feat-name">Ambient Light</span>
+              <div class="toggle-wrap">
+                <input type="checkbox" id="toggle-ambientLight" class="toggle-checkbox">
+                <label for="toggle-ambientLight" class="toggle-slider"></label>
+              </div>
+            </div>
+            <div class="ambient-sub-settings" id="ambient-sub-settings">
+              <div class="ambient-sub-inner">
+                <div class="ambient-slider-row">
+                  <div class="ambient-slider-label">
+                    <span>Độ sáng</span>
+                    <span class="ambient-val-badge" id="ambient-brightness-val">100%</span>
+                  </div>
+                  <input type="range" id="ambient-brightness" class="ambient-range-slider" min="50" max="200" step="5" value="100">
+                </div>
+                <div class="ambient-slider-row">
+                  <div class="ambient-slider-label">
+                    <span>Lan tỏa</span>
+                    <span class="ambient-val-badge" id="ambient-spread-val">100%</span>
+                  </div>
+                  <input type="range" id="ambient-spread" class="ambient-range-slider" min="50" max="200" step="5" value="100">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <span class="feat-name">Tốc độ phát (0.1x – 4x)</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-customSpeed" class="toggle-checkbox">
+              <label for="toggle-customSpeed" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="15" rx="2"/>
+                <rect x="12" y="10" width="8" height="6" rx="1" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <span class="feat-name">Hình trong hình (PiP)</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-pipButton" class="toggle-checkbox">
+              <label for="toggle-pipButton" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/>
+                <path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>
+              </svg>
+            </div>
+            <span class="feat-name">Lặp đoạn A-B</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-abLooper" class="toggle-checkbox">
+              <label for="toggle-abLooper" class="toggle-slider"></label>
+            </div>
+          </div>
+
+        </div><!-- end panel-player -->
+
+        <!-- PANEL: tools -->
+        <div class="feat-panel" id="panel-tools">
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <span class="feat-name">Chụp ảnh màn hình (4K)</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-videoScreenshot" class="toggle-checkbox">
+              <label for="toggle-videoScreenshot" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <span class="feat-name">Đánh dấu mốc &amp; Ghi chú</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-videoBookmarks" class="toggle-checkbox">
+              <label for="toggle-videoBookmarks" class="toggle-slider"></label>
+            </div>
+          </div>
+
+        </div><!-- end panel-tools -->
+
+        <!-- PANEL: layout -->
+        <div class="feat-panel" id="panel-layout">
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+            </div>
+            <span class="feat-name">Lọc gợi ý Sidebar</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-curateSidebar" class="toggle-checkbox">
+              <label for="toggle-curateSidebar" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <span class="feat-name">Lưới 4 video / hàng</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-fourColumnGrid" class="toggle-checkbox">
+              <label for="toggle-fourColumnGrid" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+                <line x1="4" y1="4" x2="20" y2="20" stroke-width="2.5" stroke="#E8930C"/>
+              </svg>
+            </div>
+            <span class="feat-name">Ẩn YouTube Shorts</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-hideShorts" class="toggle-checkbox">
+              <label for="toggle-hideShorts" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+                <line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+              </svg>
+            </div>
+            <span class="feat-name">Ẩn màn hình kết thúc</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-hideEndScreens" class="toggle-checkbox">
+              <label for="toggle-hideEndScreens" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <span class="feat-name">Cố định bình luận</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-ensureComments" class="toggle-checkbox">
+              <label for="toggle-ensureComments" class="toggle-slider"></label>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/>
+                <line x1="4" y1="18" x2="18" y2="18"/>
+              </svg>
+            </div>
+            <span class="feat-name">Tự chọn thẻ lọc</span>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="toggle-autoSelectChips" class="toggle-checkbox">
+              <label for="toggle-autoSelectChips" class="toggle-slider"></label>
+            </div>
+          </div>
+
+        </div><!-- end panel-layout -->
+
+        <!-- Sub Footer -->
+        <div class="sub-footer">
+          <button id="btn-sub-reload-tab" class="btn-reload-sub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Làm mới trang
+          </button>
+        </div>
+
+      </div><!-- end view-detail -->
+    </div><!-- end views-slider -->
+
+    <!-- Modal: Bookmarks -->
+    <div class="bm-modal-backdrop" id="bm-modal-backdrop">
+      <div class="bm-modal">
+        <div class="bm-modal-header">
+          <div class="bm-modal-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="modal-icon">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Bookmarks đã lưu</span>
+          </div>
+          <button id="btn-close-bm-modal" class="btn-modal-close">×</button>
+        </div>
+        <div class="bm-modal-body" id="bm-modal-body"></div>
+        <div class="bm-modal-footer">
+          <button id="btn-export-all-bm" class="btn-subtle">Sao chép tất cả</button>
+          <button id="btn-clear-all-bm" class="btn-subtle btn-danger">Xóa hết</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Giới thiệu TADa -->
+    <div class="about-modal-backdrop" id="about-modal-backdrop">
+      <div class="about-modal">
+        <div class="about-modal-header">
+          <div class="about-modal-title">
+            <img class="about-logo-mini" src="icons/icon48.png" alt="TADa">
+            <span>Giới thiệu TADa for YouTube</span>
+          </div>
+          <button id="btn-close-about-modal" class="btn-modal-close" title="Đóng">×</button>
+        </div>
+        <div class="about-modal-body">
+          <div class="about-hero-card">
+            <div class="about-badge-row">
+              <span class="about-tag">Official Extension</span>
+              <span class="about-ver">v2.0.0</span>
+            </div>
+            <h3 class="about-app-title">TADa for YouTube</h3>
+            <p class="about-app-desc">
+              Tiện ích mở rộng thông minh, tối ưu trải nghiệm xem video YouTube sạch sẽ, không quảng cáo, tích hợp bộ công cụ hỗ trợ người dùng toàn diện. Thuộc hệ sinh thái <strong>TADa Manager</strong>.
+            </p>
+          </div>
+
+          <div class="about-dev-card">
+            <div class="dev-avatar">TA</div>
+            <div class="dev-info">
+              <span class="dev-role">Phát triển bởi</span>
+              <h4 class="dev-name">Nguyễn Tuấn Anh</h4>
+              <span class="dev-team">Thành viên Team TADa</span>
+            </div>
+          </div>
+
+          <div class="about-links-section">
+            <a href="https://github.com/nobianh78/TADa-for-YouTube-v2.0" target="_blank" rel="noopener noreferrer" class="btn-github-link" id="link-github-repo">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+              <div class="github-link-text">
+                <span class="github-link-title">Mã nguồn trên GitHub</span>
+                <span class="github-link-url">nobianh78/TADa-for-YouTube-v2.0</span>
+              </div>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" class="arrow-icon">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="about-modal-footer">
+          <span class="about-copyright">© 2026 TADa Team</span>
+          <button id="btn-close-about-modal-footer" class="btn-subtle">Đóng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

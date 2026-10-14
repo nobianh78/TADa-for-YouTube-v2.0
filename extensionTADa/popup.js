@@ -634,7 +634,47 @@ function initBookmarksModal() {
   loadBookmarksSummary();
 }
 
+function initAboutModal() {
+  const backdrop = document.getElementById("about-modal-backdrop");
+  const openBtn = document.getElementById("btn-open-about-modal");
+  const openHeaderBtn = document.getElementById("btn-header-about");
+  const closeBtn = document.getElementById("btn-close-about-modal");
+  const closeFooterBtn = document.getElementById("btn-close-about-modal-footer");
+  const githubLink = document.getElementById("link-github-repo");
+
+  function openModal() {
+    if (backdrop) backdrop.classList.add("show");
+  }
+  function closeModal() {
+    if (backdrop) backdrop.classList.remove("show");
+  }
+
+  if (openBtn) openBtn.addEventListener("click", openModal);
+  if (openHeaderBtn) openHeaderBtn.addEventListener("click", openModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (closeFooterBtn) closeFooterBtn.addEventListener("click", closeModal);
+
+  if (backdrop) {
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+  }
+
+  if (githubLink) {
+    githubLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetUrl = "https://github.com/nobianh78/TADa-for-YouTube-v2.0";
+      if (typeof chrome !== "undefined" && chrome.tabs && typeof chrome.tabs.create === "function") {
+        chrome.tabs.create({ url: targetUrl });
+      } else {
+        window.open(targetUrl, "_blank");
+      }
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadSettings();
   initEventListeners();
+  initAboutModal();
 });

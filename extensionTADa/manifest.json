@@ -6,10 +6,8 @@
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
-    "scripting",
     "activeTab",
     "storage",
-    "browsingData",
     "downloads"
   ],
   "host_permissions": [
