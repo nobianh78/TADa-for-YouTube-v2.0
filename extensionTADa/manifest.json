@@ -9,12 +9,15 @@
     "scripting",
     "activeTab",
     "storage",
-    "browsingData"
+    "browsingData",
+    "downloads"
   ],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://*.youtube.com/*",
-    "https://*.googlevideo.com/*"
+    "https://*.googlevideo.com/*",
+    "https://*.savenow.to/*",
+    "https://*.lbserver.xyz/*"
   ],
   "background": {
     "service_worker": "background.js"

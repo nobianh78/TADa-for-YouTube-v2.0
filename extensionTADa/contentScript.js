@@ -11,8 +11,11 @@ const DEFAULT_SETTINGS = {
   ensureComments: true,
   autoSelectChips: false,
   pipButton: true,
+  videoScreenshot: true,
+  customSpeed: true,
   abLooper: true,
-  videoBookmarks: true
+  videoBookmarks: true,
+  videoDownloader: true
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -30,6 +33,19 @@ const AMBIENT_CANVAS_DIFFUSE_ID = "tada-ambient-canvas-diffuse";
 const AMBIENT_CANVAS_GLOW_ID = "tada-ambient-canvas-glow";
 const PIP_BUTTON_STYLE_ID = "tada-pip-button-style";
 const PIP_BUTTON_ID = "tada-pip-button";
+const SCREENSHOT_BUTTON_STYLE_ID = "tada-screenshot-button-style";
+const SCREENSHOT_BUTTON_ID = "tada-screenshot-button";
+const SCREENSHOT_FLASH_ID = "tada-screenshot-flash";
+const SPEED_BUTTON_STYLE_ID = "tada-speed-button-style";
+const SPEED_BUTTON_ID = "tada-speed-btn";
+const SPEED_HUD_ID = "tada-speed-hud";
+const SPEED_PRESET_MENU_ID = "tada-speed-preset-menu";
+const SPEED_MIN = 0.1;
+const SPEED_MAX = 4.0;
+const SPEED_DEFAULT = 1.0;
+const SPEED_STEP = 0.1;
+const SPEED_FINE_STEP = 0.05;
+const SPEED_STORAGE_KEY = "tada_custom_playback_rate";
 const AB_STYLE_ID = "tada-ab-style";
 const AB_BTN_ID = "tada-ab-btn";
 const AB_CLEAR_BTN_ID = "tada-ab-clear-btn";
@@ -42,6 +58,10 @@ const BOOKMARK_TRACK_ID = "tada-bookmark-track";
 const BOOKMARK_PANEL_ID = "tada-bookmark-panel";
 const BOOKMARK_TOAST_ID = "tada-bookmark-toast";
 const BOOKMARKS_STORAGE_KEY = "tada_video_bookmarks_v1";
+const DOWNLOAD_BUTTON_STYLE_ID = "tada-download-button-style";
+const DOWNLOAD_BUTTON_ID = "tada-download-btn";
+const DOWNLOAD_MODAL_ID = "tada-download-modal";
+const DOWNLOAD_TOAST_ID = "tada-download-toast";
 const AD_SELECTORS = [
   "ytd-promoted-video-renderer",
   "ytd-promoted-sparkles-text-search-renderer",
@@ -1144,10 +1164,10 @@ function syncVolumeUi() {
   const badge = panel.querySelector(".ctf-volume-badge");
   if (badge) {
     if (rounded >= 500) {
-      badge.textContent = "500% 🚀";
+      badge.textContent = "500% ";
       badge.className = "ctf-volume-badge ctf-badge-max";
     } else if (rounded > 100) {
-      badge.textContent = `${rounded}% 🔥`;
+      badge.textContent = `${rounded}% `;
       badge.className = "ctf-volume-badge ctf-badge-boost";
     } else {
       badge.textContent = `${rounded}%`;
@@ -1200,10 +1220,10 @@ function buildVolumeTrack(slider) {
     badge.className = "ctf-volume-badge";
     const rounded = Math.round(superVolumePercent);
     if (rounded >= 500) {
-      badge.textContent = "500% 🚀";
+      badge.textContent = "500% ";
       badge.className = "ctf-volume-badge ctf-badge-max";
     } else if (rounded > 100) {
-      badge.textContent = `${rounded}% 🔥`;
+      badge.textContent = `${rounded}% `;
       badge.className = "ctf-volume-badge ctf-badge-boost";
     } else {
       badge.textContent = `${rounded}%`;
@@ -2857,6 +2877,940 @@ function applyPipButtonSetting() {
   }
 }
 
+/* ===== TADa CLEAN VIDEO SCREENSHOT (HD / 4K) ===== */
+let screenshotControlInterval = null;
+let screenshotHotkeysBound = false;
+
+function triggerScreenshotFlash() {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  let flash = player.querySelector("#" + SCREENSHOT_FLASH_ID);
+  if (!flash) {
+    flash = document.createElement("div");
+    flash.id = SCREENSHOT_FLASH_ID;
+    flash.className = "tada-screenshot-flash";
+    player.appendChild(flash);
+  }
+
+  flash.classList.remove("flash-active");
+  void flash.offsetWidth;
+  flash.classList.add("flash-active");
+
+  setTimeout(() => {
+    flash.classList.remove("flash-active");
+  }, 350);
+}
+
+function secToFilenameTime(sec) {
+  if (sec === null || sec === undefined || isNaN(sec)) return "00-00";
+  const s = Math.floor(sec % 60);
+  const m = Math.floor((sec / 60) % 60);
+  const h = Math.floor(sec / 3600);
+  const pad = (n) => (n < 10 ? "0" + n : "" + n);
+  return h > 0 ? `${pad(h)}-${pad(m)}-${pad(s)}` : `${pad(m)}-${pad(s)}`;
+}
+
+function screenshotToast(msg) {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+  let t = player.querySelector("#tada-screenshot-toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "tada-screenshot-toast";
+    t.className = "tada-screenshot-toast";
+    player.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.remove("show");
+  void t.offsetWidth;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.classList.remove("show");
+  }, 2400);
+}
+
+async function takeVideoScreenshot({ copyToClipboard = false } = {}) {
+  const video = getMainVideoElement();
+  if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+    screenshotToast("Chưa tải xong khung hình video!");
+    return;
+  }
+
+  try {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      screenshotToast(" Không thể tạo khung vẽ canvas");
+      return;
+    }
+
+    ctx.drawImage(video, 0, 0, width, height);
+
+    // Hiệu ứng chớp sáng màn trập máy ảnh
+    triggerScreenshotFlash();
+
+    // Chuẩn bị tên file sạch
+    const rawTitle = typeof getCurrentVideoTitle === "function" ? getCurrentVideoTitle() : (document.title || "YouTube");
+    const safeTitle = rawTitle.replace(/[/\\?%*:|"<>]/g, "_").substring(0, 80).trim() || "YouTube";
+    const timeStr = secToFilenameTime(video.currentTime);
+    const filename = `[TADa] ${safeTitle} [${timeStr}] (${width}x${height}).png`;
+
+    if (copyToClipboard) {
+      try {
+        if (navigator.clipboard && typeof ClipboardItem !== "undefined") {
+          const blobPromise = new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("toBlob failed"));
+            }, "image/png");
+          });
+
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blobPromise })
+          ]);
+          screenshotToast(`Đã sao chép ảnh vào Clipboard (${width}x${height})`);
+          return;
+        }
+      } catch (clipErr) {
+        console.debug("[TADa] Clipboard write failed, falling back to download", clipErr);
+      }
+    }
+
+    // Tải ảnh về máy
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        screenshotToast("Không thể xuất dữ liệu ảnh blob");
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        a.remove();
+      }, 1500);
+
+      if (copyToClipboard) {
+        screenshotToast(`Đã tải ảnh (${width}x${height}) [Trình duyệt chặn Clipboard]`);
+      } else {
+        screenshotToast(`Đã lưu ảnh: ${width}x${height} [${timeStr}]`);
+      }
+    }, "image/png");
+
+  } catch (err) {
+    console.warn("[TADa] Lỗi chụp màn hình:", err);
+    screenshotToast("Không thể chụp ảnh màn hình");
+  }
+}
+
+function handleGlobalScreenshotHotkeys(event) {
+  if (!currentSettings.videoScreenshot) return;
+  if (event.defaultPrevented) return;
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key !== "s" && event.key !== "S") return;
+
+  if (shouldIgnoreKeyEvent(event) || event.target?.closest?.("ytd-comments, #comments, #search-input, [role='textbox']")) {
+    return;
+  }
+
+  const video = getMainVideoElement();
+  if (!video) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  takeVideoScreenshot({ copyToClipboard: event.shiftKey });
+}
+
+function ensureScreenshotHotkeys() {
+  if (screenshotHotkeysBound) return;
+  window.addEventListener("keydown", handleGlobalScreenshotHotkeys, true);
+  screenshotHotkeysBound = true;
+}
+
+function ensureScreenshotButton() {
+  if (!currentSettings.videoScreenshot || !isWatchPage()) {
+    removeScreenshotButton();
+    return;
+  }
+
+  const pipBtn = document.getElementById(PIP_BUTTON_ID);
+  const settingsBtn = document.querySelector(".ytp-settings-button");
+  const rightControls = document.querySelector(".ytp-right-controls") ||
+    settingsBtn?.closest?.(".ytp-right-controls") ||
+    settingsBtn?.parentElement;
+
+  if (!rightControls && !settingsBtn && !pipBtn) return;
+
+  let btn = document.getElementById(SCREENSHOT_BUTTON_ID);
+  if (!btn || !document.contains(btn)) {
+    if (btn) btn.remove();
+
+    btn = document.createElement("button");
+    btn.id = SCREENSHOT_BUTTON_ID;
+    btn.className = "ytp-button tada-screenshot-button";
+    btn.setAttribute("aria-label", "Chụp ảnh màn hình (S)");
+    btn.setAttribute("title", "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
+    btn.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+        <!-- Camera body -->
+        <path class="ytp-svg-fill" d="M10,12 L12.5,9.5 C13,9 13.8,8.5 14.5,8.5 L21.5,8.5 C22.2,8.5 23,9 23.5,9.5 L26,12 H27.5 C29.4,12 31,13.6 31,15.5 V25.5 C31,27.4 29.4,29 27.5,29 H8.5 C6.6,29 5,27.4 5,25.5 V15.5 C5,13.6 6.6,12 8.5,12 Z M8.5,14 C7.7,14 7,14.7 7,15.5 V25.5 C7,26.3 7.7,27 8.5,27 H27.5 C28.3,27 29,26.3 29,25.5 V15.5 C29,14.7 28.3,14 27.5,14 H25.2 C24.7,14 24.1,13.6 23.8,13.2 L21.8,10.7 C21.7,10.6 21.6,10.5 21.5,10.5 H14.5 C14.4,10.5 14.3,10.6 14.2,10.7 L12.2,13.2 C11.9,13.6 11.3,14 10.8,14 Z" fill="#fff"></path>
+        <!-- Lens outer ring -->
+        <circle cx="18" cy="20.5" r="5" stroke="#fff" stroke-width="2" fill="none"></circle>
+        <!-- Aperture center dot -->
+        <circle cx="18" cy="20.5" r="2.2" fill="#E8930C" class="tada-cam-inner"></circle>
+        <!-- Flash bulb -->
+        <circle cx="26" cy="16.5" r="1.3" fill="#fff"></circle>
+      </svg>
+    `;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      takeVideoScreenshot({ copyToClipboard: e.shiftKey });
+    });
+
+    btn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      takeVideoScreenshot({ copyToClipboard: true });
+    });
+
+    if (pipBtn && pipBtn.nextSibling) {
+      pipBtn.parentNode.insertBefore(btn, pipBtn.nextSibling);
+    } else if (pipBtn) {
+      pipBtn.parentNode.appendChild(btn);
+    } else if (settingsBtn && settingsBtn.nextSibling) {
+      settingsBtn.parentNode.insertBefore(btn, settingsBtn.nextSibling);
+    } else if (rightControls) {
+      const ref = rightControls.querySelector(".ytp-size-button") ||
+        rightControls.querySelector(".ytp-fullscreen-button") ||
+        null;
+      if (ref) {
+        rightControls.insertBefore(btn, ref);
+      } else {
+        rightControls.appendChild(btn);
+      }
+    }
+  } else if (pipBtn && btn.previousElementSibling !== pipBtn) {
+    pipBtn.insertAdjacentElement("afterend", btn);
+  }
+}
+
+function removeScreenshotButton() {
+  const btn = document.getElementById(SCREENSHOT_BUTTON_ID);
+  if (btn) btn.remove();
+}
+
+function startScreenshotButtonCheck() {
+  if (screenshotControlInterval) {
+    clearInterval(screenshotControlInterval);
+    screenshotControlInterval = null;
+  }
+  let count = 0;
+  ensureScreenshotButton();
+  screenshotControlInterval = setInterval(() => {
+    count++;
+    if (isWatchPage()) {
+      ensureScreenshotButton();
+    }
+    if (count > 25 && document.getElementById(SCREENSHOT_BUTTON_ID)) {
+      clearInterval(screenshotControlInterval);
+      screenshotControlInterval = null;
+    }
+  }, 300);
+}
+
+function applyScreenshotButtonSetting() {
+  const existingStyle = document.getElementById(SCREENSHOT_BUTTON_STYLE_ID);
+  if (currentSettings.videoScreenshot) {
+    if (!existingStyle) {
+      const style = document.createElement("style");
+      style.id = SCREENSHOT_BUTTON_STYLE_ID;
+      style.textContent = `
+        /* ===== TADa SCREENSHOT & FLASH EFFECT ===== */
+        .tada-screenshot-button {
+          position: relative;
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0;
+          width: 48px;
+          height: 100%;
+          opacity: 0.9;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          vertical-align: top;
+        }
+        .tada-screenshot-button:hover {
+          opacity: 1;
+        }
+        .tada-screenshot-button:active {
+          transform: scale(0.92);
+        }
+        .tada-screenshot-button svg {
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+        .tada-screenshot-button .tada-cam-inner {
+          transition: transform 0.2s ease, fill 0.2s ease;
+        }
+        .tada-screenshot-button:hover .tada-cam-inner {
+          transform-origin: 18px 20.5px;
+          transform: scale(1.2);
+        }
+        .tada-screenshot-flash {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: #ffffff;
+          opacity: 0;
+          pointer-events: none;
+          z-index: 999;
+          transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-screenshot-flash.flash-active {
+          opacity: 0.75;
+          transition: none;
+        }
+        .tada-screenshot-toast {
+          position: absolute;
+          top: 18px;
+          left: 50%;
+          transform: translate(-50%, -8px);
+          background: rgba(20, 16, 12, 0.94);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(232, 147, 12, 0.65);
+          color: #FDF6EC;
+          padding: 6px 16px;
+          border-radius: 16px;
+          font-size: 12px;
+          font-weight: 600;
+          font-family: "Roboto", "Segoe UI", sans-serif;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+          pointer-events: none;
+          opacity: 0;
+          z-index: 1000;
+          transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-screenshot-toast.show {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    ensureScreenshotHotkeys();
+    ensureScreenshotButton();
+    startScreenshotButtonCheck();
+  } else {
+    existingStyle?.remove();
+    removeScreenshotButton();
+    document.getElementById(SCREENSHOT_FLASH_ID)?.remove();
+  }
+}
+
+/* ===== TADa FINE PLAYBACK SPEED CONTROLLER (0.1x - 4.0x) ===== */
+let currentCustomSpeed = 1.0;
+let speedControlInterval = null;
+let speedHotkeysBound = false;
+let speedHudTimer = null;
+let speedPreferenceLoaded = false;
+
+async function loadStoredSpeedPreference() {
+  if (speedPreferenceLoaded) return;
+  try {
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      const data = await chrome.storage.local.get([SPEED_STORAGE_KEY]);
+      if (data && data[SPEED_STORAGE_KEY]) {
+        const rate = parseFloat(data[SPEED_STORAGE_KEY]);
+        if (!isNaN(rate) && rate >= SPEED_MIN && rate <= SPEED_MAX) {
+          currentCustomSpeed = Math.round(rate * 100) / 100;
+        }
+      }
+    }
+  } catch { }
+  speedPreferenceLoaded = true;
+}
+
+function showSpeedHud(rate) {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  let hud = player.querySelector("#" + SPEED_HUD_ID);
+  if (!hud) {
+    hud = document.createElement("div");
+    hud.id = SPEED_HUD_ID;
+    hud.className = "tada-speed-hud";
+    player.appendChild(hud);
+  }
+
+  const rateText = (Math.round(rate * 100) / 100).toFixed(rate % 1 === 0 ? 1 : 2) + "x";
+  const pct = Math.max(0, Math.min(100, ((rate - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100));
+
+  hud.innerHTML = `
+    <div class="tada-speed-hud-content">
+      <div class="tada-speed-hud-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="tada-speed-hud-icon">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span class="tada-speed-hud-val">${rateText}</span>
+      </div>
+      <div class="tada-speed-hud-bar">
+        <div class="tada-speed-hud-bar-fill" style="width: ${pct}%"></div>
+      </div>
+    </div>
+  `;
+
+  hud.classList.remove("show");
+  void hud.offsetWidth;
+  hud.classList.add("show");
+
+  clearTimeout(speedHudTimer);
+  speedHudTimer = setTimeout(() => {
+    hud.classList.remove("show");
+  }, 1100);
+}
+
+function updateSpeedButtonText() {
+  const btn = document.getElementById(SPEED_BUTTON_ID);
+  if (!btn) return;
+  const badge = btn.querySelector(".tada-speed-badge");
+  const rateText = (Math.round(currentCustomSpeed * 100) / 100).toFixed(currentCustomSpeed % 1 === 0 ? 1 : 2) + "x";
+  if (badge) {
+    badge.textContent = rateText;
+  }
+  btn.setAttribute("title", `Tốc độ: ${rateText} • Click: Menu • Chuột phải: 1.0x • Cuộn: ±0.05x • Phím [>] [<] [=]`);
+  if (Math.abs(currentCustomSpeed - 1.0) > 0.01) {
+    btn.classList.add("tada-speed-customized");
+  } else {
+    btn.classList.remove("tada-speed-customized");
+  }
+}
+
+function setCustomPlaybackRate(rate, { showHud = true, save = true } = {}) {
+  let targetRate = Math.round(rate * 100) / 100;
+  if (targetRate < SPEED_MIN) targetRate = SPEED_MIN;
+  if (targetRate > SPEED_MAX) targetRate = SPEED_MAX;
+
+  currentCustomSpeed = targetRate;
+
+  const video = getMainVideoElement();
+  if (video) {
+    video.playbackRate = targetRate;
+  }
+
+  updateSpeedButtonText();
+
+  if (showHud) {
+    showSpeedHud(targetRate);
+  }
+
+  if (save) {
+    try {
+      if (typeof chrome !== "undefined" && chrome.storage?.local) {
+        chrome.storage.local.set({ [SPEED_STORAGE_KEY]: targetRate }).catch(() => { });
+      }
+    } catch { }
+  }
+}
+
+function toggleSpeedPresetMenu() {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  let menu = player.querySelector("#" + SPEED_PRESET_MENU_ID);
+  if (menu) {
+    menu.remove();
+    return;
+  }
+
+  menu = document.createElement("div");
+  menu.id = SPEED_PRESET_MENU_ID;
+  menu.className = "tada-speed-menu";
+
+  const rateText = (Math.round(currentCustomSpeed * 100) / 100).toFixed(currentCustomSpeed % 1 === 0 ? 1 : 2) + "x";
+  const presets = [0.5, 0.75, 1.0, 1.15, 1.25, 1.35, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0];
+
+  menu.innerHTML = `
+    <div class="tada-speed-menu-header">
+      <div class="tada-speed-menu-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tada-speed-menu-icon">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span>Tốc độ phát vi chỉnh</span>
+      </div>
+      <span class="tada-speed-menu-current">${rateText}</span>
+    </div>
+    <div class="tada-speed-menu-stepper">
+      <button class="tada-speed-step-btn" data-delta="-0.1" title="Giảm 0.1x (Phím <)">- 0.1x</button>
+      <button class="tada-speed-step-btn reset" data-reset="1.0" title="Về 1.0x (Phím =)">1.0x chuẩn</button>
+      <button class="tada-speed-step-btn" data-delta="0.1" title="Tăng 0.1x (Phím >)">+ 0.1x</button>
+    </div>
+    <div class="tada-speed-menu-grid">
+      ${presets.map((p) => {
+    const isCurrent = Math.abs(currentCustomSpeed - p) < 0.02;
+    return `<button class="tada-speed-preset ${isCurrent ? "active" : ""}" data-speed="${p}">${p}x</button>`;
+  }).join("")}
+    </div>
+    <div class="tada-speed-menu-hint">
+      Phím: <b>&gt;</b> tăng · <b>&lt;</b> giảm · <b>=</b> đặt lại · Cuộn chuột ±0.05x
+    </div>
+  `;
+
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const presetBtn = e.target.closest("[data-speed]");
+    if (presetBtn) {
+      const spd = parseFloat(presetBtn.getAttribute("data-speed"));
+      setCustomPlaybackRate(spd);
+      menu.remove();
+      return;
+    }
+    const stepBtn = e.target.closest("[data-delta]");
+    if (stepBtn) {
+      const d = parseFloat(stepBtn.getAttribute("data-delta"));
+      setCustomPlaybackRate(currentCustomSpeed + d);
+      const cur = menu.querySelector(".tada-speed-menu-current");
+      if (cur) cur.textContent = (Math.round(currentCustomSpeed * 100) / 100).toFixed(currentCustomSpeed % 1 === 0 ? 1 : 2) + "x";
+      menu.querySelectorAll(".tada-speed-preset").forEach(btn => {
+        const p = parseFloat(btn.getAttribute("data-speed"));
+        btn.classList.toggle("active", Math.abs(currentCustomSpeed - p) < 0.02);
+      });
+      return;
+    }
+    const resetBtn = e.target.closest("[data-reset]");
+    if (resetBtn) {
+      setCustomPlaybackRate(1.0);
+      menu.remove();
+      return;
+    }
+  });
+
+  player.appendChild(menu);
+
+  const onOutsideClick = (evt) => {
+    if (!menu.contains(evt.target) && !evt.target.closest("#" + SPEED_BUTTON_ID)) {
+      menu.remove();
+      document.removeEventListener("click", onOutsideClick, true);
+    }
+  };
+  setTimeout(() => {
+    document.addEventListener("click", onOutsideClick, true);
+  }, 50);
+}
+
+function handleGlobalSpeedHotkeys(event) {
+  if (!currentSettings.customSpeed) return;
+  if (event.defaultPrevented) return;
+  if (event.ctrlKey || event.metaKey) return;
+
+  if (shouldIgnoreKeyEvent(event) || event.target?.closest?.("ytd-comments, #comments, #search-input, [role='textbox']")) {
+    return;
+  }
+
+  const key = event.key;
+  const code = event.code;
+
+  // '>' or 'Shift + .'
+  if (key === ">" || (event.shiftKey && (key === "." || code === "Period"))) {
+    event.preventDefault();
+    event.stopPropagation();
+    const step = event.altKey ? SPEED_FINE_STEP : SPEED_STEP;
+    setCustomPlaybackRate(currentCustomSpeed + step);
+    return;
+  }
+
+  // '<' or 'Shift + ,'
+  if (key === "<" || (event.shiftKey && (key === "," || code === "Comma"))) {
+    event.preventDefault();
+    event.stopPropagation();
+    const step = event.altKey ? SPEED_FINE_STEP : SPEED_STEP;
+    setCustomPlaybackRate(currentCustomSpeed - step);
+    return;
+  }
+
+  // '=' or '+' (reset to 1.0x)
+  if ((key === "=" && !event.shiftKey) || (code === "Equal" && !event.shiftKey)) {
+    event.preventDefault();
+    event.stopPropagation();
+    setCustomPlaybackRate(SPEED_DEFAULT);
+    return;
+  }
+}
+
+function ensureSpeedHotkeys() {
+  if (speedHotkeysBound) return;
+  window.addEventListener("keydown", handleGlobalSpeedHotkeys, true);
+  speedHotkeysBound = true;
+}
+
+function bindVideoSpeedListeners() {
+  const video = getMainVideoElement();
+  if (!video || video.dataset.tadaSpeedBound) return;
+  video.dataset.tadaSpeedBound = "true";
+
+  video.addEventListener("play", () => {
+    if (currentSettings.customSpeed && currentCustomSpeed !== 1.0) {
+      if (Math.abs(video.playbackRate - currentCustomSpeed) > 0.01) {
+        video.playbackRate = currentCustomSpeed;
+      }
+    }
+    updateSpeedButtonText();
+  });
+
+  video.addEventListener("ratechange", () => {
+    if (currentSettings.customSpeed) {
+      const actualRate = Math.round(video.playbackRate * 100) / 100;
+      if (Math.abs(currentCustomSpeed - actualRate) > 0.01) {
+        currentCustomSpeed = actualRate;
+        updateSpeedButtonText();
+      }
+    }
+  });
+}
+
+function ensureSpeedButton() {
+  if (!currentSettings.customSpeed || !isWatchPage()) {
+    removeSpeedButton();
+    return;
+  }
+
+  const settingsBtn = document.querySelector(".ytp-settings-button");
+  const rightControls = document.querySelector(".ytp-right-controls") ||
+    settingsBtn?.closest?.(".ytp-right-controls") ||
+    settingsBtn?.parentElement;
+
+  if (!rightControls && !settingsBtn) return;
+
+  let btn = document.getElementById(SPEED_BUTTON_ID);
+  if (!btn || !document.contains(btn)) {
+    if (btn) btn.remove();
+
+    btn = document.createElement("button");
+    btn.id = SPEED_BUTTON_ID;
+    btn.className = "ytp-button tada-speed-button";
+    btn.setAttribute("aria-label", "Tốc độ phát vi chỉnh");
+    btn.innerHTML = `<span class="tada-speed-badge">1.0x</span>`;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleSpeedPresetMenu();
+    });
+
+    btn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCustomPlaybackRate(1.0);
+    });
+
+    btn.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta = e.deltaY < 0 ? SPEED_FINE_STEP : -SPEED_FINE_STEP;
+      setCustomPlaybackRate(currentCustomSpeed + delta);
+    }, { passive: false });
+
+    if (settingsBtn) {
+      settingsBtn.parentNode.insertBefore(btn, settingsBtn);
+    } else if (rightControls) {
+      rightControls.insertBefore(btn, rightControls.firstChild);
+    }
+  }
+
+  updateSpeedButtonText();
+  bindVideoSpeedListeners();
+}
+
+function removeSpeedButton() {
+  const btn = document.getElementById(SPEED_BUTTON_ID);
+  if (btn) btn.remove();
+  document.getElementById(SPEED_PRESET_MENU_ID)?.remove();
+  document.getElementById(SPEED_HUD_ID)?.remove();
+}
+
+function startSpeedButtonCheck() {
+  if (speedControlInterval) {
+    clearInterval(speedControlInterval);
+    speedControlInterval = null;
+  }
+  let count = 0;
+  ensureSpeedButton();
+  speedControlInterval = setInterval(() => {
+    count++;
+    if (isWatchPage()) {
+      ensureSpeedButton();
+    }
+    if (count > 25 && document.getElementById(SPEED_BUTTON_ID)) {
+      clearInterval(speedControlInterval);
+      speedControlInterval = null;
+    }
+  }, 300);
+}
+
+function applyCustomSpeedSetting() {
+  const existingStyle = document.getElementById(SPEED_BUTTON_STYLE_ID);
+  if (currentSettings.customSpeed) {
+    if (!existingStyle) {
+      const style = document.createElement("style");
+      style.id = SPEED_BUTTON_STYLE_ID;
+      style.textContent = `
+        /* ===== TADa CUSTOM SPEED CONTROL ===== */
+        .tada-speed-button {
+          position: relative;
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0 4px;
+          min-width: 44px;
+          height: 100%;
+          opacity: 0.9;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          vertical-align: top;
+        }
+        .tada-speed-button:hover {
+          opacity: 1;
+        }
+        .tada-speed-button:active {
+          transform: scale(0.94);
+        }
+        .tada-speed-badge {
+          font-family: "Roboto", "Segoe UI", sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          color: #ffffff;
+          padding: 2px 6px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.12);
+          transition: all 0.2s ease;
+          letter-spacing: 0.2px;
+        }
+        .tada-speed-button:hover .tada-speed-badge {
+          background: rgba(232, 147, 12, 0.25);
+          color: #FDF6EC;
+        }
+        .tada-speed-button.tada-speed-customized .tada-speed-badge {
+          background: rgba(232, 147, 12, 0.28);
+          color: #E8930C;
+          border: 1px solid rgba(232, 147, 12, 0.55);
+        }
+
+        /* Speed HUD */
+        .tada-speed-hud {
+          position: absolute;
+          top: 36px;
+          right: 28px;
+          background: rgba(20, 16, 12, 0.92);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(232, 147, 12, 0.65);
+          border-radius: 14px;
+          padding: 10px 18px;
+          box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+          pointer-events: none;
+          opacity: 0;
+          transform: translateY(-8px) scale(0.96);
+          z-index: 1000;
+          transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-speed-hud.show {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        .tada-speed-hud-content {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          min-width: 90px;
+        }
+        .tada-speed-hud-top {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+        .tada-speed-hud-icon {
+          width: 18px;
+          height: 18px;
+          color: #E8930C;
+        }
+        .tada-speed-hud-val {
+          font-family: "Roboto", "Segoe UI", sans-serif;
+          font-size: 19px;
+          font-weight: 800;
+          color: #FDF6EC;
+          letter-spacing: 0.5px;
+        }
+        .tada-speed-hud-bar {
+          width: 100%;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 2px;
+          overflow: hidden;
+        }
+        .tada-speed-hud-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #E8930C, #F59E0B);
+          border-radius: 2px;
+          transition: width 0.12s ease;
+        }
+
+        /* Speed Preset Floating Menu */
+        .tada-speed-menu {
+          position: absolute;
+          bottom: 56px;
+          right: 120px;
+          width: 250px;
+          background: rgba(20, 16, 12, 0.96);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(232, 147, 12, 0.55);
+          border-radius: 14px;
+          padding: 12px;
+          box-shadow: 0 16px 36px rgba(0,0,0,0.75);
+          z-index: 1001;
+          font-family: "Roboto", "Segoe UI", sans-serif;
+          color: #FDF6EC;
+          animation: tadaSlideUp 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes tadaSlideUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .tada-speed-menu-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          margin-bottom: 10px;
+        }
+        .tada-speed-menu-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #D1D5DB;
+        }
+        .tada-speed-menu-icon {
+          width: 14px;
+          height: 14px;
+          color: #E8930C;
+        }
+        .tada-speed-menu-current {
+          font-size: 13px;
+          font-weight: 800;
+          color: #E8930C;
+          background: rgba(232, 147, 12, 0.16);
+          padding: 2px 7px;
+          border-radius: 8px;
+        }
+        .tada-speed-menu-stepper {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+        .tada-speed-step-btn {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #FDF6EC;
+          padding: 5px 0;
+          font-size: 11px;
+          font-weight: 600;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .tada-speed-step-btn:hover {
+          background: rgba(232, 147, 12, 0.22);
+          border-color: rgba(232, 147, 12, 0.5);
+          color: #E8930C;
+        }
+        .tada-speed-step-btn.reset {
+          color: #E8930C;
+        }
+        .tada-speed-menu-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+        .tada-speed-preset {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #E5E7EB;
+          padding: 6px 0;
+          font-size: 11px;
+          font-weight: 600;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .tada-speed-preset:hover {
+          background: rgba(232, 147, 12, 0.2);
+          border-color: rgba(232, 147, 12, 0.4);
+          color: #FFFFFF;
+        }
+        .tada-speed-preset.active {
+          background: #E8930C;
+          border-color: #E8930C;
+          color: #1A1410;
+          font-weight: 700;
+        }
+        .tada-speed-menu-hint {
+          font-size: 10px;
+          color: #9CA3AF;
+          text-align: center;
+          padding-top: 6px;
+          border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .tada-speed-menu-hint b {
+          color: #FDF6EC;
+        }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    loadStoredSpeedPreference().then(() => {
+      ensureSpeedHotkeys();
+      ensureSpeedButton();
+      startSpeedButtonCheck();
+      const video = getMainVideoElement();
+      if (video && currentCustomSpeed !== 1.0) {
+        video.playbackRate = currentCustomSpeed;
+      }
+    });
+  } else {
+    existingStyle?.remove();
+    removeSpeedButton();
+  }
+}
+
 
 /* ===== TADa SMART A-B LOOPER ===== */
 const ab = { a: null, b: null, on: false };
@@ -2927,16 +3881,16 @@ function abSetB(time) {
   if (!v) return;
   const t = typeof time === "number" ? time : v.currentTime;
   if (ab.a === null) ab.a = 0;
-  if (t <= ab.a) { abToast("⚠ B phải sau A"); return; }
+  if (t <= ab.a) { abToast("Điểm B phải sau điểm A"); return; }
   ab.b = parseFloat(t.toFixed(1));
   ab.on = true;
   abStartLoop();
   abUpdateAll();
-  abToast("🔁 Đang lặp");
+  abToast("Đang lặp đoạn");
 }
 
 function abToggle() {
-  if (ab.a === null || ab.b === null) { abToast("⚠ Cần đặt cả A và B"); return; }
+  if (ab.a === null || ab.b === null) { abToast("Cần đặt cả hai điểm A và B"); return; }
   ab.on = !ab.on;
   ab.on ? abStartLoop() : abStopLoop();
   if (ab.on) {
@@ -2944,7 +3898,7 @@ function abToggle() {
     if (v && (v.currentTime < ab.a || v.currentTime >= ab.b)) v.currentTime = ab.a;
   }
   abUpdateAll();
-  abToast(ab.on ? "🔁 Đang lặp" : "⏸ Đang tắt");
+  abToast(ab.on ? "Đang lặp đoạn" : "Đã tắt lặp đoạn");
 }
 
 function abReset() {
@@ -2953,7 +3907,7 @@ function abReset() {
   abStopLoop();
   abUpdateAll();
   abUpdatePickingUI();
-  abToast("✕ Đã xóa");
+  abToast("Đã xóa đoạn lặp");
 }
 
 /* --- Smart button click handler --- */
@@ -2971,7 +3925,7 @@ function abSmartClick() {
   abUpdateAll();
   abUpdatePickingUI();
   if (abPicking) {
-    abToast(ab.a === null ? "👆 Click trên thanh tua để chọn A" : "👆 Click trên thanh tua để chọn B");
+    abToast(ab.a === null ? "Nhấp trên thanh tua để chọn điểm A" : "Nhấp trên thanh tua để chọn điểm B");
   } else {
     abToast("Đã tắt chế độ chọn");
   }
@@ -2979,12 +3933,19 @@ function abSmartClick() {
 
 function abUpdatePickingUI() {
   const bar = document.querySelector(".ytp-progress-bar");
+  const container = document.querySelector(".ytp-progress-bar-container");
   if (bar) {
     bar.classList.toggle("tada-ab-picking", abPicking);
+  }
+  if (container) {
+    container.classList.toggle("tada-ab-picking", abPicking);
   }
   const btn = document.getElementById(AB_BTN_ID);
   if (btn) {
     btn.classList.toggle("picking", abPicking);
+  }
+  if (!abPicking && typeof removeTimelineGuide === "function") {
+    removeTimelineGuide();
   }
 }
 
@@ -3048,7 +4009,7 @@ function ensureAbBtn() {
       });
       btn.insertAdjacentElement("afterend", clearBtn);
     }
-    clearBtn.textContent = abPicking ? "✕ Hủy" : "✕ Xóa";
+    clearBtn.textContent = abPicking ? "Hủy" : "Xóa";
     clearBtn.title = abPicking ? "Hủy chọn mốc" : "Xóa mốc lặp";
   } else if (clearBtn) {
     clearBtn.remove();
@@ -3060,126 +4021,270 @@ function removeAbBtn() {
   document.getElementById(AB_CLEAR_BTN_ID)?.remove();
 }
 
-/* --- Timeline markers (draggable) --- */
+/* --- Timeline markers & Picking Guide --- */
+const TIMELINE_GUIDE_ID = "tada-timeline-picker-guide";
+let lastTimelineActionTime = 0;
+
+function updateTimelineGuide(time, duration, mode) {
+  const container = document.querySelector(".ytp-progress-bar-container") || document.querySelector(".ytp-progress-bar");
+  if (!container) return;
+
+  let guide = document.getElementById(TIMELINE_GUIDE_ID);
+  if (!guide || !document.contains(guide)) {
+    if (guide) guide.remove();
+    guide = document.createElement("div");
+    guide.id = TIMELINE_GUIDE_ID;
+    guide.className = "tada-timeline-picker-guide";
+    container.appendChild(guide);
+  }
+
+  const pct = Math.max(0, Math.min(100, (time / duration) * 100));
+  guide.style.left = `${pct}%`;
+
+  guide.className = `tada-timeline-picker-guide guide-${mode.toLowerCase()}`;
+  if (mode === "A") {
+    guide.textContent = `🎯 Chọn mốc A: ${abFmt(time)}`;
+  } else if (mode === "B") {
+    guide.textContent = `🎯 Chọn mốc B: ${abFmt(time)}`;
+  } else {
+    guide.textContent = `🔖 Chọn mốc ghi chú: ${typeof formatBookmarkTime === "function" ? formatBookmarkTime(time) : abFmt(time)}`;
+  }
+}
+
+function removeTimelineGuide() {
+  document.getElementById(TIMELINE_GUIDE_ID)?.remove();
+}
+
 function abTimeFromEvent(e) {
-  const bar = document.querySelector(".ytp-progress-bar");
+  const bar = document.querySelector(".ytp-progress-bar") || document.querySelector(".ytp-progress-bar-container");
   const v = getMainVideoElement();
-  if (!bar || !v || !v.duration) return null;
+  if (!bar || !v || !v.duration || isNaN(v.duration)) return null;
   const r = bar.getBoundingClientRect();
   if (r.width <= 0) return null;
-  return parseFloat((Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * v.duration).toFixed(1));
+  const ratio = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  return parseFloat((ratio * v.duration).toFixed(1));
 }
 
 function abSetupTimeline() {
+  const container = document.querySelector(".ytp-progress-bar-container");
   const bar = document.querySelector(".ytp-progress-bar");
-  if (!bar || bar.dataset.tadaAb) return;
-  bar.dataset.tadaAb = "1";
+  if (!container && !bar) return;
 
-  bar.addEventListener("click", (e) => {
+  const targets = [container, bar].filter(Boolean);
+
+  const handlePointerAction = (e) => {
+    // Nếu click vào pin A/B hoặc bookmark pin thì để handler kéo/mở pin xử lý
+    const pinOrRange = e.target.closest?.(".tada-ab-pin-a, .tada-ab-pin-b, .tada-ab-range, .tada-bm-pin");
+    if (pinOrRange) return;
+
+    const isAbShortcut = currentSettings.abLooper && (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey);
+    const isAbActive = currentSettings.abLooper && (abPicking || isAbShortcut);
+    const isBmActive = currentSettings.videoBookmarks && typeof bookmarkPicking !== "undefined" && bookmarkPicking;
+
+    if (!isAbActive && !isBmActive) return;
+
+    // Chặn YouTube scrub/seek ngay từ pointerdown/mousedown
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation?.();
+    lastTimelineActionTime = Date.now();
+
+    const t = abTimeFromEvent(e);
+    if (t === null) return;
+
     // 1. Chế độ chọn Bookmark / Note trên thanh tua
-    if (typeof bookmarkPicking !== "undefined" && bookmarkPicking && currentSettings.videoBookmarks) {
-      e.preventDefault();
-      e.stopPropagation();
-      const t = abTimeFromEvent(e);
-      if (t !== null) {
-        stopBookmarkPicking();
-        const v = getMainVideoElement();
-        if (v) v.currentTime = t;
-        openBookmarkInputModal(t);
-      }
+    if (isBmActive) {
+      stopBookmarkPicking();
+      removeTimelineGuide();
+      const v = getMainVideoElement();
+      if (v) v.currentTime = t;
+      openBookmarkInputModal(t);
       return;
     }
 
-    if (!currentSettings.abLooper) return;
-    // Shift/Alt+Click shortcuts always work
-    if (e.shiftKey) { e.preventDefault(); e.stopPropagation(); const t = abTimeFromEvent(e); if (t !== null) abSetA(t); return; }
-    if (e.altKey || e.ctrlKey || e.metaKey) { e.preventDefault(); e.stopPropagation(); const t = abTimeFromEvent(e); if (t !== null) abSetB(t); return; }
-    // Pick mode: intercept clicks to set A then B
+    // 2. Phím tắt Shift/Alt click cho A-B
+    if (e.shiftKey) { abSetA(t); return; }
+    if (e.altKey || e.ctrlKey || e.metaKey) { abSetB(t); return; }
+
+    // 3. Chế độ chọn A-B Looper
     if (abPicking) {
-      e.preventDefault(); e.stopPropagation();
-      const t = abTimeFromEvent(e);
-      if (t === null) return;
       if (ab.a === null) {
         abSetA(t);
-        abToast("Đã chọn A · Giờ click chọn mốc B");
+        abToast(`Đã chọn A (${abFmt(t)}) · Giờ click chọn mốc B`);
       } else {
         const timeA = ab.a;
         if (t < timeA) {
-          ab.a = t;
           ab.b = timeA;
+          ab.a = t;
         } else {
           ab.b = t;
         }
         ab.on = true;
         abPicking = false;
         abUpdatePickingUI();
+        removeTimelineGuide();
         const v = getMainVideoElement();
         if (v) v.currentTime = ab.a;
         abStartLoop();
-        abToast("🔁 Đang lặp");
+        abToast(`Đang lặp: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}`);
       }
       abUpdateAll();
+    }
+  };
+
+  const handleClick = (e) => {
+    const pinOrRange = e.target.closest?.(".tada-ab-pin-a, .tada-ab-pin-b, .tada-ab-range, .tada-bm-pin");
+    if (pinOrRange) return;
+
+    const isAbShortcut = currentSettings.abLooper && (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey);
+    const isAbActive = currentSettings.abLooper && (abPicking || isAbShortcut);
+    const isBmActive = currentSettings.videoBookmarks && typeof bookmarkPicking !== "undefined" && bookmarkPicking;
+
+    if (!isAbActive && !isBmActive) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation?.();
+
+    // Nếu pointerdown đã xử lý trong vòng 450ms thì bỏ qua click trùng lặp
+    if (Date.now() - lastTimelineActionTime < 450) return;
+    lastTimelineActionTime = Date.now();
+
+    const t = abTimeFromEvent(e);
+    if (t === null) return;
+
+    if (isBmActive) {
+      stopBookmarkPicking();
+      removeTimelineGuide();
+      const v = getMainVideoElement();
+      if (v) v.currentTime = t;
+      openBookmarkInputModal(t);
       return;
     }
-  }, true);
 
-  bar.addEventListener("mousedown", (e) => {
-    if (!currentSettings.abLooper) return;
-    const pinA = e.target.closest(".tada-ab-pin-a");
-    const pinB = e.target.closest(".tada-ab-pin-b");
-    const range = e.target.closest(".tada-ab-range");
-    if (!pinA && !pinB && !range) return;
+    if (e.shiftKey) { abSetA(t); return; }
+    if (e.altKey || e.ctrlKey || e.metaKey) { abSetB(t); return; }
 
-    e.preventDefault(); e.stopPropagation();
-    abDrag = {
-      type: pinA ? "A" : pinB ? "B" : "RANGE",
-      startX: e.clientX,
-      initA: ab.a ?? 0,
-      initB: ab.b ?? 0
-    };
-
-    const onMove = (me) => {
-      if (!abDrag) return;
-      me.preventDefault(); me.stopPropagation();
-      const bar2 = document.querySelector(".ytp-progress-bar");
-      const v = getMainVideoElement();
-      if (!bar2 || !v || !v.duration) return;
-      const rect = bar2.getBoundingClientRect();
-      if (rect.width <= 0) return;
-      const dur = v.duration;
-
-      if (abDrag.type === "A") {
-        let nA = parseFloat(((me.clientX - rect.left) / rect.width * dur).toFixed(1));
-        nA = Math.max(0, Math.min(nA, ab.b !== null ? ab.b - 0.2 : dur));
-        ab.a = nA;
-      } else if (abDrag.type === "B") {
-        let nB = parseFloat(((me.clientX - rect.left) / rect.width * dur).toFixed(1));
-        nB = Math.max(ab.a !== null ? ab.a + 0.2 : 0, Math.min(nB, dur));
-        ab.b = nB; ab.on = true;
-      } else if (abDrag.type === "RANGE") {
-        const delta = (me.clientX - abDrag.startX) / rect.width * dur;
-        const len = Math.max(0.5, abDrag.initB - abDrag.initA);
-        let nA = Math.max(0, Math.min(dur - len, abDrag.initA + delta));
-        ab.a = parseFloat(nA.toFixed(1));
-        ab.b = parseFloat((nA + len).toFixed(1));
+    if (abPicking) {
+      if (ab.a === null) {
+        abSetA(t);
+        abToast(`Đã chọn A (${abFmt(t)}) · Giờ click chọn mốc B`);
+      } else {
+        const timeA = ab.a;
+        if (t < timeA) {
+          ab.b = timeA;
+          ab.a = t;
+        } else {
+          ab.b = t;
+        }
+        ab.on = true;
+        abPicking = false;
+        abUpdatePickingUI();
+        removeTimelineGuide();
+        const v = getMainVideoElement();
+        if (v) v.currentTime = ab.a;
+        abStartLoop();
+        abToast(`Đang lặp: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}`);
       }
       abUpdateAll();
-      abToast(abDrag.type === "A" ? "A: " + abFmt(ab.a) : abDrag.type === "B" ? "B: " + abFmt(ab.b) : "Đoạn: " + abFmt(ab.a) + " ↔ " + abFmt(ab.b));
-    };
+    }
+  };
 
-    const onUp = (ue) => {
-      ue.preventDefault(); ue.stopPropagation();
-      document.removeEventListener("mousemove", onMove, true);
-      document.removeEventListener("mouseup", onUp, true);
-      abDrag = null;
-      if (ab.on) abStartLoop();
-      abUpdateAll();
-      abToast("🔁 Đang lặp");
-    };
+  // Hover guide khi đang ở chế độ picking
+  const handleMouseMove = (e) => {
+    const isAbActive = currentSettings.abLooper && abPicking;
+    const isBmActive = currentSettings.videoBookmarks && typeof bookmarkPicking !== "undefined" && bookmarkPicking;
+    if (!isAbActive && !isBmActive) {
+      removeTimelineGuide();
+      return;
+    }
 
-    document.addEventListener("mousemove", onMove, true);
-    document.addEventListener("mouseup", onUp, true);
-  }, true);
+    const t = abTimeFromEvent(e);
+    const v = getMainVideoElement();
+    if (t === null || !v || !v.duration) {
+      removeTimelineGuide();
+      return;
+    }
+
+    updateTimelineGuide(t, v.duration, isBmActive ? "BM" : (ab.a === null ? "A" : "B"));
+  };
+
+  const handleMouseLeave = () => {
+    removeTimelineGuide();
+  };
+
+  targets.forEach((el) => {
+    if (!el || el.dataset.tadaTimelineBound) return;
+    el.dataset.tadaTimelineBound = "true";
+
+    el.addEventListener("pointerdown", handlePointerAction, { capture: true, passive: false });
+    el.addEventListener("mousedown", handlePointerAction, { capture: true, passive: false });
+    el.addEventListener("click", handleClick, { capture: true, passive: false });
+    el.addEventListener("mousemove", handleMouseMove, { capture: true, passive: true });
+    el.addEventListener("mouseleave", handleMouseLeave, { capture: true, passive: true });
+  });
+
+  // Kéo thả mốc A, B và dải lặp Range
+  if (bar && !bar.dataset.tadaAbDragBound) {
+    bar.dataset.tadaAbDragBound = "true";
+    bar.addEventListener("mousedown", (e) => {
+      if (!currentSettings.abLooper) return;
+      const pinA = e.target.closest(".tada-ab-pin-a");
+      const pinB = e.target.closest(".tada-ab-pin-b");
+      const range = e.target.closest(".tada-ab-range");
+      if (!pinA && !pinB && !range) return;
+
+      e.preventDefault(); e.stopPropagation();
+      abDrag = {
+        type: pinA ? "A" : pinB ? "B" : "RANGE",
+        startX: e.clientX,
+        initA: ab.a ?? 0,
+        initB: ab.b ?? 0
+      };
+
+      const onMove = (me) => {
+        if (!abDrag) return;
+        me.preventDefault(); me.stopPropagation();
+        const bar2 = document.querySelector(".ytp-progress-bar");
+        const v = getMainVideoElement();
+        if (!bar2 || !v || !v.duration) return;
+        const rect = bar2.getBoundingClientRect();
+        if (rect.width <= 0) return;
+        const dur = v.duration;
+
+        if (abDrag.type === "A") {
+          let nA = parseFloat(((me.clientX - rect.left) / rect.width * dur).toFixed(1));
+          nA = Math.max(0, Math.min(nA, ab.b !== null ? ab.b - 0.2 : dur));
+          ab.a = nA;
+        } else if (abDrag.type === "B") {
+          let nB = parseFloat(((me.clientX - rect.left) / rect.width * dur).toFixed(1));
+          nB = Math.max(ab.a !== null ? ab.a + 0.2 : 0, Math.min(nB, dur));
+          ab.b = nB; ab.on = true;
+        } else if (abDrag.type === "RANGE") {
+          const delta = (me.clientX - abDrag.startX) / rect.width * dur;
+          const len = Math.max(0.5, abDrag.initB - abDrag.initA);
+          let nA = Math.max(0, Math.min(dur - len, abDrag.initA + delta));
+          ab.a = parseFloat(nA.toFixed(1));
+          ab.b = parseFloat((nA + len).toFixed(1));
+        }
+        abUpdateAll();
+        abToast(abDrag.type === "A" ? "A: " + abFmt(ab.a) : abDrag.type === "B" ? "B: " + abFmt(ab.b) : "Đoạn: " + abFmt(ab.a) + " ↔ " + abFmt(ab.b));
+      };
+
+      const onUp = (ue) => {
+        ue.preventDefault(); ue.stopPropagation();
+        document.removeEventListener("mousemove", onMove, true);
+        document.removeEventListener("mouseup", onUp, true);
+        abDrag = null;
+        if (ab.on) abStartLoop();
+        abUpdateAll();
+        abToast("Đang lặp đoạn");
+      };
+
+      document.addEventListener("mousemove", onMove, true);
+      document.addEventListener("mouseup", onUp, true);
+    }, true);
+  }
 }
 
 function abUpdateTrack() {
@@ -3349,11 +4454,64 @@ function applyAbLooperSetting() {
           transform: scale(0.94);
         }
 
-        /* Pick mode - progress bar glow */
+        /* Pick mode - progress bar glow & container cursor */
+        .ytp-progress-bar-container.tada-ab-picking,
         .ytp-progress-bar.tada-ab-picking {
           cursor: crosshair !important;
+        }
+        .ytp-progress-bar.tada-ab-picking {
           box-shadow: 0 0 0 2px #38bdf8, 0 0 12px rgba(56,189,248,0.6) !important;
           border-radius: 4px;
+        }
+
+        /* Timeline hover guide badge */
+        .tada-timeline-picker-guide {
+          position: absolute;
+          top: -28px;
+          transform: translateX(-50%);
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          pointer-events: none;
+          white-space: nowrap;
+          z-index: 1000;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+          transition: left 0.04s ease-out;
+        }
+        .tada-timeline-picker-guide.guide-a {
+          background: #38bdf8;
+          color: #0c4a6e;
+          border: 1px solid #7dd3fc;
+        }
+        .tada-timeline-picker-guide.guide-b {
+          background: #E8930C;
+          color: #1A1410;
+          border: 1px solid #fcd34d;
+        }
+        .tada-timeline-picker-guide.guide-bm {
+          background: #E8930C;
+          color: #1A1410;
+          border: 1px solid #fcd34d;
+        }
+        .tada-timeline-picker-guide::after {
+          content: "";
+          position: absolute;
+          bottom: -5px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+        }
+        .tada-timeline-picker-guide.guide-a::after {
+          border-top: 5px solid #38bdf8;
+        }
+        .tada-timeline-picker-guide.guide-b::after,
+        .tada-timeline-picker-guide.guide-bm::after {
+          border-top: 5px solid #E8930C;
         }
 
         /* Toast */
@@ -3361,26 +4519,27 @@ function applyAbLooperSetting() {
           position: absolute;
           top: 18px;
           left: 50%;
-          transform: translate(-50%, -8px);
-          background: rgba(20,16,12,0.92);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(232,147,12,0.6);
+          transform: translate(-50%, -14px) scale(0.96);
+          background: rgba(20, 16, 12, 0.94);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(232, 147, 12, 0.38);
           color: #FDF6EC;
-          padding: 5px 14px;
-          border-radius: 16px;
+          padding: 6px 16px;
+          border-radius: 9999px;
           font-size: 12px;
-          font-weight: 600;
-          font-family: "Roboto", "Segoe UI", sans-serif;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+          font-weight: 550;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 16px rgba(232, 147, 12, 0.12);
           pointer-events: none;
           opacity: 0;
-          transition: opacity 0.2s ease, transform 0.2s ease;
+          transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           z-index: 100;
           white-space: nowrap;
         }
         .tada-ab-toast.show {
           opacity: 1;
-          transform: translate(-50%, 0);
+          transform: translate(-50%, 0) scale(1);
         }
 
         /* Timeline track */
@@ -3530,7 +4689,7 @@ function bookmarkToast(msg) {
 function toggleBookmarkPicking() {
   if (bookmarkPicking) {
     stopBookmarkPicking();
-    bookmarkToast("✕ Đã hủy chọn mốc");
+    bookmarkToast("Đã hủy chọn mốc ghi chú");
   } else {
     startBookmarkPicking();
   }
@@ -3544,7 +4703,7 @@ function startBookmarkPicking() {
   bookmarkPicking = true;
   updateBookmarkButtonUI();
   bookmarkUpdatePickingUI();
-  bookmarkToast("👆 Click trên thanh tua để chọn mốc ghi chú (Esc để hủy)");
+  bookmarkToast("Nhấp trên thanh tua để chọn mốc (Esc để hủy)");
 }
 
 function stopBookmarkPicking() {
@@ -3555,12 +4714,19 @@ function stopBookmarkPicking() {
 
 function bookmarkUpdatePickingUI() {
   const bar = document.querySelector(".ytp-progress-bar");
+  const container = document.querySelector(".ytp-progress-bar-container");
   if (bar) {
     bar.classList.toggle("tada-bm-picking", bookmarkPicking);
+  }
+  if (container) {
+    container.classList.toggle("tada-bm-picking", bookmarkPicking);
   }
   const addBtn = document.getElementById(BOOKMARK_ADD_BTN_ID);
   if (addBtn) {
     addBtn.classList.toggle("picking", bookmarkPicking);
+  }
+  if (!bookmarkPicking && typeof removeTimelineGuide === "function") {
+    removeTimelineGuide();
   }
 }
 
@@ -3634,7 +4800,7 @@ async function saveNewBookmark(targetTime, noteText) {
     updateBookmarkButtonBadge();
     updateBookmarkPins();
     if (bookmarkPanelOpen) renderBookmarkPanelList();
-    bookmarkToast(`🏷️ Đã ghim [${formatBookmarkTime(roundedTime)}]: ${finalNote}`);
+    bookmarkToast(`Đã lưu mốc [${formatBookmarkTime(roundedTime)}]: ${finalNote}`);
   } catch (err) {
     console.error("[TADa] Failed to save bookmark", err);
   }
@@ -3656,7 +4822,7 @@ async function updateBookmarkNote(bmId, newNote) {
         currentVideoBookmarks = allBm[vId].items;
         updateBookmarkPins();
         if (bookmarkPanelOpen) renderBookmarkPanelList();
-        bookmarkToast("✏️ Đã cập nhật ghi chú!");
+        bookmarkToast("Đã cập nhật ghi chú");
       }
     }
   } catch (err) {
@@ -3684,7 +4850,7 @@ async function removeBookmark(bmId) {
       updateBookmarkButtonBadge();
       updateBookmarkPins();
       if (bookmarkPanelOpen) renderBookmarkPanelList();
-      bookmarkToast("🗑️ Đã xóa mốc thời gian");
+      bookmarkToast("Đã xóa mốc thời gian");
     }
   } catch (err) {
     console.error("[TADa] Failed to remove bookmark", err);
@@ -3699,15 +4865,15 @@ function exportBookmarksToMarkdown() {
   }
   const title = getCurrentVideoTitle();
   const url = `https://www.youtube.com/watch?v=${vId}`;
-  let md = `📌 **${title}**\n🔗 ${url}\n\n`;
+  let md = `**${title}**\n${url}\n\n`;
   currentVideoBookmarks.forEach((bm) => {
     md += `- [${formatBookmarkTime(bm.time)}](${url}&t=${Math.floor(bm.time)}s) - ${bm.note}\n`;
   });
 
   navigator.clipboard.writeText(md).then(() => {
-    bookmarkToast("📋 Đã chép Markdown vào bộ nhớ tạm!");
+    bookmarkToast("Đã sao chép Markdown vào clipboard");
   }).catch(() => {
-    bookmarkToast("❌ Không thể chép vào clipboard");
+    bookmarkToast("Không thể sao chép vào clipboard");
   });
 }
 
@@ -3736,17 +4902,17 @@ function openBookmarkInputModal(targetTime, existingItem = null) {
           </svg>
           <span>${isEdit ? "Chỉnh sửa ghi chú" : "Thêm ghi chú mốc thời gian"}</span>
         </div>
-        <button class="tada-bm-modal-btn-close" id="tada-bm-modal-close" title="Đóng (Esc)">✕</button>
+        <button class="tada-bm-modal-btn-close" id="tada-bm-modal-close" title="Đóng (Esc)">×</button>
       </div>
 
       <div class="tada-bm-modal-body">
         <div class="tada-bm-modal-time-row">
           <span class="tada-bm-modal-time-label">Mốc thời gian:</span>
-          <span class="tada-bm-modal-time-pill" title="Mốc thời gian ghi chú">⏱️ ${formatBookmarkTime(roundedTime)}</span>
+          <span class="tada-bm-modal-time-pill" title="Mốc thời gian ghi chú">${formatBookmarkTime(roundedTime)}</span>
         </div>
         <textarea id="tada-bm-modal-textarea" class="tada-bm-modal-textarea" placeholder="Nhập ghi chú cho mốc này... (Nhấn Enter để lưu)" rows="3" maxlength="250">${isEdit ? escapeBookmarkHtml(existingItem.note) : ""}</textarea>
         <div class="tada-bm-modal-hint">
-          <span>💡 Nhấn <b>Enter</b> để lưu · <b>Shift+Enter</b> xuống dòng · <b>Esc</b> để hủy</span>
+          <span>Nhấn <b>Enter</b> để lưu · <b>Shift+Enter</b> xuống dòng · <b>Esc</b> để hủy</span>
         </div>
       </div>
 
@@ -3857,10 +5023,11 @@ function ensureBookmarkButton() {
       toggleBookmarkPicking();
     });
 
-    if (pipBtn && pipBtn.nextSibling) {
-      pipBtn.parentNode.insertBefore(addBtn, pipBtn.nextSibling);
-    } else if (pipBtn) {
-      pipBtn.parentNode.appendChild(addBtn);
+    const anchorBtn = document.getElementById(DOWNLOAD_BUTTON_ID) || document.getElementById(SCREENSHOT_BUTTON_ID) || pipBtn;
+    if (anchorBtn && anchorBtn.nextSibling) {
+      anchorBtn.parentNode.insertBefore(addBtn, anchorBtn.nextSibling);
+    } else if (anchorBtn) {
+      anchorBtn.parentNode.appendChild(addBtn);
     } else if (settingsBtn && settingsBtn.nextSibling) {
       settingsBtn.parentNode.insertBefore(addBtn, settingsBtn.nextSibling);
     } else if (rightControls) {
@@ -4008,7 +5175,7 @@ function updateBookmarkPins() {
         if (video) {
           video.currentTime = time;
           video.play().catch(() => { });
-          bookmarkToast(`⏱️ Nhảy tới ${formatBookmarkTime(time)}`);
+          bookmarkToast(`Đã nhảy tới ${formatBookmarkTime(time)}`);
         }
       }
     });
@@ -4064,7 +5231,7 @@ function openBookmarkPanel() {
           Chép MD
         </button>
         <button id="tada-bm-btn-close" class="tada-bm-btn-action tada-bm-btn-close" title="Đóng panel (Esc hoặc B)">
-          ✕
+          ×
         </button>
       </div>
     </div>
@@ -4072,10 +5239,10 @@ function openBookmarkPanel() {
     <!-- Quick Action Bar -->
     <div class="tada-bm-add-bar">
       <button id="tada-bm-btn-pick-new" class="tada-bm-btn-pick-action" title="Bật chế độ click chọn mốc trên thanh tua">
-        👆 Chọn mốc trên thanh tua
+        Chọn mốc trên thanh tua
       </button>
       <button id="tada-bm-btn-curtime" class="tada-bm-time-pill" title="Thêm ghi chú ngay tại giây hiện tại của video">
-        + Ghim tại ⏱️ <span id="tada-bm-curtime-display">${formatBookmarkTime(curTime)}</span>
+        + Ghim tại <span id="tada-bm-curtime-display">${formatBookmarkTime(curTime)}</span>
       </button>
     </div>
 
@@ -4123,11 +5290,11 @@ function renderBookmarkPanelList() {
   if (currentVideoBookmarks.length === 0) {
     container.innerHTML = `
       <div class="tada-bm-empty">
-        <div class="tada-bm-empty-icon">📌</div>
+        <div class="tada-bm-empty-dot"></div>
         <div class="tada-bm-empty-text">Chưa có ghi chú nào cho video này</div>
-        <div class="tada-bm-empty-sub">Bấm nút bên dưới để chọn mốc trên thanh tua!</div>
+        <div class="tada-bm-empty-sub">Bấm nút bên dưới để chọn mốc trên thanh tua</div>
         <button id="tada-bm-empty-pick-btn" class="tada-bm-empty-btn">
-          👆 Chọn điểm trên thanh tua
+          Chọn điểm trên thanh tua
         </button>
       </div>
     `;
@@ -4146,17 +5313,17 @@ function renderBookmarkPanelList() {
     html += `
       <div class="tada-bm-item" data-id="${bm.id}">
         <button class="tada-bm-item-jump" data-time="${bm.time}" title="Nhảy tới ${formatBookmarkTime(bm.time)} và phát">
-          ⏱️ ${formatBookmarkTime(bm.time)}
+          ${formatBookmarkTime(bm.time)}
         </button>
         <div class="tada-bm-item-note" title="${escapeBookmarkHtml(bm.note)}">
           ${escapeBookmarkHtml(bm.note)}
         </div>
         <div class="tada-bm-item-actions">
           <button class="tada-bm-item-edit" data-id="${bm.id}" title="Chỉnh sửa ghi chú này">
-            ✏️
+            Sửa
           </button>
           <button class="tada-bm-item-delete" data-id="${bm.id}" title="Xóa mốc này">
-            ✕
+            ×
           </button>
         </div>
       </div>
@@ -4173,7 +5340,7 @@ function renderBookmarkPanelList() {
         if (video) {
           video.currentTime = time;
           video.play().catch(() => { });
-          bookmarkToast(`⏱️ Nhảy tới ${formatBookmarkTime(time)}`);
+          bookmarkToast(`Đã nhảy tới ${formatBookmarkTime(time)}`);
         }
       }
     });
@@ -4224,7 +5391,7 @@ function handleGlobalBookmarkHotkeys(e) {
     if (bookmarkPicking) {
       e.preventDefault(); e.stopPropagation();
       stopBookmarkPicking();
-      bookmarkToast("✕ Đã hủy chọn mốc");
+      bookmarkToast("Đã hủy chọn mốc");
       return;
     }
     if (bookmarkPanelOpen) {
@@ -4359,8 +5526,11 @@ function applyVideoBookmarksSetting() {
         }
 
         /* Timeline picking crosshair & glow */
+        .ytp-progress-bar-container.tada-bm-picking,
         .ytp-progress-bar.tada-bm-picking {
           cursor: crosshair !important;
+        }
+        .ytp-progress-bar.tada-bm-picking {
           box-shadow: 0 0 0 2px #E8930C, 0 0 14px rgba(232, 147, 12, 0.75) !important;
           border-radius: 4px;
         }
@@ -4836,33 +6006,39 @@ function applyVideoBookmarksSetting() {
           transform: scale(1.02);
         }
 
+        .tada-bm-empty-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #E8930C;
+          box-shadow: 0 0 10px rgba(232, 147, 12, 0.6);
+          margin-bottom: 4px;
+        }
+
         .tada-bm-toast {
           position: absolute;
           top: 18px;
           left: 50%;
-          transform: translate(-50%, -8px);
-          background: rgba(20, 16, 12, 0.92);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(232, 147, 12, 0.6);
+          transform: translate(-50%, -14px) scale(0.96);
+          background: rgba(20, 16, 12, 0.94);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(232, 147, 12, 0.38);
           color: #FDF6EC;
-          padding: 5px 14px;
-          border-radius: 16px;
+          padding: 6px 16px;
+          border-radius: 9999px;
           font-size: 12px;
-          font-weight: 600;
-          font-family: "Roboto", "Segoe UI", sans-serif;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+          font-weight: 550;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 16px rgba(232, 147, 12, 0.12);
           pointer-events: none;
           opacity: 0;
-          z-index: 99;
-          transition: all 0.2s ease;
+          z-index: 999;
+          transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .tada-bm-toast.show {
           opacity: 1;
-          transform: translate(-50%, 0);
-        }
-        @keyframes tadaBmFadeIn {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
+          transform: translate(-50%, 0) scale(1);
         }
       `;
       (document.head || document.documentElement).appendChild(style);
@@ -4877,6 +6053,1086 @@ function applyVideoBookmarksSetting() {
   }
 }
 
+/* ===== TADa VIDEO & AUDIO DOWNLOADER (MP4 & MP3) ===== */
+let downloadControlInterval = null;
+let downloadHotkeysBound = false;
+let activeDownloadPoll = null;
+let isDownloadInProgress = false;
+let downloadToastTimer = null;
+
+const DOWNLOAD_API_BASES = [
+  "https://p.savenow.to",
+  "https://p.lbserver.xyz"
+];
+const DOWNLOAD_API_KEY = "dfcb6d76f2f6a9894gjkege8a4ab232222";
+
+function showDownloadToast(message) {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  let toast = player.querySelector("#" + DOWNLOAD_TOAST_ID);
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = DOWNLOAD_TOAST_ID;
+    toast.className = "tada-dl-toast";
+    toast.innerHTML = `<span class="tada-dl-toast-dot"></span><span class="tada-dl-toast-text"></span>`;
+    player.appendChild(toast);
+  }
+
+  const textEl = toast.querySelector(".tada-dl-toast-text") || toast;
+  textEl.textContent = message;
+  toast.classList.remove("hiding");
+  toast.classList.add("show");
+
+  if (downloadToastTimer) {
+    clearTimeout(downloadToastTimer);
+  }
+  downloadToastTimer = setTimeout(() => {
+    if (toast) {
+      toast.classList.remove("show");
+      toast.classList.add("hiding");
+      setTimeout(() => {
+        toast.classList.remove("hiding");
+      }, 250);
+    }
+  }, 3200);
+}
+
+function getActiveVideoId() {
+  const queryId = getCurrentVideoId();
+  if (queryId) return queryId;
+  try {
+    if (window.location.pathname.startsWith("/shorts/")) {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      return parts[1] || null;
+    }
+  } catch {}
+  return null;
+}
+
+function getVideoDownloadMetadata() {
+  const videoId = getActiveVideoId() || "";
+  let title = getCurrentVideoTitle();
+  let author = getCurrentVideoChannel();
+  let thumb = videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : "";
+  let duration = "";
+  const videoEl = getMainVideoElement();
+  if (videoEl && Number.isFinite(videoEl.duration) && videoEl.duration > 0) {
+    duration = formatBookmarkTime(videoEl.duration);
+  }
+  return { videoId, title, author, thumb, duration };
+}
+
+function sanitizeDownloadFilename(name) {
+  return (name || "YouTube_Video")
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function tadaProxyFetch(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    try {
+      if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage(
+          { type: "PROXY_FETCH", url, options },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              fetch(url, options)
+                .then((r) => r.json())
+                .then((data) => resolve(data))
+                .catch((e) => reject(e));
+              return;
+            }
+            if (response && response.ok) {
+              resolve(response.data);
+            } else {
+              fetch(url, options)
+                .then((r) => r.json())
+                .then((data) => resolve(data))
+                .catch(() => reject(new Error(response?.error || `HTTP ${response?.status || "Error"}`)));
+            }
+          }
+        );
+      } else {
+        fetch(url, options)
+          .then((r) => r.json())
+          .then((data) => resolve(data))
+          .catch((e) => reject(e));
+      }
+    } catch (err) {
+      fetch(url, options)
+        .then((r) => r.json())
+        .then((data) => resolve(data))
+        .catch((e) => reject(e));
+    }
+  });
+}
+
+function tadaFallbackLinkDownload(url, filename) {
+  const a = document.createElement("a");
+  a.href = url;
+  if (filename) a.download = filename;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 1000);
+}
+
+async function tadaTriggerFileDownload(downloadUrl, filename) {
+  return new Promise((resolve) => {
+    try {
+      if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage(
+          { type: "START_DOWNLOAD", url: downloadUrl, filename },
+          (res) => {
+            if (res && res.ok) {
+              resolve(true);
+            } else {
+              tadaFallbackLinkDownload(downloadUrl, filename);
+              resolve(true);
+            }
+          }
+        );
+      } else {
+        tadaFallbackLinkDownload(downloadUrl, filename);
+        resolve(true);
+      }
+    } catch {
+      tadaFallbackLinkDownload(downloadUrl, filename);
+      resolve(true);
+    }
+  });
+}
+
+function translateDownloadStatus(statusText, percent) {
+  const s = String(statusText || "").toLowerCase();
+  if (s.includes("preparing")) return `Đang chuẩn bị file (${percent}%)...`;
+  if (s.includes("converting") || s.includes("rendering")) return `Đang chuyển đổi định dạng (${percent}%)...`;
+  if (s.includes("downloading")) return `Đang trích xuất luồng (${percent}%)...`;
+  if (s.includes("finished") || s.includes("ready")) return "Đã hoàn tất chuyển đổi!";
+  return `Đang xử lý ${percent}%...`;
+}
+
+async function startMediaDownloadJob(format, onProgress, onStatus) {
+  const videoId = getActiveVideoId();
+  if (!videoId) {
+    throw new Error("Không tìm thấy Video ID hợp lệ");
+  }
+  const videoUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
+
+  onStatus?.("Đang kết nối máy chủ chuyển đổi...");
+  onProgress?.(5);
+
+  let startData = null;
+  let lastError = null;
+
+  for (const base of DOWNLOAD_API_BASES) {
+    try {
+      const apiUrl = `${base}/ajax/download.php?copyright=0&allow_extended_duration=1&format=${encodeURIComponent(format)}&url=${encodeURIComponent(videoUrl)}&api=${DOWNLOAD_API_KEY}`;
+      const res = await tadaProxyFetch(apiUrl);
+      if (res && res.success && res.progress_url) {
+        startData = res;
+        break;
+      }
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  if (!startData || !startData.progress_url) {
+    throw new Error(lastError?.message || "Không thể khởi động chuyển đổi video");
+  }
+
+  onStatus?.("Đang phân tích và xử lý định dạng...");
+  onProgress?.(15);
+
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const maxAttempts = 120; // 3 phút tối đa
+
+    if (activeDownloadPoll) {
+      clearInterval(activeDownloadPoll);
+      activeDownloadPoll = null;
+    }
+
+    activeDownloadPoll = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(activeDownloadPoll);
+        activeDownloadPoll = null;
+        reject(new Error("Thời gian chờ xử lý quá lâu, vui lòng thử lại hoặc dùng công cụ dự phòng"));
+        return;
+      }
+
+      try {
+        const progressData = await tadaProxyFetch(startData.progress_url);
+        if (!progressData) return;
+
+        const rawProgress = Number(progressData.progress) || 0;
+        const percent = Math.min(100, Math.max(15, Math.round(rawProgress / 10)));
+        onProgress?.(percent);
+
+        if (progressData.text) {
+          onStatus?.(translateDownloadStatus(progressData.text, percent));
+        }
+
+        if (progressData.download_url && (Number(progressData.progress) >= 1000 || progressData.success === 1)) {
+          clearInterval(activeDownloadPoll);
+          activeDownloadPoll = null;
+          onProgress?.(100);
+          onStatus?.("Hoàn tất chuyển đổi! Đang bắt đầu tải...");
+          resolve({
+            downloadUrl: progressData.download_url,
+            title: progressData.title || startData.title || document.title,
+            format: progressData.format || format
+          });
+        }
+      } catch (err) {
+        console.warn("[TADa] Download poll error:", err);
+      }
+    }, 1500);
+  });
+}
+
+function removeDownloadModal() {
+  if (activeDownloadPoll) {
+    clearInterval(activeDownloadPoll);
+    activeDownloadPoll = null;
+  }
+  isDownloadInProgress = false;
+  const overlay = document.getElementById(DOWNLOAD_MODAL_ID);
+  if (!overlay) return;
+  if (overlay.classList.contains("closing")) return;
+  overlay.classList.add("closing");
+  setTimeout(() => {
+    overlay.remove();
+  }, 180);
+}
+
+function openDownloadModal() {
+  if (!currentSettings.videoDownloader || !isWatchPage()) return;
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  const existing = document.getElementById(DOWNLOAD_MODAL_ID);
+  if (existing) {
+    removeDownloadModal();
+    return;
+  }
+
+  const meta = getVideoDownloadMetadata();
+  const escapedTitle = escapeBookmarkHtml(meta.title);
+  const escapedAuthor = escapeBookmarkHtml(meta.author);
+  const videoId = meta.videoId;
+
+  const overlay = document.createElement("div");
+  overlay.id = DOWNLOAD_MODAL_ID;
+  overlay.className = "tada-dl-modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="tada-dl-modal" role="dialog" aria-modal="true">
+      <div class="tada-dl-modal-header">
+        <div class="tada-dl-modal-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="tada-dl-modal-icon">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Tải Video & Âm thanh</span>
+          <span class="tada-dl-badge">TADa HD</span>
+        </div>
+        <button class="tada-dl-modal-btn-close" id="tada-dl-close" title="Đóng (Esc)">×</button>
+      </div>
+
+      <div class="tada-dl-preview-card">
+        <img class="tada-dl-thumb" src="${meta.thumb}" alt="Video Thumbnail" onerror="this.style.display='none'" />
+        <div class="tada-dl-meta">
+          <div class="tada-dl-video-title" title="${escapedTitle}">${escapedTitle}</div>
+          <div class="tada-dl-video-sub">
+            ${escapedAuthor ? `<span class="tada-dl-channel">${escapedAuthor}</span>` : ""}
+            ${meta.duration ? `<span class="tada-dl-duration">${meta.duration}</span>` : ""}
+          </div>
+        </div>
+      </div>
+
+      <div class="tada-dl-options-wrap" id="tada-dl-options-wrap">
+        <div class="tada-dl-grid">
+          <button class="tada-dl-card-btn" data-format="1080">
+            <div class="tada-dl-card-top">
+              <span class="tada-dl-quality">1080p</span>
+              <span class="tada-dl-tag tada-tag-gold">Gốc</span>
+            </div>
+            <div class="tada-dl-card-desc">Full HD · MP4</div>
+          </button>
+
+          <button class="tada-dl-card-btn" data-format="720">
+            <div class="tada-dl-card-top">
+              <span class="tada-dl-quality">720p</span>
+              <span class="tada-dl-tag">Nhanh</span>
+            </div>
+            <div class="tada-dl-card-desc">Chuẩn HD · MP4</div>
+          </button>
+
+          <button class="tada-dl-card-btn" data-format="360">
+            <div class="tada-dl-card-top">
+              <span class="tada-dl-quality">360p</span>
+              <span class="tada-dl-tag">Nhẹ</span>
+            </div>
+            <div class="tada-dl-card-desc">Tiết kiệm · MP4</div>
+          </button>
+
+          <button class="tada-dl-card-btn" data-format="mp3">
+            <div class="tada-dl-card-top">
+              <span class="tada-dl-quality">MP3</span>
+              <span class="tada-dl-tag tada-tag-green">Audio</span>
+            </div>
+            <div class="tada-dl-card-desc">Âm thanh 320k</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="tada-dl-progress-box" id="tada-dl-progress-box" style="display: none;">
+        <div class="tada-dl-progress-header">
+          <div class="tada-dl-status-title" id="tada-dl-status-title">Đang chuẩn bị tải về...</div>
+          <span class="tada-dl-percent-badge" id="tada-dl-percent-badge">0%</span>
+        </div>
+        <div class="tada-dl-bar-track">
+          <div class="tada-dl-bar-fill" id="tada-dl-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div class="tada-dl-status-sub" id="tada-dl-status-sub">Đang kết nối máy chủ...</div>
+        
+        <div class="tada-dl-complete-actions" id="tada-dl-complete-actions" style="display: none;">
+          <button class="tada-dl-btn-again" id="tada-dl-btn-again">Chọn định dạng khác</button>
+        </div>
+      </div>
+
+      <div class="tada-dl-error-box" id="tada-dl-error-box" style="display: none;">
+        <div class="tada-dl-error-msg" id="tada-dl-error-msg">Không thể hoàn thành xử lý video này lúc này.</div>
+        <div class="tada-dl-error-actions">
+          <button class="tada-dl-btn-retry" id="tada-dl-btn-retry">Thử lại</button>
+          <button class="tada-dl-btn-back" id="tada-dl-btn-back">Chọn định dạng khác</button>
+        </div>
+      </div>
+
+      <div class="tada-dl-footer">
+        <div class="tada-dl-fallback-hint">Dự phòng:</div>
+        <div class="tada-dl-fallback-links">
+          <a href="https://cobalt.tools/" target="_blank" rel="noopener noreferrer" class="tada-dl-fallback-pill" title="Mở trên Cobalt Tools">Cobalt</a>
+          <a href="https://www.y2mate.com/youtube/${encodeURIComponent(videoId)}" target="_blank" rel="noopener noreferrer" class="tada-dl-fallback-pill" title="Mở trên Y2Mate">Y2Mate</a>
+          <a href="https://en.savefrom.net/#url=https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noopener noreferrer" class="tada-dl-fallback-pill" title="Mở trên SaveFrom">SaveFrom</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  player.appendChild(overlay);
+
+  const optionsWrap = overlay.querySelector("#tada-dl-options-wrap");
+  const progressBox = overlay.querySelector("#tada-dl-progress-box");
+  const statusTitle = overlay.querySelector("#tada-dl-status-title");
+  const statusSub = overlay.querySelector("#tada-dl-status-sub");
+  const percentBadge = overlay.querySelector("#tada-dl-percent-badge");
+  const barFill = overlay.querySelector("#tada-dl-bar-fill");
+  const completeActions = overlay.querySelector("#tada-dl-complete-actions");
+  const btnAgain = overlay.querySelector("#tada-dl-btn-again");
+  const errorBox = overlay.querySelector("#tada-dl-error-box");
+  const errorMsg = overlay.querySelector("#tada-dl-error-msg");
+  const btnRetry = overlay.querySelector("#tada-dl-btn-retry");
+  const btnBack = overlay.querySelector("#tada-dl-btn-back");
+  const btnClose = overlay.querySelector("#tada-dl-close");
+
+  let currentSelectedFormat = "1080";
+
+  const triggerJob = async (format) => {
+    currentSelectedFormat = format;
+    isDownloadInProgress = true;
+    optionsWrap.style.display = "none";
+    errorBox.style.display = "none";
+    progressBox.style.display = "flex";
+    completeActions.style.display = "none";
+
+    const formatName = format === "mp3" ? "MP3 Âm thanh" : `${format}p MP4`;
+    statusTitle.textContent = `Đang xử lý tải: ${formatName}`;
+    percentBadge.textContent = "0%";
+    barFill.style.width = "0%";
+    statusSub.textContent = "Đang kết nối máy chủ chuyển đổi...";
+
+    try {
+      const res = await startMediaDownloadJob(
+        format,
+        (percent) => {
+          barFill.style.width = `${percent}%`;
+          percentBadge.textContent = `${percent}%`;
+        },
+        (status) => {
+          statusSub.textContent = status;
+        }
+      );
+
+      const ext = format === "mp3" ? "mp3" : "mp4";
+      const cleanTitle = sanitizeDownloadFilename(meta.title);
+      const filename = `[TADa] ${cleanTitle} (${formatName}).${ext}`;
+
+      statusTitle.textContent = "Chuyển đổi thành công!";
+      statusSub.textContent = `File đang được lưu: ${filename}`;
+      barFill.style.width = "100%";
+      percentBadge.textContent = "100%";
+      completeActions.style.display = "flex";
+      isDownloadInProgress = false;
+
+      showDownloadToast(`Đang tải: ${cleanTitle} (${formatName})`);
+      await tadaTriggerFileDownload(res.downloadUrl, filename);
+    } catch (err) {
+      console.warn("[TADa] Download error:", err);
+      isDownloadInProgress = false;
+      progressBox.style.display = "none";
+      errorBox.style.display = "flex";
+      errorMsg.textContent = err?.message || "Không thể kết nối đến máy chủ tải lúc này. Bạn có thể thử lại hoặc bấm link Cobalt/Y2Mate bên dưới.";
+    }
+  };
+
+  overlay.querySelectorAll(".tada-dl-card-btn").forEach((cardBtn) => {
+    cardBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const format = cardBtn.getAttribute("data-format");
+      if (format) triggerJob(format);
+    });
+  });
+
+  btnAgain?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    progressBox.style.display = "none";
+    optionsWrap.style.display = "flex";
+  });
+
+  btnBack?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    errorBox.style.display = "none";
+    optionsWrap.style.display = "flex";
+  });
+
+  btnRetry?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerJob(currentSelectedFormat);
+  });
+
+  btnClose?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    removeDownloadModal();
+  });
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      removeDownloadModal();
+    }
+  });
+}
+
+function toggleDownloadModal() {
+  if (document.getElementById(DOWNLOAD_MODAL_ID)) {
+    removeDownloadModal();
+  } else {
+    openDownloadModal();
+  }
+}
+
+function handleGlobalDownloadHotkeys(event) {
+  if (!currentSettings.videoDownloader) return;
+  if (event.defaultPrevented) return;
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key !== "d" && event.key !== "D") return;
+
+  if (shouldIgnoreKeyEvent(event) || event.target?.closest?.("ytd-comments, #comments, #search-input, [role='textbox'], input, textarea")) {
+    return;
+  }
+
+  const modal = document.getElementById(DOWNLOAD_MODAL_ID);
+  if (modal) {
+    event.preventDefault();
+    event.stopPropagation();
+    removeDownloadModal();
+    return;
+  }
+
+  if (!isWatchPage()) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  toggleDownloadModal();
+}
+
+function ensureDownloadHotkeys() {
+  if (downloadHotkeysBound) return;
+  window.addEventListener("keydown", handleGlobalDownloadHotkeys, true);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.getElementById(DOWNLOAD_MODAL_ID)) {
+      e.preventDefault();
+      e.stopPropagation();
+      removeDownloadModal();
+    }
+  }, true);
+  downloadHotkeysBound = true;
+}
+
+function ensureDownloadButton() {
+  if (!currentSettings.videoDownloader || !isWatchPage()) {
+    removeDownloadButton();
+    return;
+  }
+
+  const pipBtn = document.getElementById(PIP_BUTTON_ID);
+  const screenshotBtn = document.getElementById(SCREENSHOT_BUTTON_ID);
+  const settingsBtn = document.querySelector(".ytp-settings-button");
+  const rightControls = document.querySelector(".ytp-right-controls") ||
+    settingsBtn?.closest?.(".ytp-right-controls") ||
+    settingsBtn?.parentElement;
+
+  if (!rightControls && !settingsBtn && !pipBtn && !screenshotBtn) return;
+
+  let btn = document.getElementById(DOWNLOAD_BUTTON_ID);
+  if (!btn || !document.contains(btn)) {
+    if (btn) btn.remove();
+    btn = document.createElement("button");
+    btn.id = DOWNLOAD_BUTTON_ID;
+    btn.className = "ytp-button tada-download-button";
+    btn.setAttribute("aria-label", "Tải video MP4 / MP3 (D)");
+    btn.setAttribute("title", "Tải video MP4 / MP3 (Phím D) • TADa Downloader");
+    btn.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+        <!-- Arrow pointing down -->
+        <path class="ytp-svg-fill" d="M18 8.5 V20 M13.5 15.5 L18 20 L22.5 15.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        <!-- Tray bracket -->
+        <path class="ytp-svg-fill" d="M10.5 22 V24 C10.5 24.6 11 25 11.6 25 H24.4 C25 25 25.5 24.6 25.5 24 V22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path>
+        <!-- TADa amber accent dot -->
+        <circle cx="25.5" cy="8.5" r="2.2" fill="#E8930C"></circle>
+      </svg>
+    `;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleDownloadModal();
+    });
+
+    const anchorBtn = screenshotBtn || pipBtn;
+    if (anchorBtn && anchorBtn.nextSibling) {
+      anchorBtn.parentNode.insertBefore(btn, anchorBtn.nextSibling);
+    } else if (anchorBtn) {
+      anchorBtn.parentNode.appendChild(btn);
+    } else if (settingsBtn && settingsBtn.nextSibling) {
+      settingsBtn.parentNode.insertBefore(btn, settingsBtn.nextSibling);
+    } else if (rightControls) {
+      rightControls.insertBefore(btn, rightControls.firstChild);
+    }
+  } else if (screenshotBtn && btn.previousElementSibling !== screenshotBtn) {
+    screenshotBtn.insertAdjacentElement("afterend", btn);
+  }
+}
+
+function removeDownloadButton() {
+  const btn = document.getElementById(DOWNLOAD_BUTTON_ID);
+  if (btn) btn.remove();
+}
+
+function startDownloadButtonCheck() {
+  if (downloadControlInterval) {
+    clearInterval(downloadControlInterval);
+    downloadControlInterval = null;
+  }
+  let count = 0;
+  ensureDownloadButton();
+  downloadControlInterval = setInterval(() => {
+    count++;
+    if (isWatchPage()) {
+      ensureDownloadButton();
+    }
+    if (count > 25 && document.getElementById(DOWNLOAD_BUTTON_ID)) {
+      clearInterval(downloadControlInterval);
+      downloadControlInterval = null;
+    }
+  }, 350);
+}
+
+function applyVideoDownloaderSetting() {
+  const existingStyle = document.getElementById(DOWNLOAD_BUTTON_STYLE_ID);
+  if (currentSettings.videoDownloader) {
+    if (!existingStyle) {
+      const style = document.createElement("style");
+      style.id = DOWNLOAD_BUTTON_STYLE_ID;
+      style.textContent = `
+        .tada-download-button {
+          position: relative;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          outline: none;
+          padding: 0;
+          width: 44px;
+          height: 100% !important;
+          opacity: 0.88;
+          transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+          user-select: none;
+          -webkit-user-select: none;
+          vertical-align: top !important;
+        }
+        .tada-download-button:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.08);
+        }
+        .tada-download-button:active {
+          transform: scale(0.92);
+        }
+        .tada-download-button svg {
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+        .tada-download-button:hover svg path {
+          stroke: #E8930C !important;
+        }
+        .tada-download-button:hover circle {
+          fill: #F59E0B !important;
+        }
+
+        .tada-dl-modal-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.72);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: tadaDlFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .tada-dl-modal-overlay.closing {
+          animation: tadaDlFadeOut 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          pointer-events: none;
+        }
+        .tada-dl-modal {
+          background: rgba(22, 17, 13, 0.96);
+          border: 1px solid rgba(232, 147, 12, 0.35);
+          border-radius: 16px;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.15), 0 0 28px rgba(232, 147, 12, 0.14);
+          width: 90%;
+          max-width: 420px;
+          padding: 16px 18px;
+          color: #FDF6EC;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          animation: tadaDlScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          pointer-events: auto;
+          user-select: none;
+        }
+        .tada-dl-modal-overlay.closing .tada-dl-modal {
+          animation: tadaDlScaleOut 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .tada-dl-modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          padding-bottom: 9px;
+        }
+        .tada-dl-modal-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #FDF6EC;
+        }
+        .tada-dl-modal-icon {
+          width: 17px;
+          height: 17px;
+          color: #E8930C;
+        }
+        .tada-dl-badge {
+          font-size: 10px;
+          background: rgba(232, 147, 12, 0.16);
+          color: #E8930C;
+          border: 1px solid rgba(232, 147, 12, 0.32);
+          border-radius: 9999px;
+          padding: 1px 7px;
+          font-weight: 600;
+          letter-spacing: 0.3px;
+        }
+        .tada-dl-modal-btn-close {
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 15px;
+          line-height: 1;
+          cursor: pointer;
+          padding: 3px 7px;
+          border-radius: 6px;
+          transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-modal-btn-close:hover {
+          color: #FDF6EC;
+          background: rgba(255, 255, 255, 0.1);
+          transform: scale(1.05);
+        }
+
+        .tada-dl-preview-card {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: rgba(0, 0, 0, 0.32);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 10px;
+          padding: 7px 9px;
+        }
+        .tada-dl-thumb {
+          width: 68px;
+          height: 42px;
+          border-radius: 6px;
+          object-fit: cover;
+          flex-shrink: 0;
+          background: #2a2018;
+        }
+        .tada-dl-meta {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .tada-dl-video-title {
+          font-size: 12px;
+          font-weight: 600;
+          color: #FDF6EC;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .tada-dl-video-sub {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+        .tada-dl-channel {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 170px;
+        }
+        .tada-dl-duration {
+          font-variant-numeric: tabular-nums;
+          background: rgba(255, 255, 255, 0.06);
+          padding: 1px 5px;
+          border-radius: 4px;
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.65);
+        }
+
+        .tada-dl-options-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .tada-dl-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        .tada-dl-card-btn {
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
+          padding: 10px 11px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          text-align: left;
+        }
+        .tada-dl-card-btn:hover {
+          background: rgba(232, 147, 12, 0.1);
+          border-color: rgba(232, 147, 12, 0.45);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        }
+        .tada-dl-card-btn:active {
+          transform: translateY(0) scale(0.98);
+        }
+        .tada-dl-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .tada-dl-quality {
+          font-size: 13px;
+          font-weight: 700;
+          color: #FDF6EC;
+        }
+        .tada-dl-card-desc {
+          font-size: 10.5px;
+          color: rgba(255, 255, 255, 0.52);
+          line-height: 1.2;
+        }
+        .tada-dl-tag {
+          font-size: 9.5px;
+          font-weight: 700;
+          padding: 2px 6px;
+          border-radius: 5px;
+          background: rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.7);
+          letter-spacing: 0.2px;
+        }
+        .tada-tag-gold {
+          background: rgba(232, 147, 12, 0.22);
+          color: #F59E0B;
+          border: 1px solid rgba(232, 147, 12, 0.4);
+        }
+        .tada-tag-green {
+          background: rgba(16, 185, 129, 0.18);
+          color: #10B981;
+          border: 1px solid rgba(16, 185, 129, 0.38);
+        }
+
+        .tada-dl-progress-box {
+          background: rgba(0, 0, 0, 0.36);
+          border: 1px solid rgba(232, 147, 12, 0.3);
+          border-radius: 12px;
+          padding: 13px 15px;
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+          animation: tadaDlFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-progress-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .tada-dl-status-title {
+          font-size: 12px;
+          font-weight: 700;
+          color: #FDF6EC;
+        }
+        .tada-dl-percent-badge {
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #E8930C;
+          background: rgba(232, 147, 12, 0.14);
+          padding: 2px 7px;
+          border-radius: 6px;
+          font-variant-numeric: tabular-nums;
+        }
+        .tada-dl-bar-track {
+          width: 100%;
+          height: 6px;
+          background: rgba(255, 255, 255, 0.08);
+          border-radius: 9999px;
+          overflow: hidden;
+          position: relative;
+        }
+        .tada-dl-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #E8930C, #F59E0B, #10B981);
+          background-size: 200% 100%;
+          animation: tadaDlShimmer 1.8s infinite linear;
+          border-radius: 9999px;
+          transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-status-sub {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.6);
+          line-height: 1.35;
+        }
+        .tada-dl-complete-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 3px;
+        }
+        .tada-dl-btn-again {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          color: #FDF6EC;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-btn-again:hover {
+          background: rgba(232, 147, 12, 0.18);
+          border-color: rgba(232, 147, 12, 0.4);
+        }
+
+        .tada-dl-error-box {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          border-radius: 10px;
+          padding: 11px 13px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          animation: tadaDlFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-error-msg {
+          font-size: 11.5px;
+          color: #FCA5A5;
+          line-height: 1.4;
+        }
+        .tada-dl-error-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .tada-dl-btn-retry {
+          background: #E8930C;
+          border: none;
+          color: #1A1410;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 5px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-btn-retry:hover { background: #F59E0B; }
+        .tada-dl-btn-back {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #FDF6EC;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 5px 10px;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+
+        .tada-dl-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          padding-top: 9px;
+          font-size: 11px;
+        }
+        .tada-dl-fallback-hint {
+          color: rgba(255, 255, 255, 0.42);
+        }
+        .tada-dl-fallback-links {
+          display: flex;
+          gap: 6px;
+        }
+        .tada-dl-fallback-pill {
+          color: #E8930C;
+          text-decoration: none;
+          font-weight: 600;
+          background: rgba(232, 147, 12, 0.08);
+          padding: 2px 7px;
+          border-radius: 4px;
+          border: 1px solid rgba(232, 147, 12, 0.18);
+          transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-fallback-pill:hover {
+          background: rgba(232, 147, 12, 0.22);
+          color: #F59E0B;
+          transform: translateY(-1px);
+        }
+
+        .tada-dl-toast {
+          position: absolute;
+          top: 18px;
+          left: 50%;
+          transform: translate(-50%, -14px) scale(0.96);
+          background: rgba(20, 16, 12, 0.94);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(232, 147, 12, 0.38);
+          color: #FDF6EC;
+          padding: 6px 14px;
+          border-radius: 9999px;
+          font-size: 12px;
+          font-weight: 550;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 16px rgba(232, 147, 12, 0.12);
+          pointer-events: none;
+          opacity: 0;
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tada-dl-toast.show {
+          opacity: 1;
+          transform: translate(-50%, 0) scale(1);
+        }
+        .tada-dl-toast.hiding {
+          opacity: 0;
+          transform: translate(-50%, -10px) scale(0.96);
+        }
+        .tada-dl-toast-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10B981;
+          box-shadow: 0 0 8px #10B981;
+          animation: tadaToastPulse 1.6s ease-in-out infinite;
+          flex-shrink: 0;
+        }
+        .tada-dl-toast-text {
+          white-space: nowrap;
+        }
+
+        @keyframes tadaToastPulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.3); opacity: 0.65; }
+        }
+        @keyframes tadaDlFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes tadaDlFadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+        @keyframes tadaDlScaleIn {
+          from { opacity: 0; transform: scale(0.92) translateY(10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes tadaDlScaleOut {
+          from { opacity: 1; transform: scale(1) translateY(0); }
+          to { opacity: 0; transform: scale(0.94) translateY(8px); }
+        }
+        @keyframes tadaDlShimmer {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
+        }
+      `;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    ensureDownloadHotkeys();
+    ensureDownloadButton();
+    startDownloadButtonCheck();
+  } else {
+    existingStyle?.remove();
+    removeDownloadButton();
+    removeDownloadModal();
+  }
+}
+
 function applyAllSettings() {
   applyFourColumnGridSetting();
   applyHideShortsSetting();
@@ -4887,6 +7143,9 @@ function applyAllSettings() {
   applySuperVolumeSetting();
   applyAmbientLightSetting();
   applyPipButtonSetting();
+  applyScreenshotButtonSetting();
+  applyVideoDownloaderSetting();
+  applyCustomSpeedSetting();
   applyAbLooperSetting();
   applyVideoBookmarksSetting();
   applyHudSetting();
@@ -4981,6 +7240,18 @@ function teardownOnInvalidation() {
     clearInterval(pipControlInterval);
     pipControlInterval = null;
   }
+  if (screenshotControlInterval) {
+    clearInterval(screenshotControlInterval);
+    screenshotControlInterval = null;
+  }
+  if (speedControlInterval) {
+    clearInterval(speedControlInterval);
+    speedControlInterval = null;
+  }
+  if (downloadControlInterval) {
+    clearInterval(downloadControlInterval);
+    downloadControlInterval = null;
+  }
   if (abBtnInterval) {
     clearInterval(abBtnInterval);
     abBtnInterval = null;
@@ -4988,6 +7259,13 @@ function teardownOnInvalidation() {
   abStopLoop();
   removeAmbientLightDom();
   removePipButton();
+  removeScreenshotButton();
+  removeDownloadButton();
+  removeDownloadModal();
+  removeSpeedButton();
+  document.getElementById(SCREENSHOT_FLASH_ID)?.remove();
+  document.getElementById("tada-screenshot-toast")?.remove();
+  document.getElementById(DOWNLOAD_TOAST_ID)?.remove();
   removeAbBtn();
   document.getElementById(AB_TRACK_ID)?.remove();
   ensureHud();
@@ -5087,8 +7365,22 @@ function initMutationObserver() {
       if (currentSettings.pipButton && isWatchPage()) {
         ensurePipButton();
       }
+      if (currentSettings.videoScreenshot && isWatchPage()) {
+        ensureScreenshotButton();
+      }
+      if (currentSettings.videoDownloader && isWatchPage()) {
+        ensureDownloadButton();
+      }
+      if (currentSettings.customSpeed && isWatchPage()) {
+        ensureSpeedButton();
+      }
       if (currentSettings.abLooper && isWatchPage()) {
         ensureAbBtn();
+        abSetupTimeline();
+      }
+      if (currentSettings.videoBookmarks && isWatchPage()) {
+        ensureBookmarkButton();
+        ensureBookmarkTrack();
       }
       if (isWatchPage() && currentSettings.ensureComments) {
         ensureCommentsVisible();
@@ -5121,6 +7413,9 @@ async function bootstrap() {
   initMutationObserver();
   if (isWatchPage()) {
     startPipButtonCheck();
+    startScreenshotButtonCheck();
+    startDownloadButtonCheck();
+    startSpeedButtonCheck();
     startAbCheck();
     startBookmarkCheck();
   }
@@ -5136,6 +7431,10 @@ async function bootstrap() {
     }
     if (isWatchPage()) {
       startPipButtonCheck();
+      startScreenshotButtonCheck();
+      removeDownloadModal();
+      startDownloadButtonCheck();
+      startSpeedButtonCheck();
       abResetOnNav();
       startAbCheck();
       onBookmarkNav();
@@ -5185,6 +7484,15 @@ document.addEventListener("mousemove", () => {
     if (isWatchPage() && currentSettings.pipButton) {
       ensurePipButton();
     }
+    if (isWatchPage() && currentSettings.videoScreenshot) {
+      ensureScreenshotButton();
+    }
+    if (isWatchPage() && currentSettings.videoDownloader) {
+      ensureDownloadButton();
+    }
+    if (isWatchPage() && currentSettings.customSpeed) {
+      ensureSpeedButton();
+    }
     if (isWatchPage() && currentSettings.abLooper) {
       ensureAbBtn();
     }
@@ -5197,6 +7505,15 @@ document.addEventListener("mousemove", () => {
 document.addEventListener("mouseenter", (e) => {
   if (isWatchPage() && currentSettings.pipButton && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
     ensurePipButton();
+  }
+  if (isWatchPage() && currentSettings.videoScreenshot && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
+    ensureScreenshotButton();
+  }
+  if (isWatchPage() && currentSettings.videoDownloader && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
+    ensureDownloadButton();
+  }
+  if (isWatchPage() && currentSettings.customSpeed && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
+    ensureSpeedButton();
   }
   if (isWatchPage() && currentSettings.abLooper && e.target?.closest?.("#movie_player, .html5-video-player, .ytp-chrome-bottom")) {
     ensureAbBtn();

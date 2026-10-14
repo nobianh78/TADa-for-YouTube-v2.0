@@ -58,5 +58,48 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "PROXY_FETCH") {
+    fetch(message.url, message.options || {})
+      .then(async (res) => {
+        let data = null;
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+        sendResponse({ ok: res.ok, status: res.status, data });
+      })
+      .catch((err) => {
+        sendResponse({ ok: false, error: err?.message || String(err) });
+      });
+    return true;
+  }
+
+  if (message?.type === "START_DOWNLOAD") {
+    const { url, filename } = message;
+    if (chrome.downloads && typeof chrome.downloads.download === "function") {
+      chrome.downloads.download(
+        {
+          url: url,
+          filename: filename || undefined,
+          saveAs: false
+        },
+        (downloadId) => {
+          if (chrome.runtime.lastError) {
+            console.warn("[TADa] chrome.downloads error:", chrome.runtime.lastError.message);
+            sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+          } else {
+            sendResponse({ ok: true, downloadId });
+          }
+        }
+      );
+      return true;
+    } else {
+      sendResponse({ ok: false, error: "Downloads API not available" });
+      return false;
+    }
+  }
+
   return false;
 });
+

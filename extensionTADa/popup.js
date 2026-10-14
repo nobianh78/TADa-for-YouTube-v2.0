@@ -16,16 +16,23 @@ const DEFAULT_SETTINGS = {
   ensureComments: true,
   autoSelectChips: false,
   pipButton: true,
+  videoScreenshot: true,
+  customSpeed: true,
+  zenMode: true,
   abLooper: true,
-  videoBookmarks: true
+  videoBookmarks: true,
+  videoDownloader: true
 };
 
 const TOGGLE_FEATURE_KEYS = [
   "superVolume",
   "ambientLight",
   "pipButton",
+  "videoScreenshot",
+  "customSpeed",
   "abLooper",
   "videoBookmarks",
+  "videoDownloader",
   "curateSidebar",
   "fourColumnGrid",
   "hideShorts",
@@ -33,6 +40,30 @@ const TOGGLE_FEATURE_KEYS = [
   "ensureComments",
   "autoSelectChips"
 ];
+
+// Phân nhóm các tính năng theo 3 danh mục
+const CATEGORY_MAP = {
+  player: ["superVolume", "ambientLight", "customSpeed", "pipButton", "abLooper"],
+  tools: ["videoScreenshot", "videoDownloader", "videoBookmarks"],
+  layout: ["curateSidebar", "fourColumnGrid", "hideShorts", "hideEndScreens", "ensureComments", "autoSelectChips"]
+};
+
+const CATEGORY_META = {
+  player: {
+    title: "Trình phát & Âm thanh",
+    desc: "Âm lượng 500%, Ambient Light, tốc độ, PiP & A-B Loop"
+  },
+  tools: {
+    title: "Công cụ & Tiện ích",
+    desc: "Chụp ảnh màn hình 4K, tải MP4/MP3 & Bookmarks mốc"
+  },
+  layout: {
+    title: "Giao diện & Tập trung",
+    desc: "Bố cục 4 cột, lọc Sidebar, ẩn Shorts, cố định bình luận"
+  }
+};
+
+let activeCategory = null;
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 let toastTimeout = null;
@@ -51,14 +82,33 @@ function showToast(message) {
 
   toastTimeout = setTimeout(() => {
     toast.classList.remove("show");
-  }, 2400);
+  }, 2200);
 }
 
 function updateActiveCount() {
+  // Cập nhật tổng số tính năng đang bật
   const activeCount = TOGGLE_FEATURE_KEYS.filter((key) => currentSettings[key]).length;
   const countEl = document.getElementById("active-features-count");
   if (countEl) {
     countEl.textContent = `${activeCount}/${TOGGLE_FEATURE_KEYS.length} bật`;
+  }
+
+  // Cập nhật bộ đếm real-time trên từng thẻ danh mục
+  Object.entries(CATEGORY_MAP).forEach(([catId, keys]) => {
+    const enabledInCat = keys.filter((k) => currentSettings[k]).length;
+    const pill = document.getElementById(`cat-count-${catId}`);
+    if (pill) {
+      pill.textContent = `${enabledInCat}/${keys.length}`;
+      pill.classList.toggle("has-active", enabledInCat > 0);
+    }
+  });
+
+  // Cập nhật badge trên sub-view nếu đang mở
+  if (activeCategory && CATEGORY_MAP[activeCategory]) {
+    const keys = CATEGORY_MAP[activeCategory];
+    const enabled = keys.filter((k) => currentSettings[k]).length;
+    const badge = document.getElementById("sub-count-badge");
+    if (badge) badge.textContent = `${enabled}/${keys.length}`;
   }
 }
 
@@ -72,11 +122,7 @@ function renderToggles() {
 
   const subSettings = document.getElementById("ambient-sub-settings");
   if (subSettings) {
-    if (currentSettings.ambientLight) {
-      subSettings.classList.add("show");
-    } else {
-      subSettings.classList.remove("show");
-    }
+    subSettings.classList.toggle("show", Boolean(currentSettings.ambientLight));
   }
 
   const brightnessSlider = document.getElementById("ambient-brightness");
@@ -96,6 +142,37 @@ function renderToggles() {
   }
 
   updateActiveCount();
+}
+
+function navigateToCategory(categoryId) {
+  activeCategory = categoryId;
+  const meta = CATEGORY_META[categoryId];
+
+  // Cập nhật tiêu đề sub-view
+  const titleEl = document.getElementById("sub-header-title");
+  if (titleEl && meta) titleEl.textContent = meta.title;
+
+  // Ẩn tất cả feat-panel, hiện panel đúng
+  document.querySelectorAll(".feat-panel").forEach((p) => {
+    p.style.display = "none";
+  });
+  const panel = document.getElementById(`panel-${categoryId}`);
+  if (panel) {
+    panel.style.display = "flex";
+  }
+
+  // Cập nhật badge
+  updateActiveCount();
+
+  // Slide sang màn hình chi tiết
+  const slider = document.getElementById("views-slider");
+  if (slider) slider.classList.add("show-detail");
+}
+
+function navigateBackToMain() {
+  activeCategory = null;
+  const slider = document.getElementById("views-slider");
+  if (slider) slider.classList.remove("show-detail");
 }
 
 async function loadSettings() {
@@ -173,6 +250,61 @@ function handleSliderChange(key, value, badgeId) {
 }
 
 function initEventListeners() {
+  // Drill-down navigation: click cat-row → slide to sub-view
+  document.querySelectorAll(".cat-row[data-category]").forEach((card) => {
+    card.addEventListener("click", () => {
+      const cat = card.dataset.category;
+      if (cat) navigateToCategory(cat);
+    });
+  });
+
+  // Back button: slide back to main
+  const btnBack = document.getElementById("btn-back");
+  if (btnBack) {
+    btnBack.addEventListener("click", navigateBackToMain);
+  }
+
+  // Sub-view: Bật hết trong danh mục đang xem
+  const btnSubEnableAll = document.getElementById("btn-sub-enable-all");
+  if (btnSubEnableAll) {
+    btnSubEnableAll.addEventListener("click", async () => {
+      if (!activeCategory) return;
+      CATEGORY_MAP[activeCategory].forEach((key) => { currentSettings[key] = true; });
+      await saveSettings();
+      renderToggles();
+      showToast(`Đã bật hết ${CATEGORY_META[activeCategory]?.title}!`);
+    });
+  }
+
+  // Sub-view: Tắt hết trong danh mục đang xem
+  const btnSubDisableAll = document.getElementById("btn-sub-disable-all");
+  if (btnSubDisableAll) {
+    btnSubDisableAll.addEventListener("click", async () => {
+      if (!activeCategory) return;
+      CATEGORY_MAP[activeCategory].forEach((key) => { currentSettings[key] = false; });
+      await saveSettings();
+      renderToggles();
+      showToast(`Đã tắt hết ${CATEGORY_META[activeCategory]?.title}!`);
+    });
+  }
+
+  // Sub-view reload tab button
+  const btnSubReloadTab = document.getElementById("btn-sub-reload-tab");
+  if (btnSubReloadTab) {
+    btnSubReloadTab.addEventListener("click", async () => {
+      try {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tabs && tabs[0]?.id) {
+          await chrome.tabs.reload(tabs[0].id);
+          showToast("Đang làm mới trang...");
+        }
+      } catch (error) {
+        console.warn("Could not reload tab:", error);
+      }
+    });
+  }
+
+
   // Toggle switches
   TOGGLE_FEATURE_KEYS.forEach((key) => {
     const checkbox = document.getElementById(`toggle-${key}`);
@@ -214,7 +346,7 @@ function initEventListeners() {
   const lockedTrigger = document.getElementById("lock-tooltip-trigger");
   if (lockedTrigger) {
     lockedTrigger.addEventListener("click", () => {
-      showToast("🛡️ Chặn quảng cáo là tính năng cốt lõi và luôn luôn bật!");
+      showToast("Chặn quảng cáo là tính năng cốt lõi và luôn hoạt động!");
     });
   }
 
@@ -258,7 +390,7 @@ function initEventListeners() {
     });
   }
 
-  // Reload current YouTube tab
+  // Reload current YouTube tab (header button)
   const btnReloadTab = document.getElementById("btn-reload-tab");
   if (btnReloadTab) {
     btnReloadTab.addEventListener("click", async () => {
@@ -287,7 +419,7 @@ function initEventListeners() {
           countEl.textContent = (changes.blockedRequestCount.newValue ?? 0).toLocaleString();
         }
       }
-      if (changes.tada_video_bookmarks_v1) {
+    if (changes.tada_video_bookmarks_v1) {
         loadBookmarksSummary();
       }
     }
@@ -361,7 +493,7 @@ async function renderBookmarksModalList() {
         <div class="bm-video-group" data-video-id="${vId}">
           <div class="bm-video-header">
             <span class="bm-video-title" title="${title}">${title}</span>
-            <button class="btn-del-video-bm" data-video-id="${vId}" title="Xóa toàn bộ mốc của video này">✕ Xóa</button>
+            <button class="btn-del-video-bm" data-video-id="${vId}" title="Xóa toàn bộ mốc của video này">Xóa tất cả</button>
           </div>
           <div class="bm-item-list">
       `;
@@ -375,7 +507,7 @@ async function renderBookmarksModalList() {
               <a href="${url}" target="_blank" class="bm-pill-time" title="Mở video tại ${timeStr}">${timeStr}</a>
               <span class="bm-item-note-text" title="${bm.note}">${bm.note}</span>
             </div>
-            <button class="btn-del-single-bm" data-video-id="${vId}" data-bm-id="${bm.id}" title="Xóa mốc">✕</button>
+            <button class="btn-del-single-bm" data-video-id="${vId}" data-bm-id="${bm.id}" title="Xóa mốc">×</button>
           </div>
         `;
       });
@@ -466,14 +598,14 @@ function initBookmarksModal() {
         return;
       }
 
-      let md = "# 📌 Danh sách Video Bookmarks (TADa for YouTube)\n\n";
+      let md = "# Danh sách Video Bookmarks (TADa for YouTube)\n\n";
       videoKeys.forEach((vId) => {
         const entry = allBm[vId];
         const items = Array.isArray(entry?.items) ? entry.items : [];
         if (items.length === 0) return;
         const title = entry.title || vId;
         const url = `https://www.youtube.com/watch?v=${vId}`;
-        md += `### 🎬 [${title}](${url})\n`;
+        md += `### [${title}](${url})\n`;
         items.forEach((item) => {
           md += `- [${formatTimestamp(item.time)}](${url}&t=${Math.floor(item.time)}s) — ${item.note}\n`;
         });
@@ -481,7 +613,7 @@ function initBookmarksModal() {
       });
 
       navigator.clipboard.writeText(md).then(() => {
-        showToast("📋 Đã sao chép tất cả mốc ra Markdown!");
+        showToast("Đã sao chép tất cả mốc ra Markdown!");
       }).catch(() => {
         showToast("Không thể chép vào clipboard!");
       });
