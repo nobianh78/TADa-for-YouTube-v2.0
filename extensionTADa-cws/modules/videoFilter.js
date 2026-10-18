@@ -173,7 +173,10 @@ function updateVideoFilterButtonState() {
   if (!btn) return;
   const active = isFilterActive(currentSettings);
   btn.classList.toggle("tada-filter-active", active);
-  btn.setAttribute("title", active ? "Bộ lọc video (Đang kích hoạt)" : "Bộ lọc màu & Ánh sáng (TADa)");
+  const en = typeof isEn === "function" && isEn();
+  btn.setAttribute("title", active
+    ? (en ? "Video Filter (Active)" : "Bộ lọc video (Đang kích hoạt)")
+    : (en ? "Color & Lighting Filter (TADa)" : "Bộ lọc màu & Ánh sáng (TADa)"));
 }
 
 function ensureVideoFilterButtonStyle() {
@@ -505,6 +508,17 @@ function toggleVideoFilterPopover() {
   const sVal = currentSettings.filterSaturation ?? 100;
   const wVal = currentSettings.filterWarmth ?? 0;
 
+  const en = typeof isEn === "function" && isEn();
+  const presetNamesEn = {
+    reset: "Default",
+    night: "Night",
+    brighten: "Brighten",
+    cinema: "Cinema",
+    vintage: "Vintage",
+    invert: "Invert",
+    bw: "B&W"
+  };
+
   popover.innerHTML = `
     <div class="tada-filter-pop-header">
       <div class="tada-filter-pop-title">
@@ -515,15 +529,15 @@ function toggleVideoFilterPopover() {
           <line x1="20" y1="12" x2="4" y2="12" />
           <line x1="20" y1="20" x2="8.5" y2="20" />
         </svg>
-        <span>Bộ lọc video & Ánh sáng</span>
+        <span>${en ? "Video Filter & Effects" : "Bộ lọc video & Ánh sáng"}</span>
       </div>
-      <button class="tada-filter-pop-reset" id="tada-filter-reset-btn" title="Đặt lại về mặc định">Đặt lại</button>
+      <button class="tada-filter-pop-reset" id="tada-filter-reset-btn" title="${en ? "Reset to default" : "Đặt lại về mặc định"}">${en ? "Reset" : "Đặt lại"}</button>
     </div>
 
     <div class="tada-filter-presets-wrap">
       ${Object.entries(VIDEO_FILTER_PRESETS).map(([key, p]) => `
         <button class="tada-filter-preset-pill" data-preset="${key}">
-          <span>${p.name}</span>
+          <span>${en ? (presetNamesEn[key] || p.name) : p.name}</span>
         </button>
       `).join("")}
     </div>
@@ -531,7 +545,7 @@ function toggleVideoFilterPopover() {
     <div class="tada-filter-slider-group">
       <div class="tada-filter-slider-item">
         <div class="tada-filter-slider-meta">
-          <span>Độ sáng</span>
+          <span>${en ? "Brightness" : "Độ sáng"}</span>
           <span class="tada-filter-slider-val" id="pop-filter-brightness-val">${bVal}%</span>
         </div>
         <input type="range" class="tada-filter-range" id="pop-filter-brightness" min="50" max="200" step="5" value="${bVal}">
@@ -539,7 +553,7 @@ function toggleVideoFilterPopover() {
 
       <div class="tada-filter-slider-item">
         <div class="tada-filter-slider-meta">
-          <span>Độ tương phản</span>
+          <span>${en ? "Contrast" : "Độ tương phản"}</span>
           <span class="tada-filter-slider-val" id="pop-filter-contrast-val">${cVal}%</span>
         </div>
         <input type="range" class="tada-filter-range" id="pop-filter-contrast" min="50" max="200" step="5" value="${cVal}">
@@ -547,7 +561,7 @@ function toggleVideoFilterPopover() {
 
       <div class="tada-filter-slider-item">
         <div class="tada-filter-slider-meta">
-          <span>Độ bão hòa màu</span>
+          <span>${en ? "Saturation" : "Độ bão hòa màu"}</span>
           <span class="tada-filter-slider-val" id="pop-filter-saturation-val">${sVal}%</span>
         </div>
         <input type="range" class="tada-filter-range" id="pop-filter-saturation" min="0" max="200" step="5" value="${sVal}">
@@ -555,7 +569,7 @@ function toggleVideoFilterPopover() {
 
       <div class="tada-filter-slider-item">
         <div class="tada-filter-slider-meta">
-          <span>Tông ấm / Dịu mắt</span>
+          <span>${en ? "Warmth / Eye Care" : "Tông ấm / Dịu mắt"}</span>
           <span class="tada-filter-slider-val" id="pop-filter-warmth-val">${wVal}%</span>
         </div>
         <input type="range" class="tada-filter-range" id="pop-filter-warmth" min="0" max="100" step="5" value="${wVal}">
@@ -656,8 +670,9 @@ function ensureVideoFilterButton() {
     btn = document.createElement("button");
     btn.id = VIDEO_FILTER_BUTTON_ID;
     btn.className = "ytp-button tada-filter-button";
-    btn.setAttribute("aria-label", "Bộ lọc màu & Ánh sáng");
-    btn.setAttribute("title", "Bộ lọc màu & Ánh sáng (TADa)");
+    const vfEn = typeof isEn === "function" && isEn();
+    btn.setAttribute("aria-label", vfEn ? "Color & Lighting Filter" : "Bộ lọc màu & Ánh sáng");
+    btn.setAttribute("title", vfEn ? "Color & Lighting Filter (TADa)" : "Bộ lọc màu & Ánh sáng (TADa)");
 
     btn.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tada-filter-icon">
@@ -681,7 +696,8 @@ function ensureVideoFilterButton() {
       e.stopPropagation();
       applyPresetValues("reset");
       if (typeof showHudNotification === "function") {
-        showHudNotification("Bộ lọc video: Đã đặt lại mặc định");
+        const resetEn = typeof isEn === "function" && isEn();
+        showHudNotification(resetEn ? "Video filter: Reset to default" : "Bộ lọc video: Đã đặt lại mặc định");
       }
     });
 

@@ -59,7 +59,7 @@ function bookmarkToast(msg) {
       </svg>
     </div>
     <div class="info__title">${escapeBookmarkHtml(msg)}</div>
-    <div class="info__close" title="Đóng">
+    <div class="info__close" title="${typeof isEn === "function" && isEn() ? "Close" : "Đóng"}">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
         <path fill="#fff" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
       </svg>
@@ -86,7 +86,7 @@ function bookmarkToast(msg) {
 function toggleBookmarkPicking() {
   if (bookmarkPicking) {
     stopBookmarkPicking();
-    bookmarkToast("Đã hủy chọn mốc ghi chú");
+    bookmarkToast(typeof isEn === "function" && isEn() ? "Cancelled bookmark picking" : "Đã hủy chọn mốc ghi chú");
   } else {
     startBookmarkPicking();
   }
@@ -100,7 +100,7 @@ function startBookmarkPicking() {
   bookmarkPicking = true;
   updateBookmarkButtonUI();
   bookmarkUpdatePickingUI();
-  bookmarkToast("Nhấp trên thanh tua để chọn mốc (Esc để hủy)");
+  bookmarkToast(typeof isEn === "function" && isEn() ? "Click progress bar to bookmark (Esc to cancel)" : "Nhấp trên thanh tua để chọn mốc (Esc để hủy)");
 }
 
 function stopBookmarkPicking() {
@@ -161,7 +161,8 @@ async function saveNewBookmark(targetTime, noteText) {
   const v = getMainVideoElement();
   const time = typeof targetTime === "number" ? targetTime : (v?.currentTime || 0);
   const roundedTime = parseFloat(time.toFixed(1));
-  const finalNote = (noteText && noteText.trim()) ? noteText.trim() : `Mốc ${formatBookmarkTime(roundedTime)}`;
+  const isEnglish = typeof isEn === "function" && isEn();
+  const finalNote = (noteText && noteText.trim()) ? noteText.trim() : (isEnglish ? `Bookmark at ${formatBookmarkTime(roundedTime)}` : `Mốc ${formatBookmarkTime(roundedTime)}`);
 
   const newItem = {
     id: "bm_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
@@ -197,7 +198,7 @@ async function saveNewBookmark(targetTime, noteText) {
     updateBookmarkButtonBadge();
     updateBookmarkPins();
     if (bookmarkPanelOpen) renderBookmarkPanelList();
-    bookmarkToast(`Đã lưu mốc [${formatBookmarkTime(roundedTime)}]: ${finalNote}`);
+    bookmarkToast(isEnglish ? `Saved bookmark [${formatBookmarkTime(roundedTime)}]: ${finalNote}` : `Đã lưu mốc [${formatBookmarkTime(roundedTime)}]: ${finalNote}`);
   } catch (err) {
     console.error("[TADa] Failed to save bookmark", err);
   }
@@ -212,14 +213,15 @@ async function updateBookmarkNote(bmId, newNote) {
     if (allBm[vId] && Array.isArray(allBm[vId].items)) {
       const item = allBm[vId].items.find(it => it.id === bmId);
       if (item) {
-        item.note = (newNote && newNote.trim()) ? newNote.trim() : `Mốc ${formatBookmarkTime(item.time)}`;
+        const isEnglish = typeof isEn === "function" && isEn();
+        item.note = (newNote && newNote.trim()) ? newNote.trim() : (isEnglish ? `Bookmark at ${formatBookmarkTime(item.time)}` : `Mốc ${formatBookmarkTime(item.time)}`);
         item.updatedAt = Date.now();
         allBm[vId].updatedAt = Date.now();
         await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: allBm });
         currentVideoBookmarks = allBm[vId].items;
         updateBookmarkPins();
         if (bookmarkPanelOpen) renderBookmarkPanelList();
-        bookmarkToast("Đã cập nhật ghi chú");
+        bookmarkToast(isEnglish ? "Bookmark updated" : "Đã cập nhật ghi chú");
       }
     }
   } catch (err) {
@@ -247,7 +249,7 @@ async function removeBookmark(bmId) {
       updateBookmarkButtonBadge();
       updateBookmarkPins();
       if (bookmarkPanelOpen) renderBookmarkPanelList();
-      bookmarkToast("Đã xóa mốc thời gian");
+      bookmarkToast(typeof isEn === "function" && isEn() ? "Bookmark deleted" : "Đã xóa mốc thời gian");
     }
   } catch (err) {
     console.error("[TADa] Failed to remove bookmark", err);
@@ -256,8 +258,9 @@ async function removeBookmark(bmId) {
 
 function exportBookmarksToMarkdown() {
   const vId = getCurrentVideoId();
+  const isEnglish = typeof isEn === "function" && isEn();
   if (!vId || currentVideoBookmarks.length === 0) {
-    bookmarkToast("Chưa có mốc nào để sao chép");
+    bookmarkToast(isEnglish ? "No bookmarks to copy" : "Chưa có mốc nào để sao chép");
     return;
   }
   const title = getCurrentVideoTitle();
@@ -268,9 +271,9 @@ function exportBookmarksToMarkdown() {
   });
 
   navigator.clipboard.writeText(md).then(() => {
-    bookmarkToast("Đã sao chép Markdown vào clipboard");
+    bookmarkToast(isEnglish ? "Copied Markdown to clipboard" : "Đã sao chép Markdown vào clipboard");
   }).catch(() => {
-    bookmarkToast("Không thể sao chép vào clipboard");
+    bookmarkToast(isEnglish ? "Could not copy to clipboard" : "Không thể sao chép vào clipboard");
   });
 }
 
@@ -290,6 +293,7 @@ function openBookmarkInputModal(targetTime, existingItem = null) {
   overlay.id = BOOKMARK_MODAL_ID;
   overlay.className = "tada-bm-modal-overlay";
 
+  const en = typeof isEn === "function" && isEn();
   overlay.innerHTML = `
     <div class="tada-bm-modal" role="dialog" aria-modal="true">
       <div class="tada-bm-modal-header">
@@ -297,24 +301,24 @@ function openBookmarkInputModal(targetTime, existingItem = null) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" class="tada-bm-modal-icon">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
-          <span>${isEdit ? "Chỉnh sửa ghi chú" : "Thêm ghi chú mốc thời gian"}</span>
+          <span>${isEdit ? (en ? "Edit Note" : "Chỉnh sửa ghi chú") : (en ? "Add Video Bookmark" : "Thêm ghi chú mốc thời gian")}</span>
         </div>
-        <button class="tada-bm-modal-btn-close" id="tada-bm-modal-close" title="Đóng (Esc)">×</button>
+        <button class="tada-bm-modal-btn-close" id="tada-bm-modal-close" title="${en ? "Close (Esc)" : "Đóng (Esc)"}">×</button>
       </div>
 
       <div class="tada-bm-modal-body">
         <div class="tada-bm-modal-time-row">
-          <span class="tada-bm-modal-time-label">Mốc thời gian:</span>
-          <span class="tada-bm-modal-time-pill" title="Mốc thời gian ghi chú">${formatBookmarkTime(roundedTime)}</span>
+          <span class="tada-bm-modal-time-label">${en ? "Timestamp:" : "Mốc thời gian:"}</span>
+          <span class="tada-bm-modal-time-pill" title="${en ? "Bookmark timestamp" : "Mốc thời gian ghi chú"}">${formatBookmarkTime(roundedTime)}</span>
         </div>
-        <textarea id="tada-bm-modal-textarea" class="tada-bm-modal-textarea" placeholder="Nhập ghi chú cho mốc này... (Nhấn Enter để lưu)" rows="3" maxlength="250">${isEdit ? escapeBookmarkHtml(existingItem.note) : ""}</textarea>
+        <textarea id="tada-bm-modal-textarea" class="tada-bm-modal-textarea" placeholder="${en ? "Enter note for this bookmark... (Press Enter to save)" : "Nhập ghi chú cho mốc này... (Nhấn Enter để lưu)"}" rows="3" maxlength="250">${isEdit ? escapeBookmarkHtml(existingItem.note) : ""}</textarea>
         <div class="tada-bm-modal-hint">
-          <span>Nhấn <b>Enter</b> để lưu · <b>Shift+Enter</b> xuống dòng · <b>Esc</b> để hủy</span>
+          <span>${en ? "Press <b>Enter</b> to save · <b>Shift+Enter</b> for new line · <b>Esc</b> to cancel" : "Nhấn <b>Enter</b> để lưu · <b>Shift+Enter</b> xuống dòng · <b>Esc</b> để hủy"}</span>
         </div>
       </div>
 
       <div class="tada-bm-modal-footer">
-        <button class="tada-bm-modal-btn-cancel" id="tada-bm-modal-cancel">Hủy</button>
+        <button class="tada-bm-modal-btn-cancel" id="tada-bm-modal-cancel">${en ? "Cancel" : "Hủy"}</button>
         <button class="tada-bm-modal-btn-save" id="tada-bm-modal-save">
           <div class="bookmark-icon-wrap">
             <svg viewBox="0 0 24 24" class="bookmark-checkbox__icon">
@@ -332,7 +336,7 @@ function openBookmarkInputModal(targetTime, existingItem = null) {
               <path d="M8 11l3 3 5-5" class="bookmark-checkbox__icon-check"></path>
             </svg>
           </div>
-          <span>${isEdit ? "Cập nhật" : "Lưu ghi chú"}</span>
+          <span>${isEdit ? (en ? "Update" : "Cập nhật") : (en ? "Save Note" : "Lưu ghi chú")}</span>
         </button>
       </div>
     </div>
@@ -429,7 +433,7 @@ function ensureBookmarkButton() {
     addBtn = document.createElement("button");
     addBtn.id = BOOKMARK_ADD_BTN_ID;
     addBtn.className = "ytp-button tada-bookmark-button tada-bookmark-add-button";
-    addBtn.setAttribute("aria-label", "Thêm ghi chú mốc thời gian");
+    addBtn.setAttribute("aria-label", typeof isEn === "function" && isEn() ? "Add timestamp bookmark" : "Thêm ghi chú mốc thời gian");
     addBtn.innerHTML = `
       <div class="tada-bm-btn-icon-wrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
         <svg viewBox="0 0 24 24" class="tada-bm-add-icon" style="width:22px;height:22px;">
@@ -468,7 +472,7 @@ function ensureBookmarkButton() {
     listBtn = document.createElement("button");
     listBtn.id = BOOKMARK_BTN_ID;
     listBtn.className = "ytp-button tada-bookmark-button";
-    listBtn.setAttribute("aria-label", "Xem tất cả ghi chú");
+    listBtn.setAttribute("aria-label", typeof isEn === "function" && isEn() ? "View all bookmarks" : "Xem tất cả ghi chú");
     listBtn.innerHTML = `
       <div class="bookmark-icon-wrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
         <svg viewBox="0 0 24 24" class="bookmark-checkbox__icon tada-bm-list-icon" style="width:22px;height:22px;">
@@ -616,7 +620,7 @@ function updateBookmarkPins() {
         if (video) {
           video.currentTime = time;
           video.play().catch(() => { });
-          bookmarkToast(`Đã nhảy tới ${formatBookmarkTime(time)}`);
+          bookmarkToast((typeof isEn === "function" && isEn() ? "Jumped to " : "Đã nhảy tới ") + formatBookmarkTime(time));
         }
       }
     });
@@ -654,24 +658,25 @@ function openBookmarkPanel() {
   const v = getMainVideoElement();
   const curTime = v?.currentTime || 0;
 
+  const en = typeof isEn === "function" && isEn();
   panel.innerHTML = `
     <div class="tada-bm-header">
       <div class="tada-bm-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="tada-bm-title-icon">
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
         </svg>
-        <span>Tất cả ghi chú</span>
+        <span>${en ? "All Notes" : "Tất cả ghi chú"}</span>
         <span class="tada-bm-header-count" id="tada-bm-header-count">${currentVideoBookmarks.length}</span>
       </div>
       <div class="tada-bm-actions">
-        <button id="tada-bm-btn-export" class="tada-bm-btn-action" title="Sao chép Markdown / Ghi chú">
+        <button id="tada-bm-btn-export" class="tada-bm-btn-action" title="${en ? "Copy Markdown / Notes" : "Sao chép Markdown / Ghi chú"}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
-          Chép MD
+          ${en ? "Copy MD" : "Chép MD"}
         </button>
-        <button id="tada-bm-btn-close" class="tada-bm-btn-action tada-bm-btn-close" title="Đóng panel (Esc hoặc B)">
+        <button id="tada-bm-btn-close" class="tada-bm-btn-action tada-bm-btn-close" title="${en ? "Close panel (Esc or B)" : "Đóng panel (Esc hoặc B)"}">
           ×
         </button>
       </div>
@@ -679,11 +684,11 @@ function openBookmarkPanel() {
 
     <!-- Quick Action Bar -->
     <div class="tada-bm-add-bar">
-      <button id="tada-bm-btn-pick-new" class="tada-bm-btn-pick-action" title="Bật chế độ click chọn mốc trên thanh tua">
-        Chọn mốc trên thanh tua
+      <button id="tada-bm-btn-pick-new" class="tada-bm-btn-pick-action" title="${en ? "Click progress bar to select timestamp" : "Bật chế độ click chọn mốc trên thanh tua"}">
+        ${en ? "Pick on progress bar" : "Chọn mốc trên thanh tua"}
       </button>
-      <button id="tada-bm-btn-curtime" class="tada-bm-time-pill" title="Thêm ghi chú ngay tại giây hiện tại của video">
-        + Ghim tại <span id="tada-bm-curtime-display">${formatBookmarkTime(curTime)}</span>
+      <button id="tada-bm-btn-curtime" class="tada-bm-time-pill" title="${en ? "Add note at current video time" : "Thêm ghi chú ngay tại giây hiện tại của video"}">
+        ${en ? "+ Pin at " : "+ Ghim tại "}<span id="tada-bm-curtime-display">${formatBookmarkTime(curTime)}</span>
       </button>
     </div>
 
@@ -728,14 +733,15 @@ function renderBookmarkPanelList() {
   const countBadge = document.getElementById("tada-bm-header-count");
   if (countBadge) countBadge.textContent = currentVideoBookmarks.length;
 
+  const en = typeof isEn === "function" && isEn();
   if (currentVideoBookmarks.length === 0) {
     container.innerHTML = `
       <div class="tada-bm-empty">
         <div class="tada-bm-empty-dot"></div>
-        <div class="tada-bm-empty-text">Chưa có ghi chú nào cho video này</div>
-        <div class="tada-bm-empty-sub">Bấm nút bên dưới để chọn mốc trên thanh tua</div>
+        <div class="tada-bm-empty-text">${en ? "No notes for this video yet" : "Chưa có ghi chú nào cho video này"}</div>
+        <div class="tada-bm-empty-sub">${en ? "Click the button below to pick a point on the progress bar" : "Bấm nút bên dưới để chọn mốc trên thanh tua"}</div>
         <button id="tada-bm-empty-pick-btn" class="tada-bm-empty-btn">
-          Chọn điểm trên thanh tua
+          ${en ? "Pick point on progress bar" : "Chọn điểm trên thanh tua"}
         </button>
       </div>
     `;
@@ -753,17 +759,17 @@ function renderBookmarkPanelList() {
   currentVideoBookmarks.forEach((bm) => {
     html += `
       <div class="tada-bm-item" data-id="${bm.id}">
-        <button class="tada-bm-item-jump" data-time="${bm.time}" title="Nhảy tới ${formatBookmarkTime(bm.time)} và phát">
+        <button class="tada-bm-item-jump" data-time="${bm.time}" title="${en ? `Jump to ${formatBookmarkTime(bm.time)} and play` : `Nhảy tới ${formatBookmarkTime(bm.time)} và phát`}">
           ${formatBookmarkTime(bm.time)}
         </button>
         <div class="tada-bm-item-note" title="${escapeBookmarkHtml(bm.note)}">
           ${escapeBookmarkHtml(bm.note)}
         </div>
         <div class="tada-bm-item-actions">
-          <button class="tada-bm-item-edit" data-id="${bm.id}" title="Chỉnh sửa ghi chú này">
-            Sửa
+          <button class="tada-bm-item-edit" data-id="${bm.id}" title="${en ? "Edit this note" : "Chỉnh sửa ghi chú này"}">
+            ${en ? "Edit" : "Sửa"}
           </button>
-          <button class="tada-bm-item-delete" data-id="${bm.id}" title="Xóa mốc này">
+          <button class="tada-bm-item-delete" data-id="${bm.id}" title="${en ? "Delete this bookmark" : "Xóa mốc này"}">
             ×
           </button>
         </div>
@@ -781,7 +787,7 @@ function renderBookmarkPanelList() {
         if (video) {
           video.currentTime = time;
           video.play().catch(() => { });
-          bookmarkToast(`Đã nhảy tới ${formatBookmarkTime(time)}`);
+          bookmarkToast((typeof isEn === "function" && isEn() ? "Jumped to " : "Đã nhảy tới ") + formatBookmarkTime(time));
         }
       }
     });
@@ -832,7 +838,7 @@ function handleGlobalBookmarkHotkeys(e) {
     if (bookmarkPicking) {
       e.preventDefault(); e.stopPropagation();
       stopBookmarkPicking();
-      bookmarkToast("Đã hủy chọn mốc");
+      bookmarkToast(typeof isEn === "function" && isEn() ? "Cancelled bookmark pick" : "Đã hủy chọn mốc");
       return;
     }
     if (bookmarkPanelOpen) {

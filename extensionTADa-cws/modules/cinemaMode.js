@@ -170,14 +170,16 @@ function setCinemaMode(active) {
     }, 50);
 
     if (typeof showHudNotification === "function") {
-      showHudNotification("Rạp chiếu phim: Đã tắt đèn (Bấm ra ngoài để bật lại)");
+      const en = typeof isEn === "function" && isEn();
+      showHudNotification(en ? "Cinema Mode: Lights off (Click outside to turn on)" : "Rạp chiếu phim: Đã tắt đèn (Bấm ra ngoài để bật lại)");
     }
   } else {
     document.body.classList.remove("tada-cinema-active");
     document.removeEventListener("click", handleCinemaOutsideClick, true);
 
     if (typeof showHudNotification === "function") {
-      showHudNotification("Rạp chiếu phim: Đã bật đèn");
+      const en = typeof isEn === "function" && isEn();
+      showHudNotification(en ? "Cinema Mode: Lights on" : "Rạp chiếu phim: Đã bật đèn");
     }
   }
 
@@ -197,11 +199,12 @@ function updateCinemaButtonState() {
   if (!btn) return;
 
   btn.classList.toggle("active", isCinemaActive);
+  const en = typeof isEn === "function" && isEn();
   btn.setAttribute(
     "title",
     isCinemaActive
-      ? "Bật đèn lại (Rạp chiếu phim đang bật) - Phím tắt Shift+L"
-      : "Rạp chiếu phim (Tắt đèn) - Phím tắt Shift+L"
+      ? (en ? "Turn lights on (Cinema mode active) - Shortcut Shift+L" : "Bật đèn lại (Rạp chiếu phim đang bật) - Phím tắt Shift+L")
+      : (en ? "Cinema Mode (Dim lights) - Shortcut Shift+L" : "Rạp chiếu phim (Tắt đèn) - Phím tắt Shift+L")
   );
 }
 
@@ -231,8 +234,9 @@ function ensureCinemaButton() {
     btn = document.createElement("button");
     btn.id = CINEMA_BUTTON_ID;
     btn.className = "ytp-button tada-cinema-button";
-    btn.setAttribute("aria-label", "Rạp chiếu phim (Tắt đèn)");
-    btn.setAttribute("title", "Rạp chiếu phim (Tắt đèn) - Phím tắt Shift+L");
+    const en = typeof isEn === "function" && isEn();
+    btn.setAttribute("aria-label", en ? "Cinema Mode (Dim lights)" : "Rạp chiếu phim (Tắt đèn)");
+    btn.setAttribute("title", en ? "Cinema Mode (Dim lights) - Shortcut Shift+L" : "Rạp chiếu phim (Tắt đèn) - Phím tắt Shift+L");
 
     btn.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tada-cinema-icon">

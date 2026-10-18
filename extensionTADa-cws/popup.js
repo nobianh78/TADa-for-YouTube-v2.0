@@ -176,12 +176,21 @@ const I18N = {
     btnSubEnable: "Bật",
     btnSubDisable: "Tắt",
     reloadPage: "Làm mới trang",
+    lblBrightness: "Độ sáng",
+    lblSpread: "Lan tỏa",
     ambientBrightness: "Độ sáng",
     ambientSpread: "Lan tỏa",
     presetPalette: "Bảng màu gợi ý",
     customColorLabel: "Tự chọn mã màu:",
     presetFiltersHeader: "Mẫu lọc có sẵn (1-chạm)",
     filterResetBtn: "Đặt lại",
+    filterPresetReset: "Chuẩn",
+    filterPresetNight: "Xem đêm",
+    filterPresetBrighten: "Sáng rõ",
+    filterPresetCinema: "Cinema",
+    filterPresetVintage: "Hoài cổ",
+    filterPresetInvert: "Đảo màu",
+    filterPresetBw: "Đen trắng",
     filterContrast: "Độ tương phản",
     filterSaturation: "Độ bão hòa màu",
     filterWarmth: "Tông ấm / Dịu mắt",
@@ -192,6 +201,12 @@ const I18N = {
     qualitySaveNet: "Tiết kiệm mạng (480p)",
     qualityBadgeLabel: "Hiện thông báo chất lượng trên video",
     qualityHint: "Tự động ép mức phân giải cao nhất ngay khi mở video, chống bị YouTube tự hạ xuống 480p/720p.",
+    modePcTitle: "Giao diện máy tính",
+    modeTvTitle: "Giao diện Smart TV",
+    openTvNowTitle: "Mở YouTube TV trong cửa sổ ứng dụng riêng biệt",
+    logoTadaTitle: "Logo YouTube TADa (Mặc định)",
+    logoPremiumTitle: "Logo YouTube Premium",
+    logoDefaultTitle: "Logo YouTube gốc mặc định",
     masterHotkeysTitle: "Kích hoạt phím tắt TADa",
     masterHotkeysDesc: "Bật / Tắt tất cả phím tắt tiện ích trên YouTube",
     hotkeysIntroTip: "Bấm vào phím để tùy chỉnh phím mới (nhấn phím mong muốn, Esc để hủy, ↺ để khôi phục).",
@@ -212,14 +227,102 @@ const I18N = {
     bmExportAll: "Sao chép tất cả",
     bmClearAll: "Xóa hết",
     aboutModalTitle: "Giới thiệu TADa for YouTube",
+    aboutHeroDesc: "Tiện ích mở rộng thông minh, tối ưu trải nghiệm xem video YouTube sạch sẽ, không quảng cáo, tích hợp bộ công cụ hỗ trợ người dùng toàn diện. Thuộc hệ sinh thái <strong>TADa Manager</strong>.",
     aboutDevRole: "Phát triển bởi",
     aboutDevTeam: "Thành viên Team TADa",
     aboutSourceSec: "Mã nguồn & Đóng góp",
+    aboutGithubTitle: "Xem mã nguồn & Tặng sao trên GitHub",
     aboutShareSec: "Chia sẻ tiện ích",
+    aboutCopyCwsTitle: "Sao chép link cài đặt tiện ích",
     aboutCopyLinkBtn: "Sao chép link",
+    aboutShareBtnTitle: "Chia sẻ link tiện ích",
     aboutShareBtn: "Chia sẻ",
     aboutDonateSec: "Ủng hộ tôi",
-    aboutCloseBtn: "Đóng"
+    aboutDonateTitle: "Ủng hộ tác giả TADa for YouTube",
+    aboutTapCopyStk: "Chạm để sao chép STK",
+    aboutMbBankSub: "Ngân hàng Quân Đội",
+    aboutAccNumLabel: "SỐ TÀI KHOẢN / THẺ",
+    aboutCopyStkTitle: "Sao chép số tài khoản",
+    aboutCopyStkBtn: "Sao chép",
+    aboutAccHolderLabel: "CHỦ TÀI KHOẢN:",
+    aboutShowQrBtn: "Hiện mã QR MB Bank ▼",
+    aboutHideQrBtn: "Ẩn mã QR ▲",
+    aboutQrHint: "Quét mã bằng app ngân hàng (MB Bank, VCB, MoMo, VNPay,...)",
+    aboutCloseTitle: "Đóng",
+    aboutCloseBtn: "Đóng",
+    onboardingTitle: "Chào mừng đến với TADa!",
+    onboardingSubtitle: "Vui lòng chọn ngôn ngữ bạn muốn sử dụng",
+    onboardingSubEn: "Please select your preferred language",
+    langCardDescVi: "Giao diện tiếng Việt chuẩn",
+    langCardDescEn: "International English UI",
+    btnLangConfirm: "Bắt đầu ngay • Get Started",
+    featSuperVolume: "Booster âm lượng 500%",
+    featAmbientLight: "Ambient Light",
+    featProgressColor: "Màu thanh thời gian",
+    featVideoFilter: "Bộ lọc màu & Ánh sáng",
+    featCinemaMode: "Rạp phim (Tắt đèn)",
+    featCustomSpeed: "Tốc độ phát (0.1x – 4x)",
+    featPipButton: "Hình trong hình (PiP)",
+    featAbLooper: "Lặp đoạn A-B",
+    featCustomLoader: "Loader cánh chim (Giant Bird)",
+    featAutoQuality: "Tự động chọn độ phân giải cao nhất",
+    featVideoScreenshot: "Chụp ảnh màn hình (4K)",
+    featVideoBookmarks: "Đánh dấu mốc & Ghi chú",
+    featReturnDislike: "Hiện số lượt Dislike",
+    featAutoSkipSegments: "Bỏ qua Intro & Sponsor",
+    featCurateSidebar: "Lọc gợi ý Sidebar",
+    featFourColumnGrid: "Lưới 4 video / hàng",
+    featHideShorts: "Ẩn YouTube Shorts",
+    featHideEndScreens: "Ẩn màn hình kết thúc",
+    featEnsureComments: "Cố định bình luận",
+    featAutoSelectChips: "Tự chọn thẻ lọc",
+    featInterfaceMode: "Giả lập giao diện TV",
+    featMasterHotkeys: "Kích hoạt phím tắt TADa",
+    hotkeyRecordTitle: "Bấm để đổi phím tắt",
+    hotkeyResetTitle: "Khôi phục mặc định",
+    shortcutScreenshotTitle: "Chụp ảnh màn hình 4K",
+    shortcutScreenshotDesc: "Tải về ảnh khung hình gốc chất lượng cao nhất",
+    shortcutScreenshotClipboardTitle: "Sao chép ảnh vào Clipboard",
+    shortcutScreenshotClipboardDesc: "Dán ảnh nhanh vào Zalo, Facebook, Discord",
+    shortcutCinemaModeTitle: "Chế độ rạp phim (Cinema)",
+    shortcutCinemaModeDesc: "Tối đen toàn bộ giao diện xung quanh để tập trung",
+    shortcutPipTitle: "Hình trong hình (PiP)",
+    shortcutPipDesc: "Thu nhỏ video góc màn hình để vừa làm việc vừa xem",
+    shortcutSpeedUpTitle: "Tăng tốc độ phát (+0.25x)",
+    shortcutSpeedUpDesc: "Tăng tốc độ phát video (giữ Alt để tăng vi mô +0.05x)",
+    shortcutSpeedDownTitle: "Giảm tốc độ phát (-0.25x)",
+    shortcutSpeedDownDesc: "Giảm tốc độ phát video (giữ Alt để giảm vi mô -0.05x)",
+    shortcutSpeedResetTitle: "Đặt lại tốc độ (1.0x)",
+    shortcutSpeedResetDesc: "Trả tốc độ phát về chuẩn bình thường",
+    shortcutAbSetATitle: "Đoạn lặp: Đặt điểm [A]",
+    shortcutAbSetADesc: "Ghim thời điểm bắt đầu lặp A-B",
+    shortcutAbSetBTitle: "Đoạn lặp: Đặt điểm [B]",
+    shortcutAbSetBDesc: "Ghim thời điểm kết thúc đoạn lặp",
+    shortcutAbToggleTitle: "Đoạn lặp: Bật / Tắt lặp",
+    shortcutAbToggleDesc: "Kích hoạt hoặc dừng lặp vòng A-B",
+    shortcutBookmarkAddTitle: "Đánh dấu mốc Bookmark",
+    shortcutBookmarkAddDesc: "Ghim nhanh mốc thời gian kèm ghi chú",
+    shortcutBookmarkPanelTitle: "Mở thư viện Bookmarks",
+    shortcutBookmarkPanelDesc: "Xem và nhảy nhanh tới các mốc đã lưu",
+    shortcutVolumeUpTitle: "Tăng âm lượng 500% (+20%)",
+    shortcutVolumeUpDesc: "Tăng mức khuếch đại âm lượng cực đại",
+    shortcutVolumeDownTitle: "Giảm âm lượng 500% (-20%)",
+    shortcutVolumeDownDesc: "Giảm mức khuếch đại âm lượng cực đại",
+    shortcutSponsorRevertTitle: "Hoàn tác bỏ qua tài trợ",
+    shortcutSponsorRevertDesc: "Quay lại đoạn intro / sponsor vừa tự động nhảy",
+    shortcutSwitchLogoTitle: "Đổi nhanh Logo YouTube",
+    shortcutSwitchLogoDesc: "Chuyển qua lại Logo TADa / Premium / Mặc định",
+    shortcutEscTitle: "Đóng nhanh bảng / Popup",
+    shortcutEscDesc: "Đóng bảng Bookmarks, Looper hoặc cửa sổ đang mở",
+    logoControlAria: "Tùy chọn logo YouTube",
+    modeControlAria: "Tùy chọn giao diện YouTube",
+    swatchTadaTitle: "Cam TADa (Mặc định)",
+    swatchCyanTitle: "Xanh Cyan Neon",
+    swatchEmeraldTitle: "Xanh Ngọc Emerald",
+    swatchPurpleTitle: "Tím Neon Purple",
+    swatchPinkTitle: "Hồng Pastel Pink",
+    swatchGoldTitle: "Vàng Gold",
+    swatchRedTitle: "Đỏ gốc YouTube"
   },
   en: {
     brandSub: "Smart Customizer",
@@ -235,6 +338,7 @@ const I18N = {
     logoTitle: "YouTube Logo",
     logoDefault: "Default",
     modeTitle: "Interface Mode",
+    featInterfaceMode: "Smart TV Simulation",
     openTvNow: "Open YouTube TV now",
     tvAutoRedirectLabel: "Automatically switch to TV mode on youtube.com",
     openTvSub: "Open YouTube TV in standalone window",
@@ -253,12 +357,21 @@ const I18N = {
     btnSubEnable: "Enable",
     btnSubDisable: "Disable",
     reloadPage: "Reload Page",
+    lblBrightness: "Brightness",
+    lblSpread: "Spread",
     ambientBrightness: "Brightness",
     ambientSpread: "Spread",
     presetPalette: "Preset Colors",
     customColorLabel: "Custom Hex Color:",
     presetFiltersHeader: "1-Click Presets",
     filterResetBtn: "Reset",
+    filterPresetReset: "Default",
+    filterPresetNight: "Night",
+    filterPresetBrighten: "Brighten",
+    filterPresetCinema: "Cinema",
+    filterPresetVintage: "Vintage",
+    filterPresetInvert: "Invert",
+    filterPresetBw: "B&W",
     filterContrast: "Contrast",
     filterSaturation: "Saturation",
     filterWarmth: "Warmth / Eye Care",
@@ -269,6 +382,12 @@ const I18N = {
     qualitySaveNet: "Data Saver (480p)",
     qualityBadgeLabel: "Show quality badge on video",
     qualityHint: "Forces highest resolution on video load to prevent YouTube auto-downgrading.",
+    modePcTitle: "Desktop Interface",
+    modeTvTitle: "Smart TV Interface",
+    openTvNowTitle: "Open YouTube TV in standalone application window",
+    logoTadaTitle: "TADa YouTube Logo (Default)",
+    logoPremiumTitle: "YouTube Premium Logo",
+    logoDefaultTitle: "Original YouTube Logo",
     masterHotkeysTitle: "Enable TADa Hotkeys",
     masterHotkeysDesc: "Toggle all custom keyboard shortcuts on YouTube",
     hotkeysIntroTip: "Click any key to rebind (press desired key, Esc to cancel, ↺ to reset).",
@@ -289,14 +408,102 @@ const I18N = {
     bmExportAll: "Copy All",
     bmClearAll: "Clear All",
     aboutModalTitle: "About TADa for YouTube",
+    aboutHeroDesc: "Smart YouTube extension optimizing clean ad-free playback with comprehensive productivity and viewing tools. Part of the <strong>TADa Manager</strong> ecosystem.",
     aboutDevRole: "Developed by",
     aboutDevTeam: "TADa Team Member",
     aboutSourceSec: "Source Code & Contributions",
+    aboutGithubTitle: "View source code & Star on GitHub",
     aboutShareSec: "Share Extension",
+    aboutCopyCwsTitle: "Copy extension installation link",
     aboutCopyLinkBtn: "Copy Link",
+    aboutShareBtnTitle: "Share extension link",
     aboutShareBtn: "Share",
     aboutDonateSec: "Support Me",
-    aboutCloseBtn: "Close"
+    aboutDonateTitle: "Support TADa for YouTube author",
+    aboutTapCopyStk: "Tap to copy bank account",
+    aboutMbBankSub: "Military Commercial Bank (MB Bank)",
+    aboutAccNumLabel: "ACCOUNT / CARD NUMBER",
+    aboutCopyStkTitle: "Copy account number",
+    aboutCopyStkBtn: "Copy",
+    aboutAccHolderLabel: "ACCOUNT HOLDER:",
+    aboutShowQrBtn: "Show MB Bank VietQR ▼",
+    aboutHideQrBtn: "Hide QR Code ▲",
+    aboutQrHint: "Scan with banking app (MB Bank, Vietcombank, MoMo, e-Wallets,...)",
+    aboutCloseTitle: "Close",
+    aboutCloseBtn: "Close",
+    onboardingTitle: "Welcome to TADa!",
+    onboardingSubtitle: "Please select your preferred language",
+    onboardingSubEn: "You can change this anytime from the top bar",
+    langCardDescVi: "Vietnamese standard UI",
+    langCardDescEn: "International English UI",
+    btnLangConfirm: "Get Started • Bắt đầu ngay",
+    featSuperVolume: "Volume Booster 500%",
+    featAmbientLight: "Ambient Light",
+    featProgressColor: "Progress Bar Color",
+    featVideoFilter: "Color & Lighting Filter",
+    featCinemaMode: "Cinema Mode (Dim Lights)",
+    featCustomSpeed: "Playback Speed (0.1x – 4x)",
+    featPipButton: "Picture-in-Picture (PiP)",
+    featAbLooper: "A-B Looper",
+    featCustomLoader: "Bird Wing Loading Animation",
+    featAutoQuality: "Auto Select Highest Quality",
+    featVideoScreenshot: "Screenshot Capture (4K)",
+    featVideoBookmarks: "Video Bookmarks & Notes",
+    featReturnDislike: "Show Dislike Count",
+    featAutoSkipSegments: "Skip Intro & Sponsors",
+    featCurateSidebar: "Curate Sidebar Suggestions",
+    featFourColumnGrid: "4-Column Video Grid",
+    featHideShorts: "Hide YouTube Shorts",
+    featHideEndScreens: "Hide End Screen Cards",
+    featEnsureComments: "Keep Comments Visible",
+    featAutoSelectChips: "Auto-Select Chips",
+    featInterfaceMode: "Smart TV Simulation",
+    featMasterHotkeys: "Enable TADa Hotkeys",
+    hotkeyRecordTitle: "Click to rebind shortcut",
+    hotkeyResetTitle: "Reset to default",
+    shortcutScreenshotTitle: "Capture 4K Screenshot",
+    shortcutScreenshotDesc: "Download pristine frame at highest resolution",
+    shortcutScreenshotClipboardTitle: "Copy Frame to Clipboard",
+    shortcutScreenshotClipboardDesc: "Quick paste to Discord, Slack, Messenger",
+    shortcutCinemaModeTitle: "Cinema Mode (Dim Lights)",
+    shortcutCinemaModeDesc: "Darken surroundings for focused viewing",
+    shortcutPipTitle: "Picture-in-Picture (PiP)",
+    shortcutPipDesc: "Floating video window for multitasking",
+    shortcutSpeedUpTitle: "Speed Up Playback (+0.25x)",
+    shortcutSpeedUpDesc: "Speed up video playback (hold Alt for fine +0.05x)",
+    shortcutSpeedDownTitle: "Slow Down Playback (-0.25x)",
+    shortcutSpeedDownDesc: "Slow down video playback (hold Alt for fine -0.05x)",
+    shortcutSpeedResetTitle: "Reset Playback Speed (1.0x)",
+    shortcutSpeedResetDesc: "Instantly restore normal 1.0x playback speed",
+    shortcutAbSetATitle: "A-B Looper: Set Start [A]",
+    shortcutAbSetADesc: "Pin start timestamp for loop segment",
+    shortcutAbSetBTitle: "A-B Looper: Set End [B]",
+    shortcutAbSetBDesc: "Pin end timestamp and start A-B looping",
+    shortcutAbToggleTitle: "A-B Looper: Toggle Looping",
+    shortcutAbToggleDesc: "Pause or resume current loop interval",
+    shortcutBookmarkAddTitle: "Add Video Bookmark",
+    shortcutBookmarkAddDesc: "Save current timestamp and open note field",
+    shortcutBookmarkPanelTitle: "Open Bookmarks Library",
+    shortcutBookmarkPanelDesc: "View and jump to saved bookmarks for this video",
+    shortcutVolumeUpTitle: "Increase Volume (+20%)",
+    shortcutVolumeUpDesc: "Boost audio output beyond standard 100%",
+    shortcutVolumeDownTitle: "Decrease Volume (-20%)",
+    shortcutVolumeDownDesc: "Reduce audio booster amplification",
+    shortcutSponsorRevertTitle: "Undo Sponsor Skip",
+    shortcutSponsorRevertDesc: "Jump back to skipped sponsor or intro segment",
+    shortcutSwitchLogoTitle: "Quick YouTube Logo Switcher",
+    shortcutSwitchLogoDesc: "Cycle through TADa / Premium / Default YouTube Logo",
+    shortcutEscTitle: "Quick Close Panel / Modal",
+    shortcutEscDesc: "Dismiss Bookmarks panel, Looper or active popups",
+    logoControlAria: "YouTube logo options",
+    modeControlAria: "YouTube interface options",
+    swatchTadaTitle: "TADa Orange (Default)",
+    swatchCyanTitle: "Neon Cyan",
+    swatchEmeraldTitle: "Emerald Green",
+    swatchPurpleTitle: "Neon Purple",
+    swatchPinkTitle: "Pastel Pink",
+    swatchGoldTitle: "Gold Yellow",
+    swatchRedTitle: "Original YouTube Red"
   }
 };
 
@@ -321,6 +528,7 @@ const FEATURE_NAMES_I18N = {
   hideEndScreens: { vi: "Ẩn màn hình kết thúc", en: "Hide End Screen Cards" },
   ensureComments: { vi: "Cố định bình luận", en: "Keep Comments Visible" },
   autoSelectChips: { vi: "Tự chọn thẻ lọc", en: "Auto-Select Chips" },
+  interfaceMode: { vi: "Giả lập giao diện TV", en: "Smart TV Simulation" },
   hotkeysEnabled: { vi: "Kích hoạt phím tắt TADa", en: "Enable TADa Hotkeys" }
 };
 
@@ -342,40 +550,40 @@ const SHORTCUT_I18N = {
     desc: { vi: "Thu nhỏ video góc màn hình để vừa làm việc vừa xem", en: "Floating video window for multitasking" }
   },
   speedUp: {
-    title: { vi: "Tăng tốc độ phát (+0.1x)", en: "Speed Up Playback (+0.1x)" },
-    desc: { vi: "Tăng nhanh tốc độ phát video hiện tại", en: "Increase current playback rate" }
+    title: { vi: "Tăng tốc độ phát (+0.25x)", en: "Speed Up Playback (+0.25x)" },
+    desc: { vi: "Tăng tốc độ phát video (giữ Alt để tăng vi mô +0.05x)", en: "Speed up video playback (hold Alt for fine +0.05x)" }
   },
   speedDown: {
-    title: { vi: "Giảm tốc độ phát (-0.1x)", en: "Slow Down Playback (-0.1x)" },
-    desc: { vi: "Giảm tốc độ để nghe hoặc quan sát rõ hơn", en: "Decrease speed for transcription or practice" }
+    title: { vi: "Giảm tốc độ phát (-0.25x)", en: "Slow Down Playback (-0.25x)" },
+    desc: { vi: "Giảm tốc độ phát video (giữ Alt để giảm vi mô -0.05x)", en: "Slow down video playback (hold Alt for fine -0.05x)" }
   },
   speedReset: {
-    title: { vi: "Đặt lại tốc độ về 1.0x", en: "Reset Speed to 1.0x" },
-    desc: { vi: "Trả tốc độ phát về mức bình thường ngay lập tức", en: "Instantly restore normal playback speed" }
+    title: { vi: "Đặt lại tốc độ (1.0x)", en: "Reset Playback Speed (1.0x)" },
+    desc: { vi: "Trả tốc độ phát về chuẩn bình thường", en: "Instantly restore normal 1.0x playback speed" }
   },
   abSetA: {
-    title: { vi: "Đặt mốc bắt đầu A", en: "Set Start Point A" },
-    desc: { vi: "Ghim mốc đầu đoạn cần lặp lại", en: "Pin start timestamp for loop segment" }
+    title: { vi: "Đoạn lặp: Đặt điểm [A]", en: "A-B Looper: Set Start [A]" },
+    desc: { vi: "Ghim thời điểm bắt đầu lặp A-B", en: "Pin start timestamp for loop segment" }
   },
   abSetB: {
-    title: { vi: "Đặt mốc kết thúc B", en: "Set End Point B" },
-    desc: { vi: "Ghim mốc cuối và bắt đầu vòng lặp A-B", en: "Pin end timestamp and start A-B looping" }
+    title: { vi: "Đoạn lặp: Đặt điểm [B]", en: "A-B Looper: Set End [B]" },
+    desc: { vi: "Ghim thời điểm kết thúc đoạn lặp", en: "Pin end timestamp and start A-B looping" }
   },
   abToggle: {
-    title: { vi: "Bật / Tắt lặp đoạn A-B", en: "Toggle A-B Looping" },
-    desc: { vi: "Tạm dừng hoặc kích hoạt lại chế độ lặp", en: "Pause or resume current loop interval" }
+    title: { vi: "Đoạn lặp: Bật / Tắt lặp", en: "A-B Looper: Toggle Looping" },
+    desc: { vi: "Kích hoạt hoặc dừng lặp vòng A-B", en: "Pause or resume current loop interval" }
   },
   bookmarkAdd: {
-    title: { vi: "Thêm Bookmark tại mốc hiện tại", en: "Add Bookmark at Timestamp" },
-    desc: { vi: "Lưu nhanh thời gian và mở hộp nhập ghi chú", en: "Save current timestamp and open note field" }
+    title: { vi: "Đánh dấu mốc Bookmark", en: "Add Video Bookmark" },
+    desc: { vi: "Ghim nhanh mốc thời gian kèm ghi chú", en: "Save current timestamp and open note field" }
   },
   bookmarkPanel: {
-    title: { vi: "Bật / Tắt bảng Bookmarks", en: "Toggle Bookmarks Panel" },
-    desc: { vi: "Mở danh sách các mốc đã lưu của video này", en: "View and jump to saved bookmarks for this video" }
+    title: { vi: "Mở thư viện Bookmarks", en: "Open Bookmarks Library" },
+    desc: { vi: "Xem và nhảy nhanh tới các mốc đã lưu", en: "View and jump to saved bookmarks for this video" }
   },
   volumeUp: {
     title: { vi: "Tăng âm lượng 500% (+20%)", en: "Increase Volume (+20%)" },
-    desc: { vi: "Tăng mức khuếch đại âm thanh vượt ngưỡng 100%", en: "Boost audio output beyond standard 100%" }
+    desc: { vi: "Tăng mức khuếch đại âm lượng cực đại", en: "Boost audio output beyond standard 100%" }
   },
   volumeDown: {
     title: { vi: "Giảm âm lượng 500% (-20%)", en: "Decrease Volume (-20%)" },
@@ -384,6 +592,14 @@ const SHORTCUT_I18N = {
   sponsorRevert: {
     title: { vi: "Hoàn tác bỏ qua tài trợ", en: "Undo Sponsor Skip" },
     desc: { vi: "Quay lại đoạn intro / sponsor vừa tự động nhảy", en: "Jump back to skipped sponsor or intro segment" }
+  },
+  switchLogo: {
+    title: { vi: "Đổi nhanh Logo YouTube", en: "Quick YouTube Logo Switcher" },
+    desc: { vi: "Chuyển qua lại Logo TADa / Premium / Mặc định", en: "Cycle through TADa / Premium / Default YouTube Logo" }
+  },
+  esc: {
+    title: { vi: "Đóng nhanh bảng / Popup", en: "Quick Close Panel / Modal" },
+    desc: { vi: "Đóng bảng Bookmarks, Looper hoặc cửa sổ đang mở", en: "Dismiss Bookmarks panel, Looper or active popups" }
   }
 };
 
@@ -581,9 +797,10 @@ function startRecordingHotkey(action, btn) {
 
   recordingAction = action;
   btn.classList.add("recording");
+  const isEnglish = currentSettings.language === "en";
   const displayEl = btn.querySelector(".hotkey-display");
   if (displayEl) {
-    displayEl.innerHTML = `<span class="recording-badge"><span class="recording-dot"></span>Nhấn phím...</span>`;
+    displayEl.innerHTML = `<span class="recording-badge"><span class="recording-dot"></span>${isEnglish ? "Press key..." : "Nhấn phím..."}</span>`;
   }
 
   const handleKeyDown = async (e) => {
@@ -599,7 +816,8 @@ function startRecordingHotkey(action, btn) {
     if (e.key === "Escape") {
       cleanup();
       renderHotkeys();
-      showToast("Đã hủy đổi phím tắt");
+      const isEn = currentSettings.language === "en";
+      showToast(isEn ? "Shortcut rebind cancelled" : "Đã hủy đổi phím tắt");
       return;
     }
 
@@ -612,7 +830,8 @@ function startRecordingHotkey(action, btn) {
       await saveSettings();
       renderHotkeys();
       notifyYouTubeTabs();
-      showToast("Đã khôi phục phím tắt mặc định");
+      const isEn = currentSettings.language === "en";
+      showToast(isEn ? "Restored shortcut to default" : "Đã khôi phục phím tắt mặc định");
       return;
     }
 
@@ -639,7 +858,8 @@ function startRecordingHotkey(action, btn) {
     await saveSettings();
     renderHotkeys();
     notifyYouTubeTabs();
-    showToast(`Đã lưu phím tắt mới: ${parts.map(formatKeyForDisplay).join(" + ")}`);
+    const isEn = currentSettings.language === "en";
+    showToast(isEn ? `Saved new shortcut: ${parts.map(formatKeyForDisplay).join(" + ")}` : `Đã lưu phím tắt mới: ${parts.map(formatKeyForDisplay).join(" + ")}`);
   };
 
   const handleOutsideClick = (e) => {
@@ -804,13 +1024,14 @@ function renderProgressColor() {
 
 function renderLogoType() {
   const currentLogo = currentSettings.logoType || (currentSettings.premiumBranding ? "tada" : "default");
+  const isEn = currentSettings.language === "en";
 
   const badgeMain = document.getElementById("topbar-logo-badge-main");
   if (badgeMain) {
     const labels = {
       tada: "TADa",
       premium: "Premium",
-      default: "Mặc định"
+      default: isEn ? "Default" : "Mặc định"
     };
     badgeMain.textContent = labels[currentLogo] || "TADa";
   }
@@ -931,6 +1152,7 @@ function getSanitizedToolbarOrder() {
 function renderToolbarPreview() {
   const track = document.getElementById("toolbar-preview-track");
   if (!track) return;
+  const isEnglish = currentSettings.language === "en";
 
   const order = getSanitizedToolbarOrder();
   const hidden = currentSettings.toolbarHidden || {};
@@ -941,8 +1163,9 @@ function renderToolbarPreview() {
     const def = TOOLBAR_BUTTONS_DEF[id];
     if (!def) return "";
     const isHidden = Boolean(hidden[id]);
+    const hiddenTag = isHidden ? (isEnglish ? " (Hidden)" : " (Đang ẩn)") : "";
     return `
-      <div class="preview-tb-item ${isHidden ? 'preview-hidden' : ''}" title="${def.name}${isHidden ? ' (Đang ẩn)' : ''}">
+      <div class="preview-tb-item ${isHidden ? 'preview-hidden' : ''}" title="${def.name}${hiddenTag}">
         ${def.iconSvg}
       </div>
     `;
@@ -965,12 +1188,12 @@ function renderToolbarPreview() {
     .map((id) => renderItemPill(id))
     .join("");
 
-  const ytSettingsPill = `<span title="Cài đặt YouTube" style="opacity:0.8;font-size:12px;cursor:default;">⚙️</span>`;
-  const ytEndPills = `<span title="Hình trong hình gốc" style="opacity:0.5;font-size:11px;">⧉</span><span title="Toàn màn hình" style="opacity:0.7;font-size:11px;">⛶</span>`;
+  const ytSettingsPill = `<span title="${isEnglish ? 'YouTube Settings' : 'Cài đặt YouTube'}" style="opacity:0.8;font-size:12px;cursor:default;">⚙️</span>`;
+  const ytEndPills = `<span title="${isEnglish ? 'Native PiP' : 'Hình trong hình gốc'}" style="opacity:0.5;font-size:11px;">⧉</span><span title="${isEnglish ? 'Full screen' : 'Toàn màn hình'}" style="opacity:0.7;font-size:11px;">⛶</span>`;
 
   const rightHtml = `
     <div class="preview-fixed-right">
-      <span title="Phụ đề YouTube" style="opacity:0.6;font-size:10px;">CC</span>
+      <span title="${isEnglish ? 'YouTube Captions' : 'Phụ đề YouTube'}" style="opacity:0.6;font-size:10px;">CC</span>
       ${anchor === "beforeSettings" ? tadaButtonsHtml + ytSettingsPill : ytSettingsPill + tadaButtonsHtml}
       ${ytEndPills}
     </div>
@@ -982,6 +1205,7 @@ function renderToolbarPreview() {
 function renderToolbarManager() {
   const listContainer = document.getElementById("toolbar-items-list");
   if (!listContainer) return;
+  const isEnglish = currentSettings.language === "en";
 
   const order = getSanitizedToolbarOrder();
   currentSettings.toolbarOrder = order;
@@ -1005,9 +1229,16 @@ function renderToolbarManager() {
     const isFirst = index === 0;
     const isLast = index === order.length - 1;
 
+    const dragTitle = isEnglish ? "Drag to reorder" : "Kéo thả để đổi thứ tự";
+    const upTitle = isEnglish ? "Move up" : "Đưa lên trên";
+    const downTitle = isEnglish ? "Move down" : "Đưa xuống dưới";
+    const toggleTitle = isHidden
+      ? (isEnglish ? "Click to show this button" : "Bấm để hiển thị nút này")
+      : (isEnglish ? "Click to hide this button" : "Bấm để ẩn nút này");
+
     return `
       <div class="toolbar-item-row ${isHidden ? 'is-hidden' : ''}" data-id="${item.id}" draggable="true">
-        <div class="tb-drag-handle" title="Kéo thả để đổi thứ tự">
+        <div class="tb-drag-handle" title="${dragTitle}">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
             <circle cx="9" cy="6" r="1.5"/>
             <circle cx="15" cy="6" r="1.5"/>
@@ -1027,10 +1258,10 @@ function renderToolbarManager() {
         </div>
         <div class="tb-actions-wrap">
           <div class="tb-move-btns">
-            <button type="button" class="btn-tb-move btn-tb-up" data-id="${item.id}" title="Đưa lên trên" ${isFirst ? 'disabled' : ''}>▲</button>
-            <button type="button" class="btn-tb-move btn-tb-down" data-id="${item.id}" title="Đưa xuống dưới" ${isLast ? 'disabled' : ''}>▼</button>
+            <button type="button" class="btn-tb-move btn-tb-up" data-id="${item.id}" title="${upTitle}" ${isFirst ? 'disabled' : ''}>▲</button>
+            <button type="button" class="btn-tb-move btn-tb-down" data-id="${item.id}" title="${downTitle}" ${isLast ? 'disabled' : ''}>▼</button>
           </div>
-          <div class="checkbox-wrapper-41" title="${isHidden ? 'Bấm để hiển thị nút này' : 'Bấm để ẩn nút này'}">
+          <div class="checkbox-wrapper-41" title="${toggleTitle}">
             <input type="checkbox" class="toggle-checkbox tb-visibility-checkbox" data-id="${item.id}" ${!isHidden ? 'checked' : ''}>
           </div>
         </div>
@@ -1085,7 +1316,8 @@ function renderToolbarManager() {
         currentSettings.toolbarOrder = curOrder;
         await saveSettings();
         renderToolbarManager();
-        showToast(`Đã di chuyển "${TOOLBAR_BUTTONS_DEF[draggedId]?.name}"!`);
+        const isEn = currentSettings.language === "en";
+        showToast(isEn ? `Moved "${TOOLBAR_BUTTONS_DEF[draggedId]?.name}"!` : `Đã di chuyển "${TOOLBAR_BUTTONS_DEF[draggedId]?.name}"!`);
       }
     });
 
@@ -1149,7 +1381,8 @@ function renderToolbarManager() {
               currentSettings.toolbarOrder = curOrder;
               await saveSettings();
               renderToolbarManager();
-              showToast(`Đã di chuyển "${TOOLBAR_BUTTONS_DEF[startId]?.name}"!`);
+              const isEn = currentSettings.language === "en";
+              showToast(isEn ? `Moved "${TOOLBAR_BUTTONS_DEF[startId]?.name}"!` : `Đã di chuyển "${TOOLBAR_BUTTONS_DEF[startId]?.name}"!`);
             }
           }
         };
@@ -1175,7 +1408,8 @@ function renderToolbarManager() {
         currentSettings.toolbarOrder = curOrder;
         await saveSettings();
         renderToolbarManager();
-        showToast(`Đã chuyển "${TOOLBAR_BUTTONS_DEF[id]?.name}" lên trước`);
+        const isEn = currentSettings.language === "en";
+        showToast(isEn ? `Moved "${TOOLBAR_BUTTONS_DEF[id]?.name}" up` : `Đã chuyển "${TOOLBAR_BUTTONS_DEF[id]?.name}" lên trước`);
       }
     };
   });
@@ -1193,7 +1427,8 @@ function renderToolbarManager() {
         currentSettings.toolbarOrder = curOrder;
         await saveSettings();
         renderToolbarManager();
-        showToast(`Đã chuyển "${TOOLBAR_BUTTONS_DEF[id]?.name}" xuống sau`);
+        const isEn = currentSettings.language === "en";
+        showToast(isEn ? `Moved "${TOOLBAR_BUTTONS_DEF[id]?.name}" down` : `Đã chuyển "${TOOLBAR_BUTTONS_DEF[id]?.name}" xuống sau`);
       }
     };
   });
@@ -1213,7 +1448,10 @@ function renderToolbarManager() {
       }
       await saveSettings();
       renderToolbarManager();
-      showToast(cb.checked ? `Đã hiện nút "${TOOLBAR_BUTTONS_DEF[id]?.name}"` : `Đã ẩn nút "${TOOLBAR_BUTTONS_DEF[id]?.name}"`);
+      const isEn = currentSettings.language === "en";
+      showToast(cb.checked
+        ? (isEn ? `Shown "${TOOLBAR_BUTTONS_DEF[id]?.name}" button` : `Đã hiện nút "${TOOLBAR_BUTTONS_DEF[id]?.name}"`)
+        : (isEn ? `Hidden "${TOOLBAR_BUTTONS_DEF[id]?.name}" button` : `Đã ẩn nút "${TOOLBAR_BUTTONS_DEF[id]?.name}"`));
     };
   });
 
@@ -1283,7 +1521,11 @@ function applyLanguage(lang) {
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
     const key = el.getAttribute("data-i18n-title");
     if (I18N[currentLang] && I18N[currentLang][key]) {
-      el.setAttribute("title", I18N[currentLang][key]);
+      const text = I18N[currentLang][key];
+      el.setAttribute("title", text);
+      if (el.hasAttribute("aria-label")) {
+        el.setAttribute("aria-label", text);
+      }
     }
   });
 
@@ -1320,10 +1562,13 @@ function applyLanguage(lang) {
     CATEGORY_META.toolbar.desc = "Đổi thứ tự, ẩn/hiện nút tiện ích trên thanh điều khiển YouTube";
   }
 
-  // 6. Update Sub-header title if open
-  if (activeCategory && CATEGORY_META[activeCategory]) {
-    const subTitleEl = document.getElementById("sub-header-title");
-    if (subTitleEl) subTitleEl.textContent = CATEGORY_META[activeCategory].title;
+  // 6. Update Sub-header title
+  const subTitleEl = document.getElementById("sub-header-title");
+  if (subTitleEl) {
+    const cat = activeCategory || "player";
+    if (CATEGORY_META[cat]) {
+      subTitleEl.textContent = CATEGORY_META[cat].title;
+    }
   }
 
   // 7. Update Feature Names
@@ -1410,11 +1655,223 @@ function applyLanguage(lang) {
     }
   }
 
-  // 10. Update counts and toolbar if active
-  updateActiveCount();
+  // 10. Update buttons tooltips and labels
+  document.querySelectorAll(".btn-hotkey-record").forEach((btn) => {
+    btn.title = isEnglish ? "Click to rebind shortcut" : "Bấm để đổi phím tắt";
+  });
+  document.querySelectorAll(".btn-hotkey-reset").forEach((btn) => {
+    btn.title = isEnglish ? "Reset to default" : "Khôi phục mặc định";
+  });
+
+  // 11. Update swatch button tooltips
+  const swatchTitles = {
+    "#E8930C": { vi: "Cam TADa (Mặc định)", en: "TADa Orange (Default)" },
+    "#00D2FF": { vi: "Xanh Cyan Neon", en: "Neon Cyan" },
+    "#10B981": { vi: "Xanh Ngọc Emerald", en: "Emerald Green" },
+    "#A855F7": { vi: "Tím Neon Purple", en: "Neon Purple" },
+    "#EC4899": { vi: "Hồng Pastel Pink", en: "Pastel Pink" },
+    "#EAB308": { vi: "Vàng Gold", en: "Gold Yellow" },
+    "#FF0000": { vi: "Đỏ gốc YouTube", en: "Original YouTube Red" }
+  };
+  document.querySelectorAll(".color-swatch-btn").forEach((btn) => {
+    const color = btn.dataset.color;
+    if (swatchTitles[color]) {
+      btn.title = swatchTitles[color][currentLang];
+    }
+  });
+
+  // 12. Update Filter preset chips text
+  const filterTitles = {
+    reset: { vi: "Chuẩn", en: "Default" },
+    night: { vi: "Xem đêm", en: "Night" },
+    brighten: { vi: "Sáng rõ", en: "Brighten" },
+    cinema: { vi: "Cinema", en: "Cinema" },
+    vintage: { vi: "Hoài cổ", en: "Vintage" },
+    invert: { vi: "Đảo màu", en: "Invert" },
+    bw: { vi: "Đen trắng", en: "B&W" }
+  };
+  document.querySelectorAll(".filter-chip-btn").forEach((btn) => {
+    const p = btn.dataset.preset;
+    if (filterTitles[p]) {
+      btn.textContent = filterTitles[p][currentLang];
+    }
+  });
+
+  // 13. Update segmented badges and dropdowns
+  renderLogoType();
+  renderInterfaceMode();
+  loadBookmarksSummary();
+
+  const qualitySelect = document.getElementById("select-preferredQuality");
+  if (qualitySelect) {
+    const optHighest = qualitySelect.querySelector("option[value='highest']");
+    if (optHighest) optHighest.textContent = isEnglish ? "Highest Possible (4K / 8K)" : "Cao nhất có thể (4K / 8K)";
+    const optSave = qualitySelect.querySelector("option[value='large']");
+    if (optSave) optSave.textContent = isEnglish ? "Data Saver (480p)" : "Tiết kiệm mạng (480p)";
+  }
+
+  // 14. Update Toolbar Preview & List
+  renderToolbarPreview();
   if (activeCategory === "toolbar") {
     renderToolbarManager();
   }
+
+  // 15. Universal fallback text replacement for any static text nodes
+  const TEXT_REPLACEMENTS = isEnglish ? [
+    ["Tải lại tab YouTube", "Reload YouTube tab"],
+    ["Chặn quảng cáo", "Ad Blocker"],
+    ["LUÔN BẬT", "ALWAYS ON"],
+    ["đã chặn", "blocked"],
+    ["Đặt lại thống kê", "Reset statistics"],
+    ["Logo YouTube", "YouTube Logo"],
+    ["Mặc định", "Default"],
+    ["Chế độ giao diện", "Interface Mode"],
+    ["Mở YouTube TV ngay", "Open YouTube TV now"],
+    ["Tính năng", "Features"],
+    ["Bật hết", "Enable All"],
+    ["Tắt hết", "Disable All"],
+    ["Trình phát & Âm thanh", "Player & Audio"],
+    ["Trình phát", "Player"],
+    ["Công cụ & Tiện ích", "Tools & Utilities"],
+    ["Giao diện & Tập trung", "Interface & Focus"],
+    ["Phím tắt nhanh", "Quick Hotkeys"],
+    ["Sắp xếp thanh công cụ", "Toolbar Arrangement"],
+    ["Thư viện Bookmarks", "Bookmarks Library"],
+    ["Giới thiệu TADa", "About TADa"],
+    ["Quay lại", "Back"],
+    ["Làm mới trang", "Reload Page"],
+    ["Độ sáng", "Brightness"],
+    ["Lan tỏa", "Spread"],
+    ["Bảng màu gợi ý", "Preset Colors"],
+    ["Tự chọn mã màu:", "Custom Hex Color:"],
+    ["Mẫu lọc có sẵn (1-chạm)", "1-Click Presets"],
+    ["Đặt lại", "Reset"],
+    ["Độ tương phản", "Contrast"],
+    ["Độ bão hòa màu", "Saturation"],
+    ["Tông ấm / Dịu mắt", "Warmth / Eye Care"],
+    ["Độ mờ màn đen", "Dim Opacity"],
+    ["Mức chất lượng ưu tiên:", "Preferred Quality:"],
+    ["Hiện thông báo chất lượng trên video", "Show quality badge on video"],
+    ["Kích hoạt phím tắt TADa", "Enable TADa Hotkeys"],
+    ["Khôi phục tất cả phím tắt mặc định", "Reset All Shortcuts to Default"],
+    ["MÔ PHỎNG TRỰC TIẾP", "LIVE SIMULATION"],
+    ["Thanh phát video YouTube", "YouTube Video Player Bar"],
+    ["Vị trí nút Lặp đoạn A-B:", "A-B Looper Button Position:"],
+    ["Đặt cạnh mốc thời gian hoặc cùng cụm công cụ", "Place next to time display or in right toolbar"],
+    ["Cạnh thời gian (Bên trái)", "Next to Time (Left side)"],
+    ["Thanh công cụ (Bên phải)", "Main Toolbar (Right side)"],
+    ["Vị trí cụm nút TADa:", "TADa Buttons Position:"],
+    ["Vị trí tương đối với nút Cài đặt bánh răng", "Position relative to YouTube Settings gear icon"],
+    ["Trước nút Cài đặt (Bên trái)", "Before Settings Icon (Left)"],
+    ["Sau nút Cài đặt (Bên phải)", "After Settings Icon (Right)"],
+    ["Khôi phục thứ tự mặc định", "Reset to Default Order"],
+    ["Bookmarks đã lưu", "Saved Bookmarks"],
+    ["Sao chép tất cả", "Copy All"],
+    ["Xóa hết", "Clear All"],
+    ["Phát triển bởi", "Developed by"],
+    ["Thành viên Team TADa", "TADa Team Member"],
+    ["Mã nguồn & Đóng góp", "Source Code & Contributions"],
+    ["Chia sẻ tiện ích", "Share Extension"],
+    ["Sao chép link", "Copy Link"],
+    ["Chia sẻ", "Share"],
+    ["Ủng hộ tôi", "Support Me"],
+    ["Chạm để sao chép STK", "Tap to copy bank account"],
+    ["Ngân hàng Quân Đội", "Military Commercial Bank (MB Bank)"],
+    ["SỐ TÀI KHOẢN / THẺ", "ACCOUNT / CARD NUMBER"],
+    ["Sao chép", "Copy"],
+    ["CHỦ TÀI KHOẢN:", "ACCOUNT HOLDER:"],
+    ["Hiện mã QR MB Bank ▼", "Show MB Bank VietQR ▼"],
+    ["Đóng", "Close"],
+    ["Chào mừng đến với TADa!", "Welcome to TADa!"],
+    ["Vui lòng chọn ngôn ngữ bạn muốn sử dụng", "Please select your preferred language"],
+    ["Giao diện tiếng Việt chuẩn", "Vietnamese standard UI"],
+    ["Bắt đầu ngay • Get Started", "Get Started"]
+  ] : [
+    ["Reload YouTube tab", "Tải lại tab YouTube"],
+    ["Ad Blocker", "Chặn quảng cáo"],
+    ["ALWAYS ON", "LUÔN BẬT"],
+    ["blocked", "đã chặn"],
+    ["Reset statistics", "Đặt lại thống kê"],
+    ["YouTube Logo", "Logo YouTube"],
+    ["Default", "Mặc định"],
+    ["Interface Mode", "Chế độ giao diện"],
+    ["Open YouTube TV now", "Mở YouTube TV ngay"],
+    ["Features", "Tính năng"],
+    ["Enable All", "Bật hết"],
+    ["Disable All", "Tắt hết"],
+    ["Player & Audio", "Trình phát & Âm thanh"],
+    ["Tools & Utilities", "Công cụ & Tiện ích"],
+    ["Interface & Focus", "Giao diện & Tập trung"],
+    ["Quick Hotkeys", "Phím tắt nhanh"],
+    ["Toolbar Arrangement", "Sắp xếp thanh công cụ"],
+    ["Bookmarks Library", "Thư viện Bookmarks"],
+    ["About TADa", "Giới thiệu TADa"],
+    ["Back", "Quay lại"],
+    ["Reload Page", "Làm mới trang"],
+    ["Brightness", "Độ sáng"],
+    ["Spread", "Lan tỏa"],
+    ["Preset Colors", "Bảng màu gợi ý"],
+    ["Custom Hex Color:", "Tự chọn mã màu:"],
+    ["1-Click Presets", "Mẫu lọc có sẵn (1-chạm)"],
+    ["Reset", "Đặt lại"],
+    ["Contrast", "Độ tương phản"],
+    ["Saturation", "Độ bão hòa màu"],
+    ["Warmth / Eye Care", "Tông ấm / Dịu mắt"],
+    ["Dim Opacity", "Độ mờ màn đen"],
+    ["Preferred Quality:", "Mức chất lượng ưu tiên:"],
+    ["Show quality badge on video", "Hiện thông báo chất lượng trên video"],
+    ["Enable TADa Hotkeys", "Kích hoạt phím tắt TADa"],
+    ["Reset All Shortcuts to Default", "Khôi phục tất cả phím tắt mặc định"],
+    ["LIVE SIMULATION", "MÔ PHỎNG TRỰC TIẾP"],
+    ["YouTube Video Player Bar", "Thanh phát video YouTube"],
+    ["A-B Looper Button Position:", "Vị trí nút Lặp đoạn A-B:"],
+    ["Place next to time display or in right toolbar", "Đặt cạnh mốc thời gian hoặc cùng cụm công cụ"],
+    ["Next to Time (Left side)", "Cạnh thời gian (Bên trái)"],
+    ["Main Toolbar (Right side)", "Thanh công cụ (Bên phải)"],
+    ["TADa Buttons Position:", "Vị trí cụm nút TADa:"],
+    ["Position relative to YouTube Settings gear icon", "Vị trí tương đối với nút Cài đặt bánh răng"],
+    ["Before Settings Icon (Left)", "Trước nút Cài đặt (Bên trái)"],
+    ["After Settings Icon (Right)", "Sau nút Cài đặt (Bên phải)"],
+    ["Reset to Default Order", "Khôi phục thứ tự mặc định"],
+    ["Saved Bookmarks", "Bookmarks đã lưu"],
+    ["Copy All", "Sao chép tất cả"],
+    ["Clear All", "Xóa hết"],
+    ["Developed by", "Phát triển bởi"],
+    ["TADa Team Member", "Thành viên Team TADa"],
+    ["Source Code & Contributions", "Mã nguồn & Đóng góp"],
+    ["Share Extension", "Chia sẻ tiện ích"],
+    ["Copy Link", "Sao chép link"],
+    ["Share", "Chia sẻ"],
+    ["Support Me", "Ủng hộ tôi"],
+    ["Tap to copy bank account", "Chạm để sao chép STK"],
+    ["Military Commercial Bank (MB Bank)", "Ngân hàng Quân Đội"],
+    ["ACCOUNT / CARD NUMBER", "SỐ TÀI KHOẢN / THẺ"],
+    ["Copy", "Sao chép"],
+    ["ACCOUNT HOLDER:", "CHỦ TÀI KHOẢN:"],
+    ["Show MB Bank VietQR ▼", "Hiện mã QR MB Bank ▼"],
+    ["Hide QR Code ▲", "Ẩn mã QR ▲"],
+    ["Close", "Đóng"],
+    ["Welcome to TADa!", "Chào mừng đến với TADa!"],
+    ["Please select your preferred language", "Vui lòng chọn ngôn ngữ bạn muốn sử dụng"],
+    ["Vietnamese standard UI", "Giao diện tiếng Việt chuẩn"],
+    ["Get Started", "Bắt đầu ngay • Get Started"]
+  ];
+
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walker.nextNode())) {
+    const text = node.nodeValue.trim();
+    if (!text) continue;
+    for (const [fromText, toText] of TEXT_REPLACEMENTS) {
+      if (text === fromText) {
+        node.nodeValue = node.nodeValue.replace(fromText, toText);
+        break;
+      }
+    }
+  }
+
+  // 16. Update counts
+  updateActiveCount();
 }
 
 let languageOnboardingInitialized = false;
@@ -1440,6 +1897,14 @@ function initLanguageOnboarding() {
       cards.forEach((c) => {
         c.classList.toggle("active", c.dataset.lang === lang);
       });
+      const confirmText = document.getElementById("btn-lang-confirm-text");
+      if (confirmText) {
+        confirmText.textContent = lang === "en" ? "Get Started" : "Bắt đầu ngay";
+      }
+      const titleEl = document.getElementById("lang-modal-title");
+      if (titleEl) {
+        titleEl.textContent = lang === "en" ? "Welcome to TADa!" : "Chào mừng đến với TADa!";
+      }
     };
     updateCardSelection(selectedLang);
 
@@ -1552,7 +2017,7 @@ async function saveSettings() {
     notifyYouTubeTabs();
   } catch (error) {
     console.error("[TADa] Failed to save settings", error);
-    showToast("Không thể lưu cài đặt!");
+    showToast(currentSettings.language === "en" ? "Unable to save settings!" : "Không thể lưu cài đặt!");
   }
 }
 
@@ -1598,17 +2063,18 @@ function initEventListeners() {
   if (btnSubEnableAll) {
     btnSubEnableAll.addEventListener("click", async () => {
       if (!activeCategory) return;
+      const isEn = currentSettings.language === "en";
       if (activeCategory === "toolbar") {
         currentSettings.toolbarHidden = {};
         await saveSettings();
         renderToolbarManager();
-        showToast("Đã hiện tất cả nút trên thanh phát!");
+        showToast(isEn ? "All player buttons visible!" : "Đã hiện tất cả nút trên thanh phát!");
         return;
       }
       CATEGORY_MAP[activeCategory].forEach((key) => { currentSettings[key] = true; });
       await saveSettings();
       renderToggles();
-      showToast(`Đã bật hết ${CATEGORY_META[activeCategory]?.title}!`);
+      showToast(isEn ? `Enabled all in ${CATEGORY_META[activeCategory]?.title}!` : `Đã bật hết ${CATEGORY_META[activeCategory]?.title}!`);
     });
   }
 
@@ -1617,6 +2083,7 @@ function initEventListeners() {
   if (btnSubDisableAll) {
     btnSubDisableAll.addEventListener("click", async () => {
       if (!activeCategory) return;
+      const isEn = currentSettings.language === "en";
       if (activeCategory === "toolbar") {
         const order = getSanitizedToolbarOrder();
         const newHidden = {};
@@ -1624,13 +2091,13 @@ function initEventListeners() {
         currentSettings.toolbarHidden = newHidden;
         await saveSettings();
         renderToolbarManager();
-        showToast("Đã ẩn tất cả nút khỏi thanh phát!");
+        showToast(isEn ? "All player buttons hidden!" : "Đã ẩn tất cả nút khỏi thanh phát!");
         return;
       }
       CATEGORY_MAP[activeCategory].forEach((key) => { currentSettings[key] = false; });
       await saveSettings();
       renderToggles();
-      showToast(`Đã tắt hết ${CATEGORY_META[activeCategory]?.title}!`);
+      showToast(isEn ? `Disabled all in ${CATEGORY_META[activeCategory]?.title}!` : `Đã tắt hết ${CATEGORY_META[activeCategory]?.title}!`);
     });
   }
 
@@ -1642,7 +2109,7 @@ function initEventListeners() {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tabs && tabs[0]?.id) {
           await chrome.tabs.reload(tabs[0].id);
-          showToast("Đang làm mới trang...");
+          showToast(currentSettings.language === "en" ? "Reloading YouTube tab..." : "Đang làm mới trang...");
         }
       } catch (error) {
         console.warn("Could not reload tab:", error);
@@ -1673,6 +2140,20 @@ function initEventListeners() {
           }
         }
 
+        if (key === "videoFilter") {
+          const subSettings = document.getElementById("videoFilter-sub-settings");
+          if (subSettings) {
+            subSettings.classList.toggle("show", e.target.checked);
+          }
+        }
+
+        if (key === "cinemaMode") {
+          const subSettings = document.getElementById("cinemaMode-sub-settings");
+          if (subSettings) {
+            subSettings.classList.toggle("show", e.target.checked);
+          }
+        }
+
         if (key === "autoQuality") {
           const subSettings = document.getElementById("autoQuality-sub-settings");
           if (subSettings) {
@@ -1681,9 +2162,10 @@ function initEventListeners() {
         }
 
         saveSettings();
-        const actionText = e.target.checked ? "Đã bật" : "Đã tắt";
-        const labelText = checkbox.closest(".feat-row, .feat-item, .shortcuts-master-row, .feature-item")?.querySelector(".feat-name, .feature-name")?.textContent?.trim() || key;
-        showToast(`${actionText} ${labelText}`);
+        const isEn = currentSettings.language === "en";
+        const actionText = e.target.checked ? (isEn ? "Enabled" : "Đã bật") : (isEn ? "Disabled" : "Đã tắt");
+        const labelText = FEATURE_NAMES_I18N[key]?.[isEn ? "en" : "vi"] || checkbox.closest(".feat-row, .feat-item, .shortcuts-master-row, .feature-item")?.querySelector(".feat-name, .feature-name")?.textContent?.trim() || key;
+        showToast(`${actionText}: ${labelText}`);
       });
     }
   });
@@ -1709,7 +2191,7 @@ function initEventListeners() {
     qualitySelect.addEventListener("change", (e) => {
       currentSettings.preferredQuality = e.target.value;
       saveSettings();
-      showToast("Đã lưu độ phân giải ưu tiên!");
+      showToast(currentSettings.language === "en" ? "Preferred resolution saved!" : "Đã lưu độ phân giải ưu tiên!");
     });
   }
 
@@ -1733,7 +2215,7 @@ function initEventListeners() {
       if (toggle) toggle.checked = true;
       renderProgressColor();
       await saveSettings();
-      showToast(`Đã đổi màu thanh thời gian: ${color}`);
+      showToast(currentSettings.language === "en" ? `Progress bar color updated: ${color}` : `Đã đổi màu thanh thời gian: ${color}`);
     });
   });
 
@@ -1765,14 +2247,15 @@ function initEventListeners() {
     hexInput.addEventListener("change", async (e) => {
       let val = e.target.value.trim();
       if (!val.startsWith("#")) val = "#" + val;
+      const isEn = currentSettings.language === "en";
       if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
         currentSettings.progressBarColor = val;
         renderProgressColor();
         await saveSettings();
-        showToast(`Đã lưu màu: ${val}`);
+        showToast(isEn ? `Color saved: ${val}` : `Đã lưu màu: ${val}`);
       } else {
         hexInput.value = currentSettings.progressBarColor || "#E8930C";
-        showToast("Mã màu không hợp lệ! (Ví dụ: #E8930C)");
+        showToast(isEn ? "Invalid hex color! (e.g. #E8930C)" : "Mã màu không hợp lệ! (Ví dụ: #E8930C)");
       }
     });
   }
@@ -1831,7 +2314,8 @@ function initEventListeners() {
       renderVideoFilter();
       await saveSettings();
       notifyYouTubeTabs();
-      showToast(`Đã áp dụng mẫu: ${btn.textContent.trim()}`);
+      const isEn = currentSettings.language === "en";
+      showToast(isEn ? `Applied filter preset: ${btn.textContent.trim()}` : `Đã áp dụng mẫu: ${btn.textContent.trim()}`);
     });
   });
 
@@ -1850,7 +2334,7 @@ function initEventListeners() {
       renderVideoFilter();
       await saveSettings();
       notifyYouTubeTabs();
-      showToast("Đã đặt lại bộ lọc về mặc định");
+      showToast(currentSettings.language === "en" ? "Reset video filters to default" : "Đã đặt lại bộ lọc về mặc định");
     });
   }
 
@@ -1871,7 +2355,8 @@ function initEventListeners() {
       renderInterfaceMode();
       await saveSettings();
       const isTv = selected === "tv";
-      showToast(isTv ? "Đã chuyển sang giao diện YouTube TV (Smart TV)!" : "Đã chuyển sang giao diện PC máy tính!");
+      const isEn = currentSettings.language === "en";
+      showToast(isEn ? (isTv ? "Switched to YouTube TV (Smart TV)!" : "Switched to Desktop PC interface!") : (isTv ? "Đã chuyển sang giao diện YouTube TV (Smart TV)!" : "Đã chuyển sang giao diện PC máy tính!"));
 
       // If active tab is on YouTube, redirect tab to matching interface
       try {
@@ -1900,12 +2385,13 @@ function initEventListeners() {
       renderLogoType();
       await saveSettings();
 
+      const isEn = currentSettings.language === "en";
       const nameMap = {
-        tada: "Logo YouTube TADa",
-        premium: "Logo YouTube Premium",
-        default: "Logo YouTube gốc mặc định"
+        tada: isEn ? "TADa YouTube (Default)" : "Logo YouTube TADa",
+        premium: isEn ? "YouTube Premium Logo" : "Logo YouTube Premium",
+        default: isEn ? "Original YouTube Logo" : "Logo YouTube gốc mặc định"
       };
-      showToast(`Đã chọn: ${nameMap[selected] || selected}!`);
+      showToast(`${isEn ? "Selected" : "Đã chọn"}: ${nameMap[selected] || selected}!`);
     });
   });
 
@@ -1924,14 +2410,15 @@ function initEventListeners() {
   document.getElementById("toggle-autoTvRedirect")?.addEventListener("change", async (e) => {
     currentSettings.autoTvRedirect = e.target.checked;
     await saveSettings();
-    showToast(e.target.checked ? "Đã bật tự động chuyển sang TV" : "Đã tắt tự động chuyển sang TV");
+    const isEn = currentSettings.language === "en";
+    showToast(isEn ? (e.target.checked ? "Enabled auto TV mode redirect" : "Disabled auto TV mode redirect") : (e.target.checked ? "Đã bật tự động chuyển sang TV" : "Đã tắt tự động chuyển sang TV"));
   });
 
   // Locked Ad Blocker toggle click
   const lockedTrigger = document.getElementById("lock-tooltip-trigger");
   if (lockedTrigger) {
     lockedTrigger.addEventListener("click", () => {
-      showToast("Chặn quảng cáo là tính năng cốt lõi và luôn hoạt động!");
+      showToast(currentSettings.language === "en" ? "Ad blocker is a core feature and is always active!" : "Chặn quảng cáo là tính năng cốt lõi và luôn hoạt động!");
     });
   }
 
@@ -1944,7 +2431,7 @@ function initEventListeners() {
       });
       await saveSettings();
       renderToggles();
-      showToast("Đã bật tất cả tính năng bổ sung!");
+      showToast(currentSettings.language === "en" ? "Enabled all extra features!" : "Đã bật tất cả tính năng bổ sung!");
     });
   }
 
@@ -1957,7 +2444,7 @@ function initEventListeners() {
       });
       await saveSettings();
       renderToggles();
-      showToast("Đã tắt tất cả (quảng cáo vẫn chặn)!");
+      showToast(currentSettings.language === "en" ? "Disabled all extra features (ad blocking stays active)!" : "Đã tắt tất cả (quảng cáo vẫn chặn)!");
     });
   }
 
@@ -1970,7 +2457,7 @@ function initEventListeners() {
         if (countEl) {
           countEl.textContent = "0";
         }
-        showToast("Đã đặt lại số lượng quảng cáo về 0!");
+        showToast(currentSettings.language === "en" ? "Blocked ads counter reset to 0!" : "Đã đặt lại số lượng quảng cáo về 0!");
       });
     });
   }
@@ -1998,7 +2485,7 @@ function initEventListeners() {
       await saveSettings();
       renderHotkeys();
       notifyYouTubeTabs();
-      showToast("Đã khôi phục phím tắt mặc định");
+      showToast(currentSettings.language === "en" ? "Restored shortcut to default" : "Đã khôi phục phím tắt mặc định");
     });
   });
 
@@ -2010,7 +2497,7 @@ function initEventListeners() {
       await saveSettings();
       renderHotkeys();
       notifyYouTubeTabs();
-      showToast("Đã khôi phục tất cả phím tắt về mặc định!");
+      showToast(currentSettings.language === "en" ? "All shortcuts restored to default!" : "Đã khôi phục tất cả phím tắt về mặc định!");
     });
   }
 
@@ -2022,7 +2509,7 @@ function initEventListeners() {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tabs && tabs[0]?.id) {
           await chrome.tabs.reload(tabs[0].id);
-          showToast("Đang làm mới trang...");
+          showToast(currentSettings.language === "en" ? "Reloading YouTube tab..." : "Đang làm mới trang...");
         }
       } catch (error) {
         console.warn("Could not reload tab:", error);
@@ -2068,6 +2555,7 @@ function formatTimestamp(sec) {
 async function loadBookmarksSummary() {
   const summaryEl = document.getElementById("bm-lib-summary");
   if (!summaryEl) return;
+  const isEn = currentSettings.language === "en";
   try {
     const data = await chrome.storage.local.get([BOOKMARKS_STORAGE_KEY]);
     const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
@@ -2078,12 +2566,14 @@ async function loadBookmarksSummary() {
     });
 
     if (totalItems === 0) {
-      summaryEl.textContent = "0 mốc đã lưu";
+      summaryEl.textContent = isEn ? "0 bookmarks saved" : "0 mốc đã lưu";
     } else {
-      summaryEl.textContent = `${totalItems} mốc (${videoKeys.length} video)`;
+      summaryEl.textContent = isEn
+        ? `${totalItems} ${totalItems === 1 ? "bookmark" : "bookmarks"} (${videoKeys.length} ${videoKeys.length === 1 ? "video" : "videos"})`
+        : `${totalItems} mốc (${videoKeys.length} video)`;
     }
   } catch (err) {
-    summaryEl.textContent = "0 mốc đã lưu";
+    summaryEl.textContent = isEn ? "0 bookmarks saved" : "0 mốc đã lưu";
   }
 }
 
@@ -2096,11 +2586,12 @@ async function renderBookmarksModalList() {
     const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
     const videoKeys = Object.keys(allBm);
 
+    const isEn = currentSettings.language === "en";
     if (videoKeys.length === 0) {
       bodyEl.innerHTML = `
         <div class="bm-empty-modal">
-          <p>Chưa có mốc thời gian nào được lưu.</p>
-          <p style="margin-top: 6px; font-size: 11px; opacity: 0.8;">Mở bất kỳ video nào và bấm phím <b>B</b> trên bàn phím để ghim mốc!</p>
+          <p>${isEn ? "No bookmarks saved yet." : "Chưa có mốc thời gian nào được lưu."}</p>
+          <p style="margin-top: 6px; font-size: 11px; opacity: 0.8;">${isEn ? "Open any YouTube video and press <b>B</b> to pin timestamps & notes!" : "Mở bất kỳ video nào và bấm phím <b>B</b> trên bàn phím để ghim mốc!"}</p>
         </div>
       `;
       return;
@@ -2117,7 +2608,7 @@ async function renderBookmarksModalList() {
         <div class="bm-video-group" data-video-id="${vId}">
           <div class="bm-video-header">
             <span class="bm-video-title" title="${title}">${title}</span>
-            <button class="btn-del-video-bm" data-video-id="${vId}" title="Xóa toàn bộ mốc của video này">Xóa tất cả</button>
+            <button class="btn-del-video-bm" data-video-id="${vId}" title="${isEn ? "Delete all bookmarks for this video" : "Xóa toàn bộ mốc của video này"}">${isEn ? "Delete all" : "Xóa tất cả"}</button>
           </div>
           <div class="bm-item-list">
       `;
@@ -2128,10 +2619,10 @@ async function renderBookmarksModalList() {
         html += `
           <div class="bm-item-row">
             <div class="bm-item-left">
-              <a href="${url}" target="_blank" class="bm-pill-time" title="Mở video tại ${timeStr}">${timeStr}</a>
+              <a href="${url}" target="_blank" class="bm-pill-time" title="${isEn ? "Open video at " + timeStr : "Mở video tại " + timeStr}">${timeStr}</a>
               <span class="bm-item-note-text" title="${bm.note}">${bm.note}</span>
             </div>
-            <button class="btn-del-single-bm" data-video-id="${vId}" data-bm-id="${bm.id}" title="Xóa mốc">×</button>
+            <button class="btn-del-single-bm" data-video-id="${vId}" data-bm-id="${bm.id}" title="${isEn ? "Delete bookmark" : "Xóa mốc"}">×</button>
           </div>
         `;
       });
@@ -2159,7 +2650,7 @@ async function renderBookmarksModalList() {
           await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: store });
           renderBookmarksModalList();
           loadBookmarksSummary();
-          showToast("Đã xóa mốc thời gian!");
+          showToast(currentSettings.language === "en" ? "Bookmark deleted!" : "Đã xóa mốc thời gian!");
         }
       });
     });
@@ -2175,7 +2666,7 @@ async function renderBookmarksModalList() {
           await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: store });
           renderBookmarksModalList();
           loadBookmarksSummary();
-          showToast("Đã xóa toàn bộ mốc của video!");
+          showToast(currentSettings.language === "en" ? "All video bookmarks deleted!" : "Đã xóa toàn bộ mốc của video!");
         }
       });
     });
@@ -2214,15 +2705,16 @@ function initBookmarksModal() {
 
   if (exportAllBtn) {
     exportAllBtn.addEventListener("click", async () => {
+      const isEn = currentSettings.language === "en";
       const data = await chrome.storage.local.get([BOOKMARKS_STORAGE_KEY]);
       const allBm = data?.[BOOKMARKS_STORAGE_KEY] || {};
       const videoKeys = Object.keys(allBm);
       if (videoKeys.length === 0) {
-        showToast("Không có mốc nào để sao chép!");
+        showToast(isEn ? "No bookmarks to copy!" : "Không có mốc nào để sao chép!");
         return;
       }
 
-      let md = "# Danh sách Video Bookmarks (TADa for YouTube)\n\n";
+      let md = isEn ? "# YouTube Video Bookmarks (TADa for YouTube)\n\n" : "# Danh sách Video Bookmarks (TADa for YouTube)\n\n";
       videoKeys.forEach((vId) => {
         const entry = allBm[vId];
         const items = Array.isArray(entry?.items) ? entry.items : [];
@@ -2237,20 +2729,21 @@ function initBookmarksModal() {
       });
 
       navigator.clipboard.writeText(md).then(() => {
-        showToast("Đã sao chép tất cả mốc ra Markdown!");
+        showToast(isEn ? "All bookmarks copied as Markdown!" : "Đã sao chép tất cả mốc ra Markdown!");
       }).catch(() => {
-        showToast("Không thể chép vào clipboard!");
+        showToast(isEn ? "Unable to copy to clipboard!" : "Không thể chép vào clipboard!");
       });
     });
   }
 
   if (clearAllBtn) {
     clearAllBtn.addEventListener("click", async () => {
-      if (confirm("Bạn có chắc chắn muốn xóa TẤT CẢ bookmark đã lưu của mọi video không?")) {
+      const isEn = currentSettings.language === "en";
+      if (confirm(isEn ? "Are you sure you want to delete ALL saved bookmarks across all videos?" : "Bạn có chắc chắn muốn xóa TẤT CẢ bookmark đã lưu của mọi video không?")) {
         await chrome.storage.local.set({ [BOOKMARKS_STORAGE_KEY]: {} });
         renderBookmarksModalList();
         loadBookmarksSummary();
-        showToast("Đã xóa sạch thư viện bookmark!");
+        showToast(isEn ? "Bookmarks library cleared!" : "Đã xóa sạch thư viện bookmark!");
       }
     });
   }
@@ -2303,41 +2796,48 @@ function initAboutModal() {
 
   if (copyCwsBtn) {
     copyCwsBtn.addEventListener("click", async () => {
+      const isEn = currentSettings.language === "en";
       try {
         await navigator.clipboard.writeText(CWS_URL);
-        showToast("Đã sao chép link tiện ích vào clipboard! 📋🎉");
+        showToast(isEn ? "Extension link copied to clipboard! 📋🎉" : "Đã sao chép link tiện ích vào clipboard! 📋🎉");
         copyCwsBtn.classList.add("copied");
         const span = copyCwsBtn.querySelector("span");
-        if (span) span.textContent = "Đã chép! ✓";
+        if (span) span.textContent = isEn ? "Copied! ✓" : "Đã chép! ✓";
         setTimeout(() => {
           copyCwsBtn.classList.remove("copied");
-          if (span) span.textContent = "Sao chép link";
+          if (span) span.textContent = isEn ? "Copy link" : "Sao chép link";
         }, 2000);
       } catch (err) {
-        showToast("Không thể chép vào clipboard!");
+        showToast(isEn ? "Unable to copy to clipboard!" : "Không thể chép vào clipboard!");
       }
     });
   }
 
   if (shareCwsBtn) {
     shareCwsBtn.addEventListener("click", async () => {
+      const isEn = currentSettings.language === "en";
+      const shareTitle = "TADa for YouTube";
+      const shareText = isEn
+        ? "TADa — Smart YouTube customizer, ad blocker, 500% volume booster, cinema mode & handy video tools!"
+        : "TADa — Tiện ích chặn quảng cáo YouTube, ẩn Shorts, tăng âm lượng 500% và nhiều công cụ hữu ích!";
+
       if (navigator.share) {
         try {
           await navigator.share({
-            title: "TADa for YouTube",
-            text: "TADa — Tiện ích chặn quảng cáo YouTube, ẩn Shorts, tăng âm lượng 500% và nhiều công cụ hữu ích!",
+            title: shareTitle,
+            text: shareText,
             url: CWS_URL
           });
         } catch (err) {
           if (err.name !== "AbortError") {
             navigator.clipboard.writeText(CWS_URL).then(() => {
-              showToast("Đã sao chép link tiện ích vào clipboard! 📋🎉");
+              showToast(isEn ? "Extension link copied to clipboard! 📋🎉" : "Đã sao chép link tiện ích vào clipboard! 📋🎉");
             });
           }
         }
       } else {
         navigator.clipboard.writeText(CWS_URL).then(() => {
-          showToast("Đã sao chép link tiện ích vào clipboard! 📋🎉");
+          showToast(isEn ? "Extension link copied to clipboard! 📋🎉" : "Đã sao chép link tiện ích vào clipboard! 📋🎉");
         });
       }
     });
@@ -2349,20 +2849,21 @@ function initAboutModal() {
   const pgDonateTrigger = document.getElementById("pg-donate-trigger");
 
   async function copyStkAction() {
+    const isEn = currentSettings.language === "en";
     try {
       await navigator.clipboard.writeText(STK_NUMBER);
-      showToast("Đã sao chép STK MB Bank: 9704 2292 0047 9524 109! Cảm ơn bạn rất nhiều! ❤️");
+      showToast(isEn ? "Copied MB Bank account: 9704 2292 0047 9524 109! Thank you so much! ❤️" : "Đã sao chép STK MB Bank: 9704 2292 0047 9524 109! Cảm ơn bạn rất nhiều! ❤️");
       if (copyStkBtn) {
         copyStkBtn.classList.add("copied");
         const span = copyStkBtn.querySelector("span");
-        if (span) span.textContent = "Đã chép! ✓";
+        if (span) span.textContent = isEn ? "Copied! ✓" : "Đã chép! ✓";
         setTimeout(() => {
           copyStkBtn.classList.remove("copied");
-          if (span) span.textContent = "Sao chép";
+          if (span) span.textContent = isEn ? "Copy" : "Sao chép";
         }, 2200);
       }
     } catch (err) {
-      showToast("Không thể chép STK vào clipboard!");
+      showToast(isEn ? "Unable to copy account number to clipboard!" : "Không thể chép STK vào clipboard!");
     }
   }
 
@@ -2375,7 +2876,10 @@ function initAboutModal() {
   if (toggleQrBtn && qrBox) {
     toggleQrBtn.addEventListener("click", () => {
       const isShowing = qrBox.classList.toggle("show");
-      toggleQrBtn.textContent = isShowing ? "Ẩn mã QR ▲" : "Hiện mã QR MB Bank ▼";
+      const isEn = currentSettings.language === "en";
+      toggleQrBtn.textContent = isShowing
+        ? (isEn ? "Hide QR Code ▲" : "Ẩn mã QR ▲")
+        : (isEn ? "Show MB Bank VietQR ▼" : "Hiện mã QR MB Bank ▼");
     });
   }
 
@@ -2386,7 +2890,10 @@ function initAboutModal() {
       currentSettings.abLooperPosition = e.target.value;
       await saveSettings();
       renderToolbarManager();
-      showToast(e.target.value === "left" ? "Nút A-B chuyển về cạnh mốc thời gian (bên trái)" : "Nút A-B chuyển vào thanh công cụ (bên phải)");
+      const isEn = currentSettings.language === "en";
+      showToast(isEn
+        ? (e.target.value === "left" ? "A-B Looper button moved next to timestamps (left)" : "A-B Looper button moved to player toolbar (right)")
+        : (e.target.value === "left" ? "Nút A-B chuyển về cạnh mốc thời gian (bên trái)" : "Nút A-B chuyển vào thanh công cụ (bên phải)"));
     });
   }
 
@@ -2396,7 +2903,10 @@ function initAboutModal() {
       currentSettings.toolbarAnchor = e.target.value;
       await saveSettings();
       renderToolbarManager();
-      showToast(e.target.value === "afterSettings" ? "Cụm TADa hiển thị sau nút Cài đặt" : "Cụm TADa hiển thị trước nút Cài đặt");
+      const isEn = currentSettings.language === "en";
+      showToast(isEn
+        ? (e.target.value === "afterSettings" ? "TADa buttons placed after Settings gear icon" : "TADa buttons placed before Settings gear icon")
+        : (e.target.value === "afterSettings" ? "Cụm TADa hiển thị sau nút Cài đặt" : "Cụm TADa hiển thị trước nút Cài đặt"));
     });
   }
 
@@ -2409,7 +2919,7 @@ function initAboutModal() {
       currentSettings.toolbarAnchor = "beforeSettings";
       await saveSettings();
       renderToolbarManager();
-      showToast("Đã khôi phục thứ tự và hiển thị mặc định của thanh công cụ!");
+      showToast(currentSettings.language === "en" ? "Toolbar layout and order reset to default!" : "Đã khôi phục thứ tự và hiển thị mặc định của thanh công cụ!");
     });
   }
 }

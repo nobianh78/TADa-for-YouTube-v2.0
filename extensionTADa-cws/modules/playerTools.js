@@ -113,8 +113,9 @@ function ensurePipButton() {
     btn = document.createElement("button");
     btn.id = PIP_BUTTON_ID;
     btn.className = "ytp-button tada-pip-button";
-    btn.setAttribute("aria-label", "Hình trong hình (P)");
-    btn.setAttribute("title", "Hình trong hình (P)");
+    const pipEn = typeof isEn === "function" && isEn();
+    btn.setAttribute("aria-label", pipEn ? "Picture-in-Picture (P)" : "Hình trong hình (P)");
+    btn.setAttribute("title", pipEn ? "Picture-in-Picture (P)" : "Hình trong hình (P)");
     btn.innerHTML = `
       <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
         <!-- Screen outline -->
@@ -280,7 +281,7 @@ function screenshotToast(msg) {
       </svg>
     </div>
     <div class="info__title">${msg}</div>
-    <div class="info__close" title="Đóng">
+    <div class="info__close" title="${typeof isEn === "function" && isEn() ? "Close" : "Đóng"}">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
         <path fill="#fff" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
       </svg>
@@ -304,9 +305,10 @@ function screenshotToast(msg) {
 }
 
 async function takeVideoScreenshot({ copyToClipboard = false } = {}) {
+  const en = typeof isEn === "function" && isEn();
   const video = getMainVideoElement();
   if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
-    screenshotToast("Chưa tải xong khung hình video!");
+    screenshotToast(en ? "Video frame not ready yet!" : "Chưa tải xong khung hình video!");
     return;
   }
 
@@ -319,7 +321,7 @@ async function takeVideoScreenshot({ copyToClipboard = false } = {}) {
 
     const ctx = canvas.getContext("2d");
     if (!ctx) {
-      screenshotToast(" Không thể tạo khung vẽ canvas");
+      screenshotToast(en ? "Could not create canvas context" : "Không thể tạo khung vẽ canvas");
       return;
     }
 
@@ -363,7 +365,7 @@ async function takeVideoScreenshot({ copyToClipboard = false } = {}) {
           await navigator.clipboard.write([
             new ClipboardItem({ "image/png": blobPromise })
           ]);
-          screenshotToast(`Đã sao chép ảnh vào Clipboard (${width}x${height})`);
+          screenshotToast(en ? `Copied frame to Clipboard (${width}x${height})` : `Đã sao chép ảnh vào Clipboard (${width}x${height})`);
           return;
         }
       } catch (clipErr) {
@@ -374,7 +376,7 @@ async function takeVideoScreenshot({ copyToClipboard = false } = {}) {
     // Tải ảnh về máy
     canvas.toBlob((blob) => {
       if (!blob) {
-        screenshotToast("Không thể xuất dữ liệu ảnh blob");
+        screenshotToast(en ? "Could not export image blob" : "Không thể xuất dữ liệu ảnh blob");
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -389,15 +391,15 @@ async function takeVideoScreenshot({ copyToClipboard = false } = {}) {
       }, 1500);
 
       if (copyToClipboard) {
-        screenshotToast(`Đã tải ảnh (${width}x${height}) [Trình duyệt chặn Clipboard]`);
+        screenshotToast(en ? `Downloaded screenshot (${width}x${height}) [Clipboard blocked]` : `Đã tải ảnh (${width}x${height}) [Trình duyệt chặn Clipboard]`);
       } else {
-        screenshotToast(`Đã lưu ảnh: ${width}x${height} [${timeStr}]`);
+        screenshotToast(en ? `Saved screenshot: ${width}x${height} [${timeStr}]` : `Đã lưu ảnh: ${width}x${height} [${timeStr}]`);
       }
     }, "image/png");
 
   } catch (err) {
-    console.warn("[TADa] Lỗi chụp màn hình:", err);
-    screenshotToast("Không thể chụp ảnh màn hình");
+    console.warn("[TADa] Screenshot error:", err);
+    screenshotToast(en ? "Could not capture screenshot" : "Không thể chụp ảnh màn hình");
   }
 }
 
@@ -993,20 +995,21 @@ function toggleSpeedPresetMenu() {
   const rateText = (Math.round(currentCustomSpeed * 100) / 100).toFixed(currentCustomSpeed % 1 === 0 ? 1 : 2) + "x";
   const presets = [0.5, 0.75, 1.0, 1.15, 1.25, 1.35, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0];
 
+  const spEn = typeof isEn === "function" && isEn();
   menu.innerHTML = `
     <div class="tada-speed-menu-header">
       <div class="tada-speed-menu-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tada-speed-menu-icon">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
         </svg>
-        <span>Tốc độ phát vi chỉnh</span>
+        <span>${spEn ? "Fine Speed Tuning" : "Tốc độ phát vi chỉnh"}</span>
       </div>
       <span class="tada-speed-menu-current">${rateText}</span>
     </div>
     <div class="tada-speed-menu-stepper">
-      <button class="tada-speed-step-btn" data-delta="-0.1" title="Giảm 0.1x (Phím <)">- 0.1x</button>
-      <button class="tada-speed-step-btn reset" data-reset="1.0" title="Về 1.0x (Phím =)">1.0x chuẩn</button>
-      <button class="tada-speed-step-btn" data-delta="0.1" title="Tăng 0.1x (Phím >)">+ 0.1x</button>
+      <button class="tada-speed-step-btn" data-delta="-0.1" title="${spEn ? "Decrease 0.1x (Key <)" : "Giảm 0.1x (Phím <)"}">- 0.1x</button>
+      <button class="tada-speed-step-btn reset" data-reset="1.0" title="${spEn ? "Reset to 1.0x (Key =)" : "Về 1.0x (Phím =)"}">${spEn ? "1.0x Normal" : "1.0x chuẩn"}</button>
+      <button class="tada-speed-step-btn" data-delta="0.1" title="${spEn ? "Increase 0.1x (Key >)" : "Tăng 0.1x (Phím >)"}">+ 0.1x</button>
     </div>
     <div class="tada-speed-menu-grid">
       ${presets.map((p) => {
@@ -1015,7 +1018,7 @@ function toggleSpeedPresetMenu() {
   }).join("")}
     </div>
     <div class="tada-speed-menu-hint">
-      Phím: <b>&gt;</b> tăng · <b>&lt;</b> giảm · <b>=</b> đặt lại · Cuộn chuột ±0.05x
+      ${spEn ? "Keys: <b>&gt;</b> faster · <b>&lt;</b> slower · <b>=</b> reset · Scroll wheel ±0.05x" : "Phím: <b>&gt;</b> tăng · <b>&lt;</b> giảm · <b>=</b> đặt lại · Cuộn chuột ±0.05x"}
     </div>
   `;
 
@@ -1160,7 +1163,8 @@ function ensureSpeedButton() {
     btn = document.createElement("button");
     btn.id = SPEED_BUTTON_ID;
     btn.className = "ytp-button tada-speed-button";
-    btn.setAttribute("aria-label", "Tốc độ phát vi chỉnh");
+    const spBtnEn = typeof isEn === "function" && isEn();
+    btn.setAttribute("aria-label", spBtnEn ? "Fine Speed Tuning" : "Tốc độ phát vi chỉnh");
     btn.innerHTML = `<span class="tada-speed-badge">1.0x</span>`;
 
     btn.addEventListener("click", (e) => {

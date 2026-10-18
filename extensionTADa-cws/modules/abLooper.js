@@ -37,7 +37,7 @@ function abToast(text) {
       </svg>
     </div>
     <div class="info__title">${text}</div>
-    <div class="info__close" title="Đóng">
+    <div class="info__close" title="${typeof isEn === "function" && isEn() ? "Close" : "Đóng"}">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
         <path fill="#fff" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
       </svg>
@@ -83,24 +83,27 @@ function abSetA(time) {
   ab.a = Math.max(0, parseFloat(t.toFixed(1)));
   if (ab.b !== null && ab.a >= ab.b) { ab.b = null; ab.on = false; abStopLoop(); }
   abUpdateAll();
-  abToast("Đã chọn A · Giờ chọn mốc B");
+  const en = typeof isEn === "function" && isEn();
+  abToast(en ? "Point A selected · Now pick point B" : "Đã chọn A · Giờ chọn mốc B");
 }
 
 function abSetB(time) {
   const v = getMainVideoElement();
   if (!v) return;
+  const en = typeof isEn === "function" && isEn();
   const t = typeof time === "number" ? time : v.currentTime;
   if (ab.a === null) ab.a = 0;
-  if (t <= ab.a) { abToast("Điểm B phải sau điểm A"); return; }
+  if (t <= ab.a) { abToast(en ? "Point B must be after Point A" : "Điểm B phải sau điểm A"); return; }
   ab.b = parseFloat(t.toFixed(1));
   ab.on = true;
   abStartLoop();
   abUpdateAll();
-  abToast("Đang lặp đoạn");
+  abToast(en ? "Looping segment active" : "Đang lặp đoạn");
 }
 
 function abToggle() {
-  if (ab.a === null || ab.b === null) { abToast("Cần đặt cả hai điểm A và B"); return; }
+  const en = typeof isEn === "function" && isEn();
+  if (ab.a === null || ab.b === null) { abToast(en ? "Both points A and B are required" : "Cần đặt cả hai điểm A và B"); return; }
   ab.on = !ab.on;
   ab.on ? abStartLoop() : abStopLoop();
   if (ab.on) {
@@ -108,16 +111,17 @@ function abToggle() {
     if (v && (v.currentTime < ab.a || v.currentTime >= ab.b)) v.currentTime = ab.a;
   }
   abUpdateAll();
-  abToast(ab.on ? "Đang lặp đoạn" : "Đã tắt lặp đoạn");
+  abToast(ab.on ? (en ? "Looping segment active" : "Đang lặp đoạn") : (en ? "Loop disabled" : "Đã tắt lặp đoạn"));
 }
 
 function abReset() {
+  const en = typeof isEn === "function" && isEn();
   ab.a = null; ab.b = null; ab.on = false;
   abPicking = false;
   abStopLoop();
   abUpdateAll();
   abUpdatePickingUI();
-  abToast("Đã xóa đoạn lặp");
+  abToast(en ? "Cleared loop segment" : "Đã xóa đoạn lặp");
 }
 
 /* --- Smart button click handler --- */
@@ -134,10 +138,13 @@ function abSmartClick() {
   abPicking = !abPicking;
   abUpdateAll();
   abUpdatePickingUI();
+  const enClick = typeof isEn === "function" && isEn();
   if (abPicking) {
-    abToast(ab.a === null ? "Nhấp trên thanh tua để chọn điểm A" : "Nhấp trên thanh tua để chọn điểm B");
+    abToast(ab.a === null
+      ? (enClick ? "Click on progress bar to pick Point A" : "Nhấp trên thanh tua để chọn điểm A")
+      : (enClick ? "Click on progress bar to pick Point B" : "Nhấp trên thanh tua để chọn điểm B"));
   } else {
-    abToast("Đã tắt chế độ chọn");
+    abToast(enClick ? "Picking mode cancelled" : "Đã tắt chế độ chọn");
   }
 }
 
@@ -264,13 +271,16 @@ function updateTimelineGuide(time, duration, mode) {
   const pct = Math.max(0, Math.min(100, (time / duration) * 100));
   guide.style.left = `${pct}%`;
 
+  const enGuide = typeof isEn === "function" && isEn();
   guide.className = `tada-timeline-picker-guide guide-${mode.toLowerCase()}`;
   if (mode === "A") {
-    guide.textContent = `Chọn mốc A: ${abFmt(time)}`;
+    guide.textContent = enGuide ? `Pick Point A: ${abFmt(time)}` : `Chọn mốc A: ${abFmt(time)}`;
   } else if (mode === "B") {
-    guide.textContent = `Chọn mốc B: ${abFmt(time)}`;
+    guide.textContent = enGuide ? `Pick Point B: ${abFmt(time)}` : `Chọn mốc B: ${abFmt(time)}`;
   } else {
-    guide.textContent = `Chọn mốc ghi chú: ${typeof formatBookmarkTime === "function" ? formatBookmarkTime(time) : abFmt(time)}`;
+    guide.textContent = enGuide
+      ? `Pick bookmark time: ${typeof formatBookmarkTime === "function" ? formatBookmarkTime(time) : abFmt(time)}`
+      : `Chọn mốc ghi chú: ${typeof formatBookmarkTime === "function" ? formatBookmarkTime(time) : abFmt(time)}`;
   }
 }
 
@@ -331,9 +341,10 @@ function abSetupTimeline() {
 
     // 3. Chế độ chọn A-B Looper
     if (abPicking) {
+      const enPtr = typeof isEn === "function" && isEn();
       if (ab.a === null) {
         abSetA(t);
-        abToast(`Đã chọn A (${abFmt(t)}) · Giờ click chọn mốc B`);
+        abToast(enPtr ? `Point A selected (${abFmt(t)}) · Now click to pick Point B` : `Đã chọn A (${abFmt(t)}) · Giờ click chọn mốc B`);
       } else {
         const timeA = ab.a;
         if (t < timeA) {
@@ -349,7 +360,7 @@ function abSetupTimeline() {
         const v = getMainVideoElement();
         if (v) v.currentTime = ab.a;
         abStartLoop();
-        abToast(`Đang lặp: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}`);
+        abToast(enPtr ? `Looping: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}` : `Đang lặp: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}`);
       }
       abUpdateAll();
     }
@@ -389,9 +400,10 @@ function abSetupTimeline() {
     if (e.altKey || e.ctrlKey || e.metaKey) { abSetB(t); return; }
 
     if (abPicking) {
+      const enClk = typeof isEn === "function" && isEn();
       if (ab.a === null) {
         abSetA(t);
-        abToast(`Đã chọn A (${abFmt(t)}) · Giờ click chọn mốc B`);
+        abToast(enClk ? `Point A selected (${abFmt(t)}) · Now click to pick Point B` : `Đã chọn A (${abFmt(t)}) · Giờ click chọn mốc B`);
       } else {
         const timeA = ab.a;
         if (t < timeA) {
@@ -407,7 +419,7 @@ function abSetupTimeline() {
         const v = getMainVideoElement();
         if (v) v.currentTime = ab.a;
         abStartLoop();
-        abToast(`Đang lặp: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}`);
+        abToast(enClk ? `Looping: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}` : `Đang lặp: ${abFmt(ab.a)} ↔ ${abFmt(ab.b)}`);
       }
       abUpdateAll();
     }
@@ -491,7 +503,12 @@ function abSetupTimeline() {
           ab.b = parseFloat((nA + len).toFixed(1));
         }
         abUpdateAll();
-        abToast(abDrag.type === "A" ? "A: " + abFmt(ab.a) : abDrag.type === "B" ? "B: " + abFmt(ab.b) : "Đoạn: " + abFmt(ab.a) + " ↔ " + abFmt(ab.b));
+        const enDrag = typeof isEn === "function" && isEn();
+        abToast(abDrag.type === "A"
+          ? "A: " + abFmt(ab.a)
+          : abDrag.type === "B"
+            ? "B: " + abFmt(ab.b)
+            : (enDrag ? "Range: " : "Đoạn: ") + abFmt(ab.a) + " ↔ " + abFmt(ab.b));
       };
 
       const onUp = (ue) => {
@@ -501,7 +518,8 @@ function abSetupTimeline() {
         abDrag = null;
         if (ab.on) abStartLoop();
         abUpdateAll();
-        abToast("Đang lặp đoạn");
+        const enUp = typeof isEn === "function" && isEn();
+        abToast(enUp ? "Looping segment active" : "Đang lặp đoạn");
       };
 
       document.addEventListener("mousemove", onMove, true);
@@ -536,8 +554,9 @@ function abUpdateTrack() {
   const bPct = ab.b !== null ? (ab.b / dur) * 100 : null;
 
   let html = "";
+  const enTrack = typeof isEn === "function" && isEn();
   if (aPct !== null && bPct !== null && bPct > aPct) {
-    html += `<div class="tada-ab-range ${ab.on ? "looping" : ""}" style="left:${aPct}%;width:${bPct - aPct}%" title="Kéo đoạn"></div>`;
+    html += `<div class="tada-ab-range ${ab.on ? "looping" : ""}" style="left:${aPct}%;width:${bPct - aPct}%" title="${enTrack ? "Drag range" : "Kéo đoạn"}"></div>`;
   }
   if (aPct !== null) html += `<div class="tada-ab-pin tada-ab-pin-a" style="left:${aPct}%" title="A: ${abFmt(ab.a)}"><span>A</span></div>`;
   if (bPct !== null) html += `<div class="tada-ab-pin tada-ab-pin-b" style="left:${bPct}%" title="B: ${abFmt(ab.b)}"><span>B</span></div>`;

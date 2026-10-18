@@ -14,13 +14,13 @@ let boundVideoElement = null;
 let skipHotkeyBound = false;
 
 const SKIP_CATEGORIES = {
-  sponsor: { label: "Nhà tài trợ", color: "#f59e0b" },
-  intro: { label: "Đoạn mở đầu (Intro)", color: "#10b981" },
-  outro: { label: "Đoạn kết thúc (Outro)", color: "#3b82f6" },
-  selfpromo: { label: "Tự quảng bá", color: "#8b5cf6" },
-  interaction: { label: "Nhắc like & đăng ký", color: "#ec4899" },
-  preview: { label: "Đoạn xem trước", color: "#06b6d4" },
-  music_offtopic: { label: "Đoạn ngoài lề", color: "#64748b" }
+  sponsor: { label: "Nhà tài trợ", labelEn: "Sponsor", color: "#f59e0b" },
+  intro: { label: "Đoạn mở đầu (Intro)", labelEn: "Intro", color: "#10b981" },
+  outro: { label: "Đoạn kết thúc (Outro)", labelEn: "Outro", color: "#3b82f6" },
+  selfpromo: { label: "Tự quảng bá", labelEn: "Self Promotion", color: "#8b5cf6" },
+  interaction: { label: "Nhắc like & đăng ký", labelEn: "Interaction Reminder", color: "#ec4899" },
+  preview: { label: "Đoạn xem trước", labelEn: "Preview Segment", color: "#06b6d4" },
+  music_offtopic: { label: "Đoạn ngoài lề", labelEn: "Off-topic Segment", color: "#64748b" }
 };
 
 function formatSkipTime(sec) {
@@ -167,12 +167,12 @@ async function fetchSkipSegments(videoId) {
             const end = Number(item.segment[1]);
             if (!isNaN(start) && !isNaN(end) && end > start) {
               const catKey = item.category || "sponsor";
-              const catInfo = SKIP_CATEGORIES[catKey] || { label: "Đoạn bỏ qua", color: "#38bdf8" };
+              const catInfo = SKIP_CATEGORIES[catKey] || { label: "Đoạn bỏ qua", labelEn: "Skipped Segment", color: "#38bdf8" };
               parsed.push({
                 start,
                 end,
                 category: catKey,
-                label: catInfo.label,
+                label: (typeof isEn === "function" && isEn() ? (catInfo.labelEn || catInfo.label) : catInfo.label),
                 color: catInfo.color,
                 actionType: item.actionType || "skip"
               });
@@ -194,7 +194,7 @@ async function fetchSkipSegments(videoId) {
               start: 0,
               end: c1.seconds,
               category: "intro",
-              label: `Đoạn mở đầu (${c0.title})`,
+              label: (typeof isEn === "function" && isEn() ? `Intro (${c0.title})` : `Đoạn mở đầu (${c0.title})`),
               color: "#10b981",
               actionType: "skip"
             });
@@ -208,7 +208,7 @@ async function fetchSkipSegments(videoId) {
               start: lastC.seconds,
               end: dur,
               category: "outro",
-              label: `Đoạn kết thúc (${lastC.title})`,
+              label: (typeof isEn === "function" && isEn() ? `Outro (${lastC.title})` : `Đoạn kết thúc (${lastC.title})`),
               color: "#3b82f6",
               actionType: "skip"
             });
@@ -271,6 +271,7 @@ function ensureSkipToastContainer() {
 function showSkipToast(seg, fromTime, toTime) {
   const toast = ensureSkipToastContainer();
   const savedSec = Math.max(1, Math.round(toTime - fromTime));
+  const en = typeof isEn === "function" && isEn();
 
   const skipIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
     <path fill="#fff" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
@@ -279,15 +280,15 @@ function showSkipToast(seg, fromTime, toTime) {
   toast.innerHTML = `
     <div class="info__icon">${skipIconSvg}</div>
     <div class="info__title">
-      Đã bỏ qua <strong>${seg.label}</strong> <span style="opacity:0.85;font-size:11px;">(tiết kiệm ${savedSec}s)</span>
+      ${en ? `Skipped <strong>${seg.label}</strong> <span style="opacity:0.85;font-size:11px;">(saved ${savedSec}s)</span>` : `Đã bỏ qua <strong>${seg.label}</strong> <span style="opacity:0.85;font-size:11px;">(tiết kiệm ${savedSec}s)</span>`}
     </div>
-    <button id="tada-skip-undo-btn" class="tada-skip-undo-btn" title="Hoàn tác đoạn vừa bỏ qua (phím Z)">
+    <button id="tada-skip-undo-btn" class="tada-skip-undo-btn" title="${en ? "Undo skip (key Z)" : "Hoàn tác đoạn vừa bỏ qua (phím Z)"}">
       <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
         <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
       </svg>
-      <span>Hoàn tác (Z)</span>
+      <span>${en ? "Undo (Z)" : "Hoàn tác (Z)"}</span>
     </button>
-    <div class="info__close" id="tada-skip-close-btn" title="Đóng">
+    <div class="info__close" id="tada-skip-close-btn" title="${en ? "Close" : "Đóng"}">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
         <path fill="#fff" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
       </svg>
@@ -325,14 +326,15 @@ function showSkipToast(seg, fromTime, toTime) {
 
 function showRevertedToast() {
   const toast = ensureSkipToastContainer();
+  const en = typeof isEn === "function" && isEn();
   const undoIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
     <path fill="#fff" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
   </svg>`;
 
   toast.innerHTML = `
     <div class="info__icon">${undoIconSvg}</div>
-    <div class="info__title">Đã hoàn tác và giữ lại đoạn phát</div>
-    <div class="info__close" id="tada-skip-close-btn" title="Đóng">
+    <div class="info__title">${en ? "Reverted and kept playback segment" : "Đã hoàn tác và giữ lại đoạn phát"}</div>
+    <div class="info__close" id="tada-skip-close-btn" title="${en ? "Close" : "Đóng"}">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
         <path fill="#fff" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
       </svg>

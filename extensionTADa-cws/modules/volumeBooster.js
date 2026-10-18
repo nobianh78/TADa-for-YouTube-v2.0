@@ -204,7 +204,7 @@ function syncVolumeUi() {
   panel.setAttribute("aria-valuemax", String(SUPER_VOLUME_MAX));
   panel.setAttribute("aria-valuenow", String(rounded));
   panel.setAttribute("aria-valuetext", `${rounded}% volume`);
-  panel.setAttribute("data-tooltip-title", `Âm lượng (${rounded}%)`);
+  panel.setAttribute("data-tooltip-title", (typeof isEn === "function" && isEn()) ? `Volume (${rounded}%)` : `Âm lượng (${rounded}%)`);
 
   panel.classList.toggle("ctf-panel-boost", isBoost);
 
@@ -257,7 +257,7 @@ function enhanceVolumePanel(root = document) {
     }
     panel.setAttribute("aria-valuemin", String(SUPER_VOLUME_MIN));
     panel.setAttribute("aria-valuemax", String(SUPER_VOLUME_MAX));
-    panel.setAttribute("data-tooltip-title", `Âm lượng (0-${SUPER_VOLUME_MAX}%)`);
+    panel.setAttribute("data-tooltip-title", (typeof isEn === "function" && isEn()) ? `Volume (0-${SUPER_VOLUME_MAX}%)` : `Âm lượng (0-${SUPER_VOLUME_MAX}%)`);
     const slider = panel.querySelector(".ytp-volume-slider");
     if (slider) {
       prepareVolumeSlider(slider);

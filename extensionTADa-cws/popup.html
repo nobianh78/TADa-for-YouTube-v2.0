@@ -73,14 +73,14 @@
             <span class="quick-logo-title" data-i18n="logoTitle">Logo YouTube</span>
             <span class="feat-badge-val" id="topbar-logo-badge-main">TADa</span>
           </div>
-          <div class="logo-segmented-control" role="group" aria-label="Tùy chọn logo YouTube">
-            <button type="button" class="logo-seg-btn active" data-logo="tada" title="Logo YouTube TADa (Mặc định)">
+          <div class="logo-segmented-control" role="group" aria-label="Tùy chọn logo YouTube" data-i18n-title="logoControlAria">
+            <button type="button" class="logo-seg-btn active" data-logo="tada" data-i18n-title="logoTadaTitle" title="Logo YouTube TADa (Mặc định)">
               <span>TADa</span>
             </button>
-            <button type="button" class="logo-seg-btn" data-logo="premium" title="Logo YouTube Premium">
+            <button type="button" class="logo-seg-btn" data-logo="premium" data-i18n-title="logoPremiumTitle" title="Logo YouTube Premium">
               <span>Premium</span>
             </button>
-            <button type="button" class="logo-seg-btn" data-logo="default" title="Logo YouTube gốc mặc định">
+            <button type="button" class="logo-seg-btn" data-logo="default" data-i18n-title="logoDefaultTitle" title="Logo YouTube gốc mặc định">
               <span data-i18n="logoDefault">Mặc định</span>
             </button>
           </div>
@@ -92,8 +92,8 @@
             <span class="quick-interface-title" data-i18n="modeTitle">Chế độ giao diện</span>
             <span class="feat-badge-val" id="topbar-interface-badge-main">PC</span>
           </div>
-          <div class="mode-segmented-control" role="group" aria-label="Tùy chọn giao diện YouTube">
-            <button type="button" class="mode-seg-btn active" data-mode="pc" title="Giao diện máy tính thông thường">
+          <div class="mode-segmented-control" role="group" aria-label="Tùy chọn giao diện YouTube" data-i18n-title="modeControlAria">
+            <button type="button" class="mode-seg-btn active" data-mode="pc" data-i18n-title="modePcTitle" title="Giao diện máy tính thông thường">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="seg-icon">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
                 <line x1="8" y1="21" x2="16" y2="21" />
@@ -101,7 +101,7 @@
               </svg>
               <span>PC</span>
             </button>
-            <button type="button" class="mode-seg-btn" data-mode="tv"
+            <button type="button" class="mode-seg-btn" data-mode="tv" data-i18n-title="modeTvTitle"
               title="Giao diện YouTube cho TV (Smart TV / Leanback)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="seg-icon">
                 <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
@@ -111,7 +111,7 @@
             </button>
           </div>
           <div class="tv-mode-action-row" id="tv-mode-action-row" style="display: none;">
-            <button type="button" class="btn-open-tv-window" id="btn-open-tv-window"
+            <button type="button" class="btn-open-tv-window" id="btn-open-tv-window" data-i18n-title="openTvNowTitle"
               title="Mở YouTube TV trong cửa sổ ứng dụng riêng biệt">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="5 3 19 12 5 21 5 3" />
@@ -261,7 +261,7 @@
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <span class="sub-title" id="sub-header-title">Trình phát</span>
+          <span class="sub-title" id="sub-header-title">Trình phát &amp; Âm thanh</span>
           <div class="sub-hdr-right">
             <span class="sub-badge" id="sub-count-badge">5/5</span>
             <button id="btn-sub-enable-all" class="btn-chip" data-i18n="btnSubEnable">Bật</button>
@@ -280,7 +280,7 @@
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
               </svg>
             </div>
-            <span class="feat-name">Booster âm lượng 500%</span>
+            <span class="feat-name" data-i18n="featSuperVolume">Booster âm lượng 500%</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-superVolume" class="toggle-checkbox">
             </div>
@@ -301,7 +301,7 @@
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
               </div>
-              <span class="feat-name">Ambient Light</span>
+              <span class="feat-name" data-i18n="featAmbientLight">Ambient Light</span>
               <div class="checkbox-wrapper-41">
                 <input type="checkbox" id="toggle-ambientLight" class="toggle-checkbox">
               </div>
@@ -310,7 +310,7 @@
               <div class="ambient-sub-inner">
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Độ sáng</span>
+                    <span data-i18n="ambientBrightness">Độ sáng</span>
                     <span class="ambient-val-badge" id="ambient-brightness-val">100%</span>
                   </div>
                   <input type="range" id="ambient-brightness" class="ambient-range-slider" min="50" max="200" step="5"
@@ -318,7 +318,7 @@
                 </div>
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Lan tỏa</span>
+                    <span data-i18n="ambientSpread">Lan tỏa</span>
                     <span class="ambient-val-badge" id="ambient-spread-val">100%</span>
                   </div>
                   <input type="range" id="ambient-spread" class="ambient-range-slider" min="50" max="200" step="5"
@@ -337,7 +337,7 @@
                   <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
                 </svg>
               </div>
-              <span class="feat-name">Màu thanh thời gian</span>
+              <span class="feat-name" data-i18n="featProgressColor">Màu thanh thời gian</span>
               <div class="checkbox-wrapper-41">
                 <input type="checkbox" id="toggle-progressColor" class="toggle-checkbox">
               </div>
@@ -345,20 +345,20 @@
             <div class="ambient-sub-settings" id="progressColor-sub-settings">
               <div class="ambient-sub-inner">
                 <div class="color-palette-label">
-                  <span>Bảng màu gợi ý</span>
+                  <span data-i18n="presetPalette">Bảng màu gợi ý</span>
                   <div class="color-preview-pill" id="progress-color-preview" style="background-color: #E8930C;"></div>
                 </div>
                 <div class="color-swatches-grid">
-                  <button type="button" class="color-swatch-btn active" data-color="#E8930C" title="Cam TADa (Mặc định)" style="--swatch-color: #E8930C;"></button>
-                  <button type="button" class="color-swatch-btn" data-color="#00D2FF" title="Xanh Cyan Neon" style="--swatch-color: #00D2FF;"></button>
-                  <button type="button" class="color-swatch-btn" data-color="#10B981" title="Xanh Ngọc Emerald" style="--swatch-color: #10B981;"></button>
-                  <button type="button" class="color-swatch-btn" data-color="#A855F7" title="Tím Neon Purple" style="--swatch-color: #A855F7;"></button>
-                  <button type="button" class="color-swatch-btn" data-color="#EC4899" title="Hồng Pastel Pink" style="--swatch-color: #EC4899;"></button>
-                  <button type="button" class="color-swatch-btn" data-color="#EAB308" title="Vàng Gold" style="--swatch-color: #EAB308;"></button>
-                  <button type="button" class="color-swatch-btn" data-color="#FF0000" title="Đỏ gốc YouTube" style="--swatch-color: #FF0000;"></button>
+                  <button type="button" class="color-swatch-btn active" data-color="#E8930C" data-i18n-title="swatchTadaTitle" title="Cam TADa (Mặc định)" style="--swatch-color: #E8930C;"></button>
+                  <button type="button" class="color-swatch-btn" data-color="#00D2FF" data-i18n-title="swatchCyanTitle" title="Xanh Cyan Neon" style="--swatch-color: #00D2FF;"></button>
+                  <button type="button" class="color-swatch-btn" data-color="#10B981" data-i18n-title="swatchEmeraldTitle" title="Xanh Ngọc Emerald" style="--swatch-color: #10B981;"></button>
+                  <button type="button" class="color-swatch-btn" data-color="#A855F7" data-i18n-title="swatchPurpleTitle" title="Tím Neon Purple" style="--swatch-color: #A855F7;"></button>
+                  <button type="button" class="color-swatch-btn" data-color="#EC4899" data-i18n-title="swatchPinkTitle" title="Hồng Pastel Pink" style="--swatch-color: #EC4899;"></button>
+                  <button type="button" class="color-swatch-btn" data-color="#EAB308" data-i18n-title="swatchGoldTitle" title="Vàng Gold" style="--swatch-color: #EAB308;"></button>
+                  <button type="button" class="color-swatch-btn" data-color="#FF0000" data-i18n-title="swatchRedTitle" title="Đỏ gốc YouTube" style="--swatch-color: #FF0000;"></button>
                 </div>
                 <div class="custom-color-row">
-                  <span class="custom-color-label">Tự chọn mã màu:</span>
+                  <span class="custom-color-label" data-i18n="customColorLabel">Tự chọn mã màu:</span>
                   <div class="custom-color-input-wrap">
                     <input type="color" id="input-progress-color-picker" value="#E8930C">
                     <input type="text" id="input-progress-color-hex" value="#E8930C" maxlength="7" placeholder="#HEX">
@@ -380,7 +380,7 @@
                   <line x1="20" y1="20" x2="8.5" y2="20" />
                 </svg>
               </div>
-              <span class="feat-name">Bộ lọc màu & Ánh sáng</span>
+              <span class="feat-name" data-i18n="featVideoFilter">Bộ lọc màu & Ánh sáng</span>
               <div class="checkbox-wrapper-41">
                 <input type="checkbox" id="toggle-videoFilter" class="toggle-checkbox">
               </div>
@@ -388,42 +388,42 @@
             <div class="ambient-sub-settings" id="videoFilter-sub-settings">
               <div class="ambient-sub-inner">
                 <div class="filter-presets-header">
-                  <span>Mẫu lọc có sẵn (1-chạm)</span>
-                  <button type="button" class="filter-reset-btn" id="btn-filter-reset">Đặt lại</button>
+                  <span data-i18n="presetFiltersHeader">Mẫu lọc có sẵn (1-chạm)</span>
+                  <button type="button" class="filter-reset-btn" id="btn-filter-reset" data-i18n="filterResetBtn">Đặt lại</button>
                 </div>
                 <div class="filter-presets-grid">
-                  <button type="button" class="filter-chip-btn active" data-preset="reset">Chuẩn</button>
-                  <button type="button" class="filter-chip-btn" data-preset="night">Xem đêm</button>
-                  <button type="button" class="filter-chip-btn" data-preset="brighten">Sáng rõ</button>
-                  <button type="button" class="filter-chip-btn" data-preset="cinema">Cinema</button>
-                  <button type="button" class="filter-chip-btn" data-preset="vintage">Hoài cổ</button>
-                  <button type="button" class="filter-chip-btn" data-preset="invert">Đảo màu</button>
-                  <button type="button" class="filter-chip-btn" data-preset="bw">Đen trắng</button>
+                  <button type="button" class="filter-chip-btn active" data-preset="reset" data-i18n="filterPresetReset">Chuẩn</button>
+                  <button type="button" class="filter-chip-btn" data-preset="night" data-i18n="filterPresetNight">Xem đêm</button>
+                  <button type="button" class="filter-chip-btn" data-preset="brighten" data-i18n="filterPresetBrighten">Sáng rõ</button>
+                  <button type="button" class="filter-chip-btn" data-preset="cinema" data-i18n="filterPresetCinema">Cinema</button>
+                  <button type="button" class="filter-chip-btn" data-preset="vintage" data-i18n="filterPresetVintage">Hoài cổ</button>
+                  <button type="button" class="filter-chip-btn" data-preset="invert" data-i18n="filterPresetInvert">Đảo màu</button>
+                  <button type="button" class="filter-chip-btn" data-preset="bw" data-i18n="filterPresetBw">Đen trắng</button>
                 </div>
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Độ sáng</span>
+                    <span data-i18n="ambientBrightness">Độ sáng</span>
                     <span class="ambient-val-badge" id="filter-brightness-val">100%</span>
                   </div>
                   <input type="range" id="filter-brightness" class="ambient-range-slider" min="50" max="200" step="5" value="100">
                 </div>
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Độ tương phản</span>
+                    <span data-i18n="filterContrast">Độ tương phản</span>
                     <span class="ambient-val-badge" id="filter-contrast-val">100%</span>
                   </div>
                   <input type="range" id="filter-contrast" class="ambient-range-slider" min="50" max="200" step="5" value="100">
                 </div>
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Độ bão hòa màu</span>
+                    <span data-i18n="filterSaturation">Độ bão hòa màu</span>
                     <span class="ambient-val-badge" id="filter-saturation-val">100%</span>
                   </div>
                   <input type="range" id="filter-saturation" class="ambient-range-slider" min="0" max="200" step="5" value="100">
                 </div>
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Tông ấm / Dịu mắt</span>
+                    <span data-i18n="filterWarmth">Tông ấm / Dịu mắt</span>
                     <span class="ambient-val-badge" id="filter-warmth-val">0%</span>
                   </div>
                   <input type="range" id="filter-warmth" class="ambient-range-slider" min="0" max="100" step="5" value="0">
@@ -442,7 +442,7 @@
                   <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
                 </svg>
               </div>
-              <span class="feat-name">Rạp phim (Tắt đèn)</span>
+              <span class="feat-name" data-i18n="featCinemaMode">Rạp phim (Tắt đèn)</span>
               <div class="checkbox-wrapper-41">
                 <input type="checkbox" id="toggle-cinemaMode" class="toggle-checkbox">
               </div>
@@ -451,13 +451,13 @@
               <div class="ambient-sub-inner">
                 <div class="ambient-slider-row">
                   <div class="ambient-slider-label">
-                    <span>Độ mờ màn đen</span>
+                    <span data-i18n="cinemaOpacity">Độ mờ màn đen</span>
                     <span class="ambient-val-badge" id="cinema-opacity-val">85%</span>
                   </div>
                   <input type="range" id="cinema-opacity" class="ambient-range-slider" min="40" max="100" step="5" value="85">
                 </div>
                 <div class="cinema-hint-row">
-                  <span>Phím tắt: <strong>Shift + L</strong> hoặc bấm bóng đèn trên Player</span>
+                  <span data-i18n-html="cinemaHint">Phím tắt: <strong>Shift + L</strong> hoặc bấm bóng đèn trên Player</span>
                 </div>
               </div>
             </div>
@@ -469,7 +469,7 @@
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
-            <span class="feat-name">Tốc độ phát (0.1x – 4x)</span>
+            <span class="feat-name" data-i18n="featCustomSpeed">Tốc độ phát (0.1x – 4x)</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-customSpeed" class="toggle-checkbox">
             </div>
@@ -482,7 +482,7 @@
                 <rect x="12" y="10" width="8" height="6" rx="1" fill="currentColor" stroke="none" />
               </svg>
             </div>
-            <span class="feat-name">Hình trong hình (PiP)</span>
+            <span class="feat-name" data-i18n="featPipButton">Hình trong hình (PiP)</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-pipButton" class="toggle-checkbox">
             </div>
@@ -498,7 +498,7 @@
                 <path d="M21 13v1a4 4 0 0 1-4 4H3" />
               </svg>
             </div>
-            <span class="feat-name">Lặp đoạn A-B</span>
+            <span class="feat-name" data-i18n="featAbLooper">Lặp đoạn A-B</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-abLooper" class="toggle-checkbox">
             </div>
@@ -513,7 +513,7 @@
                 <line x1="17.5" y1="15" x2="9" y2="15" />
               </svg>
             </div>
-            <span class="feat-name">Loader cánh chim (Giant Bird)</span>
+            <span class="feat-name" data-i18n="featCustomLoader">Loader cánh chim (Giant Bird)</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-customLoader" class="toggle-checkbox">
             </div>
@@ -529,7 +529,7 @@
                   <polyline points="17 2 12 7 7 2" />
                 </svg>
               </div>
-              <span class="feat-name">Tự động chọn độ phân giải cao nhất</span>
+              <span class="feat-name" data-i18n="featAutoQuality">Tự động chọn độ phân giải cao nhất</span>
               <div class="checkbox-wrapper-41">
                 <input type="checkbox" id="toggle-autoQuality" class="toggle-checkbox">
               </div>
@@ -537,24 +537,24 @@
             <div class="ambient-sub-settings" id="autoQuality-sub-settings">
               <div class="ambient-sub-inner">
                 <div class="quality-select-row">
-                  <span class="quality-select-label">Mức chất lượng ưu tiên:</span>
+                  <span class="quality-select-label" data-i18n="preferredQualityLabel">Mức chất lượng ưu tiên:</span>
                   <select id="select-preferredQuality" class="quality-select-dropdown">
-                    <option value="highest">Cao nhất có thể (4K / 8K)</option>
+                    <option value="highest" data-i18n="qualityHighest">Cao nhất có thể (4K / 8K)</option>
                     <option value="hd2160">4K (2160p)</option>
                     <option value="hd1440">2K (1440p)</option>
                     <option value="hd1080">Full HD (1080p)</option>
                     <option value="hd720">HD (720p)</option>
-                    <option value="large">Tiết kiệm mạng (480p)</option>
+                    <option value="large" data-i18n="qualitySaveNet">Tiết kiệm mạng (480p)</option>
                   </select>
                 </div>
                 <div class="quality-badge-toggle-row">
                   <label class="quality-badge-toggle-label">
                     <input type="checkbox" id="toggle-qualityBadge" checked>
-                    <span>Hiện thông báo chất lượng trên video</span>
+                    <span data-i18n="qualityBadgeLabel">Hiện thông báo chất lượng trên video</span>
                   </label>
                 </div>
                 <div class="quality-hint-row">
-                  <span>Tự động ép mức phân giải cao nhất ngay khi mở video, chống bị YouTube tự hạ xuống 480p/720p.</span>
+                  <span data-i18n="qualityHint">Tự động ép mức phân giải cao nhất ngay khi mở video, chống bị YouTube tự hạ xuống 480p/720p.</span>
                 </div>
               </div>
             </div>
@@ -572,7 +572,7 @@
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <span class="feat-name">Chụp ảnh màn hình (4K)</span>
+            <span class="feat-name" data-i18n="featVideoScreenshot">Chụp ảnh màn hình (4K)</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-videoScreenshot" class="toggle-checkbox">
             </div>
@@ -584,7 +584,7 @@
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <span class="feat-name">Đánh dấu mốc &amp; Ghi chú</span>
+            <span class="feat-name" data-i18n="featVideoBookmarks">Đánh dấu mốc &amp; Ghi chú</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-videoBookmarks" class="toggle-checkbox">
             </div>
@@ -598,7 +598,7 @@
                   d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
               </svg>
             </div>
-            <span class="feat-name">Hiện số lượt Dislike</span>
+            <span class="feat-name" data-i18n="featReturnDislike">Hiện số lượt Dislike</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-returnDislike" class="toggle-checkbox">
             </div>
@@ -612,7 +612,7 @@
                 <line x1="19" y1="5" x2="19" y2="19" />
               </svg>
             </div>
-            <span class="feat-name">Bỏ qua Intro &amp; Sponsor</span>
+            <span class="feat-name" data-i18n="featAutoSkipSegments">Bỏ qua Intro &amp; Sponsor</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-autoSkipSegments" class="toggle-checkbox">
             </div>
@@ -632,25 +632,25 @@
                   <polyline points="17 2 12 7 7 2" />
                 </svg>
               </div>
-              <span class="feat-name">Giả lập giao diện TV</span>
+              <span class="feat-name" data-i18n="featInterfaceMode">Giả lập giao diện TV</span>
               <span class="feat-badge-val" id="interface-mode-badge">PC</span>
             </div>
             <div class="mode-selector-wrapper">
-              <div class="mode-segmented-control" role="group" aria-label="Tùy chọn giao diện">
-                <button type="button" class="mode-seg-btn active" data-mode="pc" title="Giao diện máy tính">
+              <div class="mode-segmented-control" role="group" data-i18n-title="modeTitle" aria-label="Tùy chọn giao diện">
+                <button type="button" class="mode-seg-btn active" data-mode="pc" data-i18n-title="modePcTitle" title="Giao diện máy tính">
                   <span>PC</span>
                 </button>
-                <button type="button" class="mode-seg-btn" data-mode="tv" title="Giao diện Smart TV">
+                <button type="button" class="mode-seg-btn" data-mode="tv" data-i18n-title="modeTvTitle" title="Giao diện Smart TV">
                   <span>TV</span>
                 </button>
               </div>
               <div class="tv-mode-options" id="tv-mode-options" style="display: none;">
                 <label class="tv-sub-toggle-label">
                   <input type="checkbox" id="toggle-autoTvRedirect" class="toggle-checkbox-sm">
-                  <span>Tự động chuyển sang TV khi vào youtube.com</span>
+                  <span data-i18n="tvAutoRedirectLabel">Tự động chuyển sang TV khi vào youtube.com</span>
                 </label>
                 <button type="button" class="btn-open-tv-window-sub" id="btn-open-tv-window-sub">
-                  <span>Mở YouTube TV trong cửa sổ riêng</span>
+                  <span data-i18n="openTvSub">Mở YouTube TV trong cửa sổ riêng</span>
                 </button>
               </div>
             </div>
@@ -664,7 +664,7 @@
                 <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
               </svg>
             </div>
-            <span class="feat-name">Lọc gợi ý Sidebar</span>
+            <span class="feat-name" data-i18n="featCurateSidebar">Lọc gợi ý Sidebar</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-curateSidebar" class="toggle-checkbox">
             </div>
@@ -679,7 +679,7 @@
                 <rect x="3" y="14" width="7" height="7" />
               </svg>
             </div>
-            <span class="feat-name">Lưới 4 video / hàng</span>
+            <span class="feat-name" data-i18n="featFourColumnGrid">Lưới 4 video / hàng</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-fourColumnGrid" class="toggle-checkbox">
             </div>
@@ -693,7 +693,7 @@
                 <line x1="4" y1="4" x2="20" y2="20" stroke-width="2.5" stroke="#E8930C" />
               </svg>
             </div>
-            <span class="feat-name">Ẩn YouTube Shorts</span>
+            <span class="feat-name" data-i18n="featHideShorts">Ẩn YouTube Shorts</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-hideShorts" class="toggle-checkbox">
             </div>
@@ -708,7 +708,7 @@
                 <line x1="2" y1="12" x2="22" y2="12" />
               </svg>
             </div>
-            <span class="feat-name">Ẩn màn hình kết thúc</span>
+            <span class="feat-name" data-i18n="featHideEndScreens">Ẩn màn hình kết thúc</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-hideEndScreens" class="toggle-checkbox">
             </div>
@@ -720,7 +720,7 @@
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <span class="feat-name">Cố định bình luận</span>
+            <span class="feat-name" data-i18n="featEnsureComments">Cố định bình luận</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-ensureComments" class="toggle-checkbox">
             </div>
@@ -734,7 +734,7 @@
                 <line x1="4" y1="18" x2="18" y2="18" />
               </svg>
             </div>
-            <span class="feat-name">Tự chọn thẻ lọc</span>
+            <span class="feat-name" data-i18n="featAutoSelectChips">Tự chọn thẻ lọc</span>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-autoSelectChips" class="toggle-checkbox">
             </div>
@@ -755,8 +755,8 @@
               </svg>
             </div>
             <div class="feat-text-group">
-              <span class="feat-name">Kích hoạt phím tắt TADa</span>
-              <span class="feat-desc-sub">Bật / Tắt tất cả phím tắt tiện ích trên YouTube</span>
+              <span class="feat-name" data-i18n="featMasterHotkeys">Kích hoạt phím tắt TADa</span>
+              <span class="feat-desc-sub" data-i18n="masterHotkeysDesc">Bật / Tắt tất cả phím tắt tiện ích trên YouTube</span>
             </div>
             <div class="checkbox-wrapper-41">
               <input type="checkbox" id="toggle-hotkeysEnabled" class="toggle-checkbox">
@@ -770,7 +770,7 @@
               <line x1="12" y1="16" x2="12" y2="12"></line>
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
-            <span>Bấm vào phím để tùy chỉnh phím mới (nhấn phím mong muốn, Esc để hủy, ↺ để khôi phục).</span>
+            <span data-i18n="hotkeysIntroTip">Bấm vào phím để tùy chỉnh phím mới (nhấn phím mong muốn, Esc để hủy, ↺ để khôi phục).</span>
           </div>
 
           <!-- Shortcuts list -->
@@ -779,16 +779,16 @@
             <!-- 1. Chụp ảnh 4K -->
             <div class="shortcut-item" data-action="screenshot">
               <div class="shortcut-info">
-                <span class="shortcut-title">Chụp ảnh màn hình 4K</span>
-                <span class="shortcut-desc">Tải về ảnh khung hình gốc chất lượng cao nhất</span>
+                <span class="shortcut-title" data-i18n="shortcutScreenshotTitle">Chụp ảnh màn hình 4K</span>
+                <span class="shortcut-desc" data-i18n="shortcutScreenshotDesc">Tải về ảnh khung hình gốc chất lượng cao nhất</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="screenshot" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="screenshot" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-screenshot">
                     <kbd class="tada-kbd">S</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="screenshot" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="screenshot" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -800,18 +800,18 @@
             <!-- 2. Copy Clipboard -->
             <div class="shortcut-item" data-action="screenshotClipboard">
               <div class="shortcut-info">
-                <span class="shortcut-title">Sao chép ảnh vào Clipboard</span>
-                <span class="shortcut-desc">Dán ảnh nhanh vào Zalo, Facebook, Discord</span>
+                <span class="shortcut-title" data-i18n="shortcutScreenshotClipboardTitle">Sao chép ảnh vào Clipboard</span>
+                <span class="shortcut-desc" data-i18n="shortcutScreenshotClipboardDesc">Dán ảnh nhanh vào Zalo, Facebook, Discord</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="screenshotClipboard" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="screenshotClipboard" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-screenshotClipboard">
                     <kbd class="tada-kbd">Shift</kbd>
                     <span class="tada-kbd-plus">+</span>
                     <kbd class="tada-kbd">S</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="screenshotClipboard" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="screenshotClipboard" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -823,16 +823,16 @@
             <!-- 3. Cinema Mode -->
             <div class="shortcut-item" data-action="cinemaMode">
               <div class="shortcut-info">
-                <span class="shortcut-title">Chế độ rạp phim (Cinema)</span>
-                <span class="shortcut-desc">Tối đen toàn bộ giao diện xung quanh để tập trung</span>
+                <span class="shortcut-title" data-i18n="shortcutCinemaModeTitle">Chế độ rạp phim (Cinema)</span>
+                <span class="shortcut-desc" data-i18n="shortcutCinemaModeDesc">Tối đen toàn bộ giao diện xung quanh để tập trung</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="cinemaMode" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="cinemaMode" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-cinemaMode">
                     <kbd class="tada-kbd">W</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="cinemaMode" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="cinemaMode" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -844,16 +844,16 @@
             <!-- 4. Picture-in-Picture -->
             <div class="shortcut-item" data-action="pip">
               <div class="shortcut-info">
-                <span class="shortcut-title">Hình trong hình (PiP)</span>
-                <span class="shortcut-desc">Thu nhỏ video góc màn hình để vừa làm việc vừa xem</span>
+                <span class="shortcut-title" data-i18n="shortcutPipTitle">Hình trong hình (PiP)</span>
+                <span class="shortcut-desc" data-i18n="shortcutPipDesc">Thu nhỏ video góc màn hình để vừa làm việc vừa xem</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="pip" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="pip" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-pip">
                     <kbd class="tada-kbd">P</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="pip" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="pip" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -865,16 +865,16 @@
             <!-- 5. Speed Up -->
             <div class="shortcut-item" data-action="speedUp">
               <div class="shortcut-info">
-                <span class="shortcut-title">Tăng tốc độ phát (+0.25x)</span>
-                <span class="shortcut-desc">Tăng tốc độ phát video (giữ Alt để tăng vi mô +0.05x)</span>
+                <span class="shortcut-title" data-i18n="shortcutSpeedUpTitle">Tăng tốc độ phát (+0.25x)</span>
+                <span class="shortcut-desc" data-i18n="shortcutSpeedUpDesc">Tăng tốc độ phát video (giữ Alt để tăng vi mô +0.05x)</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="speedUp" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="speedUp" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-speedUp">
                     <kbd class="tada-kbd">&gt;</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="speedUp" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="speedUp" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -886,16 +886,16 @@
             <!-- 6. Speed Down -->
             <div class="shortcut-item" data-action="speedDown">
               <div class="shortcut-info">
-                <span class="shortcut-title">Giảm tốc độ phát (-0.25x)</span>
-                <span class="shortcut-desc">Giảm tốc độ phát video (giữ Alt để giảm vi mô -0.05x)</span>
+                <span class="shortcut-title" data-i18n="shortcutSpeedDownTitle">Giảm tốc độ phát (-0.25x)</span>
+                <span class="shortcut-desc" data-i18n="shortcutSpeedDownDesc">Giảm tốc độ phát video (giữ Alt để giảm vi mô -0.05x)</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="speedDown" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="speedDown" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-speedDown">
                     <kbd class="tada-kbd">&lt;</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="speedDown" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="speedDown" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -907,16 +907,16 @@
             <!-- 7. Speed Reset -->
             <div class="shortcut-item" data-action="speedReset">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đặt lại tốc độ (1.0x)</span>
-                <span class="shortcut-desc">Trả tốc độ phát về chuẩn bình thường</span>
+                <span class="shortcut-title" data-i18n="shortcutSpeedResetTitle">Đặt lại tốc độ (1.0x)</span>
+                <span class="shortcut-desc" data-i18n="shortcutSpeedResetDesc">Trả tốc độ phát về chuẩn bình thường</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="speedReset" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="speedReset" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-speedReset">
                     <kbd class="tada-kbd">=</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="speedReset" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="speedReset" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -928,16 +928,16 @@
             <!-- 8. Looper Set A -->
             <div class="shortcut-item" data-action="abSetA">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đoạn lặp: Đặt điểm [A]</span>
-                <span class="shortcut-desc">Ghim thời điểm bắt đầu lặp A-B</span>
+                <span class="shortcut-title" data-i18n="shortcutAbSetATitle">Đoạn lặp: Đặt điểm [A]</span>
+                <span class="shortcut-desc" data-i18n="shortcutAbSetADesc">Ghim thời điểm bắt đầu lặp A-B</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="abSetA" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="abSetA" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-abSetA">
                     <kbd class="tada-kbd">[</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="abSetA" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="abSetA" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -949,16 +949,16 @@
             <!-- 9. Looper Set B -->
             <div class="shortcut-item" data-action="abSetB">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đoạn lặp: Đặt điểm [B]</span>
-                <span class="shortcut-desc">Ghim thời điểm kết thúc đoạn lặp</span>
+                <span class="shortcut-title" data-i18n="shortcutAbSetBTitle">Đoạn lặp: Đặt điểm [B]</span>
+                <span class="shortcut-desc" data-i18n="shortcutAbSetBDesc">Ghim thời điểm kết thúc đoạn lặp</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="abSetB" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="abSetB" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-abSetB">
                     <kbd class="tada-kbd">]</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="abSetB" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="abSetB" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -970,16 +970,16 @@
             <!-- 10. Looper Toggle -->
             <div class="shortcut-item" data-action="abToggle">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đoạn lặp: Bật / Tắt lặp</span>
-                <span class="shortcut-desc">Kích hoạt hoặc dừng lặp vòng A-B</span>
+                <span class="shortcut-title" data-i18n="shortcutAbToggleTitle">Đoạn lặp: Bật / Tắt lặp</span>
+                <span class="shortcut-desc" data-i18n="shortcutAbToggleDesc">Kích hoạt hoặc dừng lặp vòng A-B</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="abToggle" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="abToggle" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-abToggle">
                     <kbd class="tada-kbd">\</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="abToggle" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="abToggle" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -991,18 +991,18 @@
             <!-- 11. Bookmark Add -->
             <div class="shortcut-item" data-action="bookmarkAdd">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đánh dấu mốc Bookmark</span>
-                <span class="shortcut-desc">Ghim nhanh mốc thời gian kèm ghi chú</span>
+                <span class="shortcut-title" data-i18n="shortcutBookmarkAddTitle">Đánh dấu mốc Bookmark</span>
+                <span class="shortcut-desc" data-i18n="shortcutBookmarkAddDesc">Ghim nhanh mốc thời gian kèm ghi chú</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="bookmarkAdd" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="bookmarkAdd" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-bookmarkAdd">
                     <kbd class="tada-kbd">Shift</kbd>
                     <span class="tada-kbd-plus">+</span>
                     <kbd class="tada-kbd">B</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="bookmarkAdd" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="bookmarkAdd" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -1014,16 +1014,16 @@
             <!-- 12. Bookmark Open -->
             <div class="shortcut-item" data-action="bookmarkPanel">
               <div class="shortcut-info">
-                <span class="shortcut-title">Mở thư viện Bookmarks</span>
-                <span class="shortcut-desc">Xem và nhảy nhanh tới các mốc đã lưu</span>
+                <span class="shortcut-title" data-i18n="shortcutBookmarkPanelTitle">Mở thư viện Bookmarks</span>
+                <span class="shortcut-desc" data-i18n="shortcutBookmarkPanelDesc">Xem và nhảy nhanh tới các mốc đã lưu</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="bookmarkPanel" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="bookmarkPanel" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-bookmarkPanel">
                     <kbd class="tada-kbd">B</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="bookmarkPanel" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="bookmarkPanel" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -1035,18 +1035,18 @@
             <!-- 13. Volume Up -->
             <div class="shortcut-item" data-action="volumeUp">
               <div class="shortcut-info">
-                <span class="shortcut-title">Tăng âm lượng 500% (+20%)</span>
-                <span class="shortcut-desc">Tăng mức khuếch đại âm lượng cực đại</span>
+                <span class="shortcut-title" data-i18n="shortcutVolumeUpTitle">Tăng âm lượng 500% (+20%)</span>
+                <span class="shortcut-desc" data-i18n="shortcutVolumeUpDesc">Tăng mức khuếch đại âm lượng cực đại</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="volumeUp" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="volumeUp" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-volumeUp">
                     <kbd class="tada-kbd">Shift</kbd>
                     <span class="tada-kbd-plus">+</span>
                     <kbd class="tada-kbd">&uarr;</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="volumeUp" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="volumeUp" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -1058,18 +1058,18 @@
             <!-- 14. Volume Down -->
             <div class="shortcut-item" data-action="volumeDown">
               <div class="shortcut-info">
-                <span class="shortcut-title">Giảm âm lượng 500% (-20%)</span>
-                <span class="shortcut-desc">Giảm mức khuếch đại âm lượng cực đại</span>
+                <span class="shortcut-title" data-i18n="shortcutVolumeDownTitle">Giảm âm lượng 500% (-20%)</span>
+                <span class="shortcut-desc" data-i18n="shortcutVolumeDownDesc">Giảm mức khuếch đại âm lượng cực đại</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="volumeDown" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="volumeDown" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-volumeDown">
                     <kbd class="tada-kbd">Shift</kbd>
                     <span class="tada-kbd-plus">+</span>
                     <kbd class="tada-kbd">&darr;</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="volumeDown" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="volumeDown" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -1081,16 +1081,16 @@
             <!-- 15. SponsorBlock Revert -->
             <div class="shortcut-item" data-action="sponsorRevert">
               <div class="shortcut-info">
-                <span class="shortcut-title">Hoàn tác bỏ qua tài trợ</span>
-                <span class="shortcut-desc">Quay lại đoạn intro / sponsor vừa tự động nhảy</span>
+                <span class="shortcut-title" data-i18n="shortcutSponsorRevertTitle">Hoàn tác bỏ qua tài trợ</span>
+                <span class="shortcut-desc" data-i18n="shortcutSponsorRevertDesc">Quay lại đoạn intro / sponsor vừa tự động nhảy</span>
               </div>
               <div class="shortcut-action-wrap">
-                <button type="button" class="btn-hotkey-record" data-action="sponsorRevert" title="Bấm để đổi phím tắt">
+                <button type="button" class="btn-hotkey-record" data-action="sponsorRevert" data-i18n-title="hotkeyRecordTitle" title="Bấm để đổi phím tắt">
                   <span class="hotkey-display" id="hotkey-display-sponsorRevert">
                     <kbd class="tada-kbd">Z</kbd>
                   </span>
                 </button>
-                <button type="button" class="btn-hotkey-reset" data-action="sponsorRevert" title="Khôi phục mặc định">
+                <button type="button" class="btn-hotkey-reset" data-action="sponsorRevert" data-i18n-title="hotkeyResetTitle" title="Khôi phục mặc định">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -1100,10 +1100,10 @@
             </div>
 
             <!-- 16. Switch Logo (Info only) -->
-            <div class="shortcut-item">
+            <div class="shortcut-item" data-action="switchLogo">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đổi nhanh Logo YouTube</span>
-                <span class="shortcut-desc">Chuyển qua lại Logo TADa / Premium / Mặc định</span>
+                <span class="shortcut-title" data-i18n="shortcutSwitchLogoTitle">Đổi nhanh Logo YouTube</span>
+                <span class="shortcut-desc" data-i18n="shortcutSwitchLogoDesc">Chuyển qua lại Logo TADa / Premium / Mặc định</span>
               </div>
               <div class="shortcut-action-wrap">
                 <kbd class="tada-kbd">Alt</kbd>
@@ -1113,10 +1113,10 @@
             </div>
 
             <!-- 17. Esc (Info only) -->
-            <div class="shortcut-item">
+            <div class="shortcut-item" data-action="esc">
               <div class="shortcut-info">
-                <span class="shortcut-title">Đóng nhanh bảng / Popup</span>
-                <span class="shortcut-desc">Đóng bảng Bookmarks, Looper hoặc cửa sổ đang mở</span>
+                <span class="shortcut-title" data-i18n="shortcutEscTitle">Đóng nhanh bảng / Popup</span>
+                <span class="shortcut-desc" data-i18n="shortcutEscDesc">Đóng bảng Bookmarks, Looper hoặc cửa sổ đang mở</span>
               </div>
               <div class="shortcut-action-wrap">
                 <kbd class="tada-kbd">Esc</kbd>
@@ -1132,7 +1132,7 @@
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                 <path d="M3 3v5h5"/>
               </svg>
-              <span>Khôi phục tất cả phím tắt mặc định</span>
+              <span data-i18n="resetAllHotkeys">Khôi phục tất cả phím tắt mặc định</span>
             </button>
           </div>
 
@@ -1145,8 +1145,8 @@
           <div class="toolbar-preview-card">
             <div class="toolbar-preview-header">
               <div class="preview-badge-row">
-                <span class="preview-tag">MÔ PHỎNG TRỰC TIẾP</span>
-                <span class="preview-sub">Thanh phát video YouTube</span>
+                <span class="preview-tag" data-i18n="tbPreviewTag">MÔ PHỎNG TRỰC TIẾP</span>
+                <span class="preview-sub" data-i18n="tbPreviewSub">Thanh phát video YouTube</span>
               </div>
             </div>
             <div class="toolbar-preview-track" id="toolbar-preview-track">
@@ -1160,7 +1160,7 @@
               <line x1="12" y1="16" x2="12" y2="12"/>
               <line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            <span>Kéo thả từng dòng hoặc bấm <b>▲ / ▼</b> để đổi vị trí nút. Tắt công tắc để ẩn nút khỏi thanh video (phím tắt vẫn dùng được).</span>
+            <span data-i18n-html="tbGuideBanner">Kéo thả từng dòng hoặc bấm <b>▲ / ▼</b> để đổi vị trí nút. Tắt công tắc để ẩn nút khỏi thanh video (phím tắt vẫn dùng được).</span>
           </div>
 
           <!-- Reorderable List of Player Buttons -->
@@ -1172,22 +1172,22 @@
           <div class="toolbar-options-card">
             <div class="tb-opt-row">
               <div class="tb-opt-info">
-                <span class="tb-opt-title">Vị trí nút Lặp đoạn A-B:</span>
-                <span class="tb-opt-sub">Đặt cạnh mốc thời gian hoặc cùng cụm công cụ</span>
+                <span class="tb-opt-title" data-i18n="tbLooperPosTitle">Vị trí nút Lặp đoạn A-B:</span>
+                <span class="tb-opt-sub" data-i18n="tbLooperPosSub">Đặt cạnh mốc thời gian hoặc cùng cụm công cụ</span>
               </div>
               <select id="select-abLooperPosition" class="tb-opt-select">
-                <option value="left">Cạnh thời gian (Bên trái)</option>
-                <option value="toolbar">Thanh công cụ (Bên phải)</option>
+                <option value="left" data-i18n="tbLooperPosLeft">Cạnh thời gian (Bên trái)</option>
+                <option value="toolbar" data-i18n="tbLooperPosRight">Thanh công cụ (Bên phải)</option>
               </select>
             </div>
             <div class="tb-opt-row">
               <div class="tb-opt-info">
-                <span class="tb-opt-title">Vị trí cụm nút TADa:</span>
-                <span class="tb-opt-sub">Vị trí tương đối với nút Cài đặt bánh răng</span>
+                <span class="tb-opt-title" data-i18n="tbAnchorTitle">Vị trí cụm nút TADa:</span>
+                <span class="tb-opt-sub" data-i18n="tbAnchorSub">Vị trí tương đối với nút Cài đặt bánh răng</span>
               </div>
               <select id="select-toolbarAnchor" class="tb-opt-select">
-                <option value="beforeSettings">Trước nút Cài đặt (Bên trái)</option>
-                <option value="afterSettings">Sau nút Cài đặt (Bên phải)</option>
+                <option value="beforeSettings" data-i18n="tbAnchorBefore">Trước nút Cài đặt (Bên trái)</option>
+                <option value="afterSettings" data-i18n="tbAnchorAfter">Sau nút Cài đặt (Bên phải)</option>
               </select>
             </div>
           </div>
@@ -1199,7 +1199,7 @@
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                 <path d="M3 3v5h5"/>
               </svg>
-              <span>Khôi phục thứ tự mặc định</span>
+              <span data-i18n="tbResetOrder">Khôi phục thứ tự mặc định</span>
             </button>
           </div>
 
@@ -1212,7 +1212,7 @@
               <polyline points="23 4 23 10 17 10" />
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
             </svg>
-            Làm mới trang
+            <span data-i18n="reloadPage">Làm mới trang</span>
           </button>
         </div>
 
@@ -1227,14 +1227,14 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="modal-icon">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
-            <span>Bookmarks đã lưu</span>
+            <span data-i18n="bmModalTitle">Bookmarks đã lưu</span>
           </div>
-          <button id="btn-close-bm-modal" class="btn-modal-close">×</button>
+          <button id="btn-close-bm-modal" class="btn-modal-close" data-i18n-title="aboutCloseTitle" title="Đóng">×</button>
         </div>
         <div class="bm-modal-body" id="bm-modal-body"></div>
         <div class="bm-modal-footer">
-          <button id="btn-export-all-bm" class="btn-subtle">Sao chép tất cả</button>
-          <button id="btn-clear-all-bm" class="btn-subtle btn-danger">Xóa hết</button>
+          <button id="btn-export-all-bm" class="btn-subtle" data-i18n="bmExportAll">Sao chép tất cả</button>
+          <button id="btn-clear-all-bm" class="btn-subtle btn-danger" data-i18n="bmClearAll">Xóa hết</button>
         </div>
       </div>
     </div>
@@ -1245,9 +1245,9 @@
         <div class="about-modal-header">
           <div class="about-modal-title">
             <img class="about-logo-mini" src="icons/icon48.png" alt="TADa">
-            <span>Giới thiệu TADa for YouTube</span>
+            <span data-i18n="aboutModalTitle">Giới thiệu TADa for YouTube</span>
           </div>
-          <button id="btn-close-about-modal" class="btn-modal-close" title="Đóng">×</button>
+          <button id="btn-close-about-modal" class="btn-modal-close" data-i18n-title="aboutCloseTitle" title="Đóng">×</button>
         </div>
         <div class="about-modal-body">
           <div class="about-hero-card">
@@ -1256,7 +1256,7 @@
               <span class="about-ver">v2.2</span>
             </div>
             <h3 class="about-app-title">TADa for YouTube</h3>
-            <p class="about-app-desc">
+            <p class="about-app-desc" data-i18n-html="aboutHeroDesc">
               Tiện ích mở rộng thông minh, tối ưu trải nghiệm xem video YouTube sạch sẽ, không quảng cáo, tích hợp bộ
               công cụ hỗ trợ người dùng toàn diện. Thuộc hệ sinh thái <strong>TADa Manager</strong>.
             </p>
@@ -1265,16 +1265,16 @@
           <div class="about-dev-card">
             <div class="dev-avatar">TA</div>
             <div class="dev-info">
-              <span class="dev-role">Phát triển bởi</span>
+              <span class="dev-role" data-i18n="aboutDevRole">Phát triển bởi</span>
               <h4 class="dev-name">Nguyễn Tuấn Anh</h4>
-              <span class="dev-team">Thành viên Team TADa</span>
+              <span class="dev-team" data-i18n="aboutDevTeam">Thành viên Team TADa</span>
             </div>
           </div>
 
           <!-- 1. GITHUB LINK (bright-chicken-11 by elijahgummer) -->
-          <div class="about-section-label">Mã nguồn &amp; Đóng góp</div>
+          <div class="about-section-label" data-i18n="aboutSourceSec">Mã nguồn &amp; Đóng góp</div>
           <a href="https://github.com/nobianh78/TADa-for-YouTube-v2.0" target="_blank" rel="noopener noreferrer"
-            class="uiverse-github-btn" id="link-github-repo" title="Xem mã nguồn & Tặng sao trên GitHub">
+            class="uiverse-github-btn" id="link-github-repo" data-i18n-title="aboutGithubTitle" title="Xem mã nguồn & Tặng sao trên GitHub">
             <span class="uiverse-github-shimmer"></span>
             <div class="uiverse-github-left">
               <svg class="uiverse-github-svg" viewBox="0 0 438.549 438.549">
@@ -1291,7 +1291,7 @@
           </a>
 
           <!-- 2. SHARE & COPY LINK (Chrome Web Store) -->
-          <div class="about-section-label">Chia sẻ tiện ích</div>
+          <div class="about-section-label" data-i18n="aboutShareSec">Chia sẻ tiện ích</div>
           <div class="about-share-box">
             <div class="share-url-preview" title="https://chromewebstore.google.com/detail/ddhelhlhdbagdcmlopiplhkbddgfjnmk?utm_source=item-share-cb">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="link-icon">
@@ -1301,29 +1301,29 @@
               <span class="share-url-text">chromewebstore.google.com/detail/ddhelhlh...</span>
             </div>
             <div class="share-btn-group">
-              <button type="button" class="btn-share-action" id="btn-copy-cws-link" title="Sao chép link cài đặt tiện ích">
+              <button type="button" class="btn-share-action" id="btn-copy-cws-link" data-i18n-title="aboutCopyCwsTitle" title="Sao chép link cài đặt tiện ích">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <span>Sao chép link</span>
+                <span data-i18n="aboutCopyLinkBtn">Sao chép link</span>
               </button>
-              <button type="button" class="btn-share-action btn-share-primary" id="btn-share-cws" title="Chia sẻ link tiện ích">
+              <button type="button" class="btn-share-action btn-share-primary" id="btn-share-cws" data-i18n-title="aboutShareBtnTitle" title="Chia sẻ link tiện ích">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                   <polyline points="16 6 12 2 8 6"></polyline>
                   <line x1="12" y1="2" x2="12" y2="15"></line>
                 </svg>
-                <span>Chia sẻ</span>
+                <span data-i18n="aboutShareBtn">Chia sẻ</span>
               </button>
             </div>
           </div>
 
           <!-- 3. DONATE & SUPPORT (plastic-goose-38 by Admin12121) -->
-          <div class="about-section-label">Ủng hộ tôi</div>
+          <div class="about-section-label" data-i18n="aboutDonateSec">Ủng hộ tôi</div>
           <div class="uiverse-donate-card">
             <!-- plastic-goose-38 POS terminal animation container -->
-            <div class="pg-container" id="pg-donate-trigger" title="Ủng hộ tác giả TADa for YouTube">
+            <div class="pg-container" id="pg-donate-trigger" data-i18n-title="aboutDonateTitle" title="Ủng hộ tác giả TADa for YouTube">
               <div class="pg-left-side">
                 <div class="pg-card">
                   <div class="pg-card-line"></div>
@@ -1340,8 +1340,8 @@
               </div>
               <div class="pg-right-side">
                 <div class="pg-title-box">
-                  <div class="pg-new">Ủng hộ tôi</div>
-                  <div class="pg-sub">Chạm để sao chép STK</div>
+                  <div class="pg-new" data-i18n="aboutDonateSec">Ủng hộ tôi</div>
+                  <div class="pg-sub" data-i18n="aboutTapCopyStk">Chạm để sao chép STK</div>
                 </div>
                 <svg viewBox="0 0 451.846 451.847" height="16" width="16" xmlns="http://www.w3.org/2000/svg" class="pg-arrow">
                   <path fill="currentColor" d="M345.441 248.292L151.154 442.573c-12.359 12.365-32.397 12.365-44.75 0-12.354-12.354-12.354-32.391 0-44.744L278.318 225.92 106.409 54.017c-12.354-12.359-12.354-32.394 0-44.748 12.354-12.359 32.391-12.359 44.75 0l194.287 194.284c6.177 6.18 9.262 14.271 9.262 22.366 0 8.099-3.091 16.196-9.267 22.373z"></path>
@@ -1353,32 +1353,32 @@
             <div class="donate-bank-info">
               <div class="bank-row">
                 <span class="bank-badge">MB BANK</span>
-                <span class="bank-sub-name">Ngân hàng Quân Đội</span>
+                <span class="bank-sub-name" data-i18n="aboutMbBankSub">Ngân hàng Quân Đội</span>
               </div>
               <div class="bank-acc-row">
                 <div class="bank-acc-num-wrap">
-                  <span class="bank-label">SỐ TÀI KHOẢN / THẺ</span>
+                  <span class="bank-label" data-i18n="aboutAccNumLabel">SỐ TÀI KHOẢN / THẺ</span>
                   <span class="bank-acc-number" id="stk-number-display">9704 2292 0047 9524 109</span>
                 </div>
-                <button type="button" class="btn-copy-stk" id="btn-copy-stk" title="Sao chép số tài khoản">
+                <button type="button" class="btn-copy-stk" id="btn-copy-stk" data-i18n-title="aboutCopyStkTitle" title="Sao chép số tài khoản">
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
-                  <span>Sao chép</span>
+                  <span data-i18n="aboutCopyStkBtn">Sao chép</span>
                 </button>
               </div>
               <div class="bank-holder-row">
-                <span class="bank-label">CHỦ TÀI KHOẢN:</span>
+                <span class="bank-label" data-i18n="aboutAccHolderLabel">CHỦ TÀI KHOẢN:</span>
                 <span class="bank-holder-name">NGUYEN TUAN ANH</span>
               </div>
 
               <!-- Quick VietQR Toggle -->
               <div class="donate-qr-wrapper">
-                <button type="button" class="btn-toggle-qr" id="btn-toggle-donate-qr">Hiện mã QR MB Bank ▼</button>
+                <button type="button" class="btn-toggle-qr" id="btn-toggle-donate-qr" data-i18n="aboutShowQrBtn">Hiện mã QR MB Bank ▼</button>
                 <div class="donate-qr-box" id="donate-qr-box">
                   <img class="donate-qr-img" src="https://img.vietqr.io/image/mbbank-9704229200479524109-compact2.png?amount=0&addInfo=Ung%20ho%20TADa&accountName=NGUYEN%20TUAN%20ANH" alt="VietQR MB Bank TADa" loading="lazy">
-                  <span class="qr-hint">Quét mã bằng app ngân hàng (MB Bank, VCB, MoMo, VNPay,...)</span>
+                  <span class="qr-hint" data-i18n="aboutQrHint">Quét mã bằng app ngân hàng (MB Bank, VCB, MoMo, VNPay,...)</span>
                 </div>
               </div>
             </div>
@@ -1398,10 +1398,10 @@
         <div class="lang-modal-icon-wrap">
           <img src="icons/icon128.png" alt="TADa" class="lang-modal-logo">
         </div>
-        <h2 class="lang-modal-title" id="lang-modal-title">Chào mừng đến với TADa!</h2>
+        <h2 class="lang-modal-title" id="lang-modal-title" data-i18n="onboardingTitle">Chào mừng đến với TADa!</h2>
         <p class="lang-modal-subtitle" id="lang-modal-subtitle">
-          Vui lòng chọn ngôn ngữ bạn muốn sử dụng<br>
-          <span class="lang-modal-sub-en">Please select your preferred language</span>
+          <span data-i18n="onboardingSubtitle">Vui lòng chọn ngôn ngữ bạn muốn sử dụng</span><br>
+          <span class="lang-modal-sub-en" data-i18n="onboardingSubEn">Please select your preferred language</span>
         </p>
 
         <div class="lang-cards-grid">
@@ -1410,7 +1410,7 @@
             <div class="lang-card-flag">🇻🇳</div>
             <div class="lang-card-info">
               <div class="lang-card-name">Tiếng Việt</div>
-              <div class="lang-card-desc">Giao diện tiếng Việt chuẩn</div>
+              <div class="lang-card-desc" data-i18n="langCardDescVi">Giao diện tiếng Việt chuẩn</div>
             </div>
             <div class="lang-card-radio">
               <span class="lang-radio-dot"></span>
@@ -1422,7 +1422,7 @@
             <div class="lang-card-flag">🇬🇧</div>
             <div class="lang-card-info">
               <div class="lang-card-name">English</div>
-              <div class="lang-card-desc">International English UI</div>
+              <div class="lang-card-desc" data-i18n="langCardDescEn">International English UI</div>
             </div>
             <div class="lang-card-radio">
               <span class="lang-radio-dot"></span>
@@ -1432,7 +1432,7 @@
 
         <div class="lang-modal-actions">
           <button type="button" class="btn-lang-confirm" id="btn-lang-confirm">
-            <span id="btn-lang-confirm-text">Bắt đầu ngay • Get Started</span>
+            <span id="btn-lang-confirm-text" data-i18n="btnLangConfirm">Bắt đầu ngay • Get Started</span>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>

@@ -51,8 +51,9 @@ function parseYouTubeCount(str) {
 
 function formatDislikeCount(num) {
   if (num === null || num === undefined || isNaN(num)) return "0";
+  const en = typeof isEn === "function" && isEn();
   const lang = (document.documentElement.lang || navigator.language || "vi").toLowerCase();
-  const isVi = lang.startsWith("vi");
+  const isVi = !en && (currentSettings.language === "vi" || lang.startsWith("vi"));
   if (num < 1000) return String(num);
   try {
     return new Intl.NumberFormat(isVi ? "vi" : "en-US", {
@@ -176,8 +177,9 @@ function getDislikeTooltip(likes, dislikes) {
     }
   }
   const effectiveDislikes = Number(dislikes ?? localVotes.dislikes ?? 0);
+  const en = typeof isEn === "function" && isEn();
   const lang = (document.documentElement.lang || navigator.language || "vi").toLowerCase();
-  const isVi = lang.startsWith("vi");
+  const isVi = !en && (currentSettings.language === "vi" || lang.startsWith("vi"));
   const exactDislikes = effectiveDislikes.toLocaleString(isVi ? "vi-VN" : "en-US");
   const exactLikes = effectiveLikes.toLocaleString(isVi ? "vi-VN" : "en-US");
   const totalVotes = effectiveLikes + effectiveDislikes;

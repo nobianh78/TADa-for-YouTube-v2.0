@@ -358,12 +358,13 @@ function setupLogoAltClickListener() {
         // Suppress error if extension context was invalidated by reload
       }
 
+      const en = typeof isEn === "function" && isEn();
       const labels = {
         tada: "TADa",
         premium: "YouTube Premium",
-        default: "Mặc định (YouTube)"
+        default: en ? "Default (YouTube)" : "Mặc định (YouTube)"
       };
-      showLogoToast(`Đã đổi Logo: ${labels[nextLogo]}`);
+      showLogoToast(en ? `Logo switched to: ${labels[nextLogo]}` : `Đã đổi Logo: ${labels[nextLogo]}`);
     }
   }, true);
 }
@@ -715,11 +716,12 @@ function initTvModeUi() {
 
   const badge = document.createElement("div");
   badge.id = "tada-tv-floating-badge";
+  const en = typeof isEn === "function" && isEn();
   badge.innerHTML = `
     <span class="tada-tv-dot"></span>
     <span class="tada-tv-title">TADa TV</span>
     <span class="tada-tv-hint">(Alt+M)</span>
-    <button type="button" class="tada-tv-btn" id="tada-tv-switch-pc" title="Quay về giao diện YouTube PC máy tính">Về PC</button>
+    <button type="button" class="tada-tv-btn" id="tada-tv-switch-pc" title="${en ? "Return to YouTube PC desktop mode" : "Quay về giao diện YouTube PC máy tính"}">${en ? "PC Mode" : "Về PC"}</button>
   `;
   (document.body || document.documentElement).appendChild(badge);
 
