@@ -4,6 +4,8 @@
  */
 
 const DEFAULT_SETTINGS = {
+  language: "vi",
+  hasChosenLanguage: false,
   superVolume: true,
   ambientLight: true,
   ambientBrightness: 100,
@@ -141,6 +143,250 @@ const CATEGORY_META = {
   }
 };
 
+const I18N = {
+  vi: {
+    brandSub: "Tùy chỉnh thông minh",
+    aboutTitle: "Giới thiệu TADa & Tác giả",
+    reloadTabTitle: "Tải lại tab YouTube",
+    switchLangTitle: "Đổi sang Tiếng Anh (Switch to English)",
+    switchLangToast: "Đã chuyển sang Tiếng Việt 🇻🇳",
+    adBlockLabel: "Chặn quảng cáo",
+    alwaysOn: "LUÔN BẬT",
+    blockedUnit: "đã chặn",
+    resetStatsTitle: "Đặt lại thống kê",
+    resetStatsToast: "Đã đặt lại bộ đếm quảng cáo về 0!",
+    logoTitle: "Logo YouTube",
+    logoDefault: "Mặc định",
+    modeTitle: "Chế độ giao diện",
+    openTvNow: "Mở YouTube TV ngay",
+    tvAutoRedirectLabel: "Tự động chuyển sang TV khi vào youtube.com",
+    openTvSub: "Mở YouTube TV trong cửa sổ riêng",
+    featuresLabel: "Tính năng",
+    enableAll: "Bật hết",
+    disableAll: "Tắt hết",
+    catPlayer: "Trình phát & Âm thanh",
+    catTools: "Công cụ & Tiện ích",
+    catLayout: "Giao diện & Tập trung",
+    catShortcuts: "Phím tắt nhanh",
+    catToolbar: "Sắp xếp thanh công cụ",
+    catBookmarks: "Thư viện Bookmarks",
+    catAbout: "Giới thiệu TADa",
+    catAboutSub: "Nguyễn Tuấn Anh • TADa Team",
+    btnBackTitle: "Quay lại",
+    btnSubEnable: "Bật",
+    btnSubDisable: "Tắt",
+    reloadPage: "Làm mới trang",
+    ambientBrightness: "Độ sáng",
+    ambientSpread: "Lan tỏa",
+    presetPalette: "Bảng màu gợi ý",
+    customColorLabel: "Tự chọn mã màu:",
+    presetFiltersHeader: "Mẫu lọc có sẵn (1-chạm)",
+    filterResetBtn: "Đặt lại",
+    filterContrast: "Độ tương phản",
+    filterSaturation: "Độ bão hòa màu",
+    filterWarmth: "Tông ấm / Dịu mắt",
+    cinemaOpacity: "Độ mờ màn đen",
+    cinemaHint: "Phím tắt: <strong>Shift + L</strong> hoặc bấm bóng đèn trên Player",
+    preferredQualityLabel: "Mức chất lượng ưu tiên:",
+    qualityHighest: "Cao nhất có thể (4K / 8K)",
+    qualitySaveNet: "Tiết kiệm mạng (480p)",
+    qualityBadgeLabel: "Hiện thông báo chất lượng trên video",
+    qualityHint: "Tự động ép mức phân giải cao nhất ngay khi mở video, chống bị YouTube tự hạ xuống 480p/720p.",
+    masterHotkeysTitle: "Kích hoạt phím tắt TADa",
+    masterHotkeysDesc: "Bật / Tắt tất cả phím tắt tiện ích trên YouTube",
+    hotkeysIntroTip: "Bấm vào phím để tùy chỉnh phím mới (nhấn phím mong muốn, Esc để hủy, ↺ để khôi phục).",
+    resetAllHotkeys: "Khôi phục tất cả phím tắt mặc định",
+    tbPreviewTag: "MÔ PHỎNG TRỰC TIẾP",
+    tbPreviewSub: "Thanh phát video YouTube",
+    tbGuideBanner: "Kéo thả từng dòng hoặc bấm <b>▲ / ▼</b> để đổi vị trí nút. Tắt công tắc để ẩn nút khỏi thanh video (phím tắt vẫn dùng được).",
+    tbLooperPosTitle: "Vị trí nút Lặp đoạn A-B:",
+    tbLooperPosSub: "Đặt cạnh mốc thời gian hoặc cùng cụm công cụ",
+    tbLooperPosLeft: "Cạnh thời gian (Bên trái)",
+    tbLooperPosRight: "Thanh công cụ (Bên phải)",
+    tbAnchorTitle: "Vị trí cụm nút TADa:",
+    tbAnchorSub: "Vị trí tương đối với nút Cài đặt bánh răng",
+    tbAnchorBefore: "Trước nút Cài đặt (Bên trái)",
+    tbAnchorAfter: "Sau nút Cài đặt (Bên phải)",
+    tbResetOrder: "Khôi phục thứ tự mặc định",
+    bmModalTitle: "Bookmarks đã lưu",
+    bmExportAll: "Sao chép tất cả",
+    bmClearAll: "Xóa hết",
+    aboutModalTitle: "Giới thiệu TADa for YouTube",
+    aboutDevRole: "Phát triển bởi",
+    aboutDevTeam: "Thành viên Team TADa",
+    aboutSourceSec: "Mã nguồn & Đóng góp",
+    aboutShareSec: "Chia sẻ tiện ích",
+    aboutCopyLinkBtn: "Sao chép link",
+    aboutShareBtn: "Chia sẻ",
+    aboutDonateSec: "Ủng hộ tôi",
+    aboutCloseBtn: "Đóng"
+  },
+  en: {
+    brandSub: "Smart Customizer",
+    aboutTitle: "About TADa & Author",
+    reloadTabTitle: "Reload YouTube tab",
+    switchLangTitle: "Chuyển sang Tiếng Việt (Switch to Vietnamese)",
+    switchLangToast: "Switched to English 🇬🇧",
+    adBlockLabel: "Ad Blocker",
+    alwaysOn: "ALWAYS ON",
+    blockedUnit: "blocked",
+    resetStatsTitle: "Reset statistics",
+    resetStatsToast: "Ad blocker counter reset to 0!",
+    logoTitle: "YouTube Logo",
+    logoDefault: "Default",
+    modeTitle: "Interface Mode",
+    openTvNow: "Open YouTube TV now",
+    tvAutoRedirectLabel: "Automatically switch to TV mode on youtube.com",
+    openTvSub: "Open YouTube TV in standalone window",
+    featuresLabel: "Features",
+    enableAll: "Enable All",
+    disableAll: "Disable All",
+    catPlayer: "Player & Audio",
+    catTools: "Tools & Utilities",
+    catLayout: "Interface & Focus",
+    catShortcuts: "Quick Hotkeys",
+    catToolbar: "Toolbar Arrangement",
+    catBookmarks: "Bookmarks Library",
+    catAbout: "About TADa",
+    catAboutSub: "Nguyen Tuan Anh • TADa Team",
+    btnBackTitle: "Back",
+    btnSubEnable: "Enable",
+    btnSubDisable: "Disable",
+    reloadPage: "Reload Page",
+    ambientBrightness: "Brightness",
+    ambientSpread: "Spread",
+    presetPalette: "Preset Colors",
+    customColorLabel: "Custom Hex Color:",
+    presetFiltersHeader: "1-Click Presets",
+    filterResetBtn: "Reset",
+    filterContrast: "Contrast",
+    filterSaturation: "Saturation",
+    filterWarmth: "Warmth / Eye Care",
+    cinemaOpacity: "Dim Opacity",
+    cinemaHint: "Shortcut: <strong>Shift + L</strong> or click the lamp on Player",
+    preferredQualityLabel: "Preferred Quality:",
+    qualityHighest: "Highest Possible (4K / 8K)",
+    qualitySaveNet: "Data Saver (480p)",
+    qualityBadgeLabel: "Show quality badge on video",
+    qualityHint: "Forces highest resolution on video load to prevent YouTube auto-downgrading.",
+    masterHotkeysTitle: "Enable TADa Hotkeys",
+    masterHotkeysDesc: "Toggle all custom keyboard shortcuts on YouTube",
+    hotkeysIntroTip: "Click any key to rebind (press desired key, Esc to cancel, ↺ to reset).",
+    resetAllHotkeys: "Reset All Shortcuts to Default",
+    tbPreviewTag: "LIVE SIMULATION",
+    tbPreviewSub: "YouTube Video Player Bar",
+    tbGuideBanner: "Drag & drop rows or click <b>▲ / ▼</b> to reorder buttons. Toggle switch to hide buttons.",
+    tbLooperPosTitle: "A-B Looper Button Position:",
+    tbLooperPosSub: "Place next to time display or in right toolbar",
+    tbLooperPosLeft: "Next to Time (Left side)",
+    tbLooperPosRight: "Main Toolbar (Right side)",
+    tbAnchorTitle: "TADa Buttons Position:",
+    tbAnchorSub: "Position relative to YouTube Settings gear icon",
+    tbAnchorBefore: "Before Settings Icon (Left)",
+    tbAnchorAfter: "After Settings Icon (Right)",
+    tbResetOrder: "Reset to Default Order",
+    bmModalTitle: "Saved Bookmarks",
+    bmExportAll: "Copy All",
+    bmClearAll: "Clear All",
+    aboutModalTitle: "About TADa for YouTube",
+    aboutDevRole: "Developed by",
+    aboutDevTeam: "TADa Team Member",
+    aboutSourceSec: "Source Code & Contributions",
+    aboutShareSec: "Share Extension",
+    aboutCopyLinkBtn: "Copy Link",
+    aboutShareBtn: "Share",
+    aboutDonateSec: "Support Me",
+    aboutCloseBtn: "Close"
+  }
+};
+
+const FEATURE_NAMES_I18N = {
+  superVolume: { vi: "Booster âm lượng 500%", en: "Volume Booster 500%" },
+  ambientLight: { vi: "Ambient Light", en: "Ambient Light" },
+  progressColor: { vi: "Màu thanh thời gian", en: "Progress Bar Color" },
+  videoFilter: { vi: "Bộ lọc màu & Ánh sáng", en: "Color & Lighting Filter" },
+  cinemaMode: { vi: "Rạp phim (Tắt đèn)", en: "Cinema Mode (Dim Lights)" },
+  customSpeed: { vi: "Tốc độ phát (0.1x – 4x)", en: "Playback Speed (0.1x – 4x)" },
+  pipButton: { vi: "Hình trong hình (PiP)", en: "Picture-in-Picture (PiP)" },
+  abLooper: { vi: "Lặp đoạn A-B", en: "A-B Looper" },
+  customLoader: { vi: "Loader cánh chim (Giant Bird)", en: "Bird Wing Loading Animation" },
+  autoQuality: { vi: "Tự động chọn độ phân giải cao nhất", en: "Auto Select Highest Quality" },
+  videoScreenshot: { vi: "Chụp ảnh màn hình (4K)", en: "Screenshot Capture (4K)" },
+  videoBookmarks: { vi: "Đánh dấu mốc & Ghi chú", en: "Video Bookmarks & Notes" },
+  returnDislike: { vi: "Hiện số lượt Dislike", en: "Show Dislike Count" },
+  autoSkipSegments: { vi: "Bỏ qua Intro & Sponsor", en: "Skip Intro & Sponsors" },
+  curateSidebar: { vi: "Lọc gợi ý Sidebar", en: "Curate Sidebar Suggestions" },
+  fourColumnGrid: { vi: "Lưới 4 video / hàng", en: "4-Column Video Grid" },
+  hideShorts: { vi: "Ẩn YouTube Shorts", en: "Hide YouTube Shorts" },
+  hideEndScreens: { vi: "Ẩn màn hình kết thúc", en: "Hide End Screen Cards" },
+  ensureComments: { vi: "Cố định bình luận", en: "Keep Comments Visible" },
+  autoSelectChips: { vi: "Tự chọn thẻ lọc", en: "Auto-Select Chips" },
+  hotkeysEnabled: { vi: "Kích hoạt phím tắt TADa", en: "Enable TADa Hotkeys" }
+};
+
+const SHORTCUT_I18N = {
+  screenshot: {
+    title: { vi: "Chụp ảnh màn hình 4K", en: "Capture 4K Screenshot" },
+    desc: { vi: "Tải về ảnh khung hình gốc chất lượng cao nhất", en: "Download pristine frame at highest resolution" }
+  },
+  screenshotClipboard: {
+    title: { vi: "Sao chép ảnh vào Clipboard", en: "Copy Frame to Clipboard" },
+    desc: { vi: "Dán ảnh nhanh vào Zalo, Facebook, Discord", en: "Quick paste to Discord, Slack, Messenger" }
+  },
+  cinemaMode: {
+    title: { vi: "Chế độ rạp phim (Cinema)", en: "Cinema Mode (Dim Lights)" },
+    desc: { vi: "Tối đen toàn bộ giao diện xung quanh để tập trung", en: "Darken surroundings for focused viewing" }
+  },
+  pip: {
+    title: { vi: "Hình trong hình (PiP)", en: "Picture-in-Picture (PiP)" },
+    desc: { vi: "Thu nhỏ video góc màn hình để vừa làm việc vừa xem", en: "Floating video window for multitasking" }
+  },
+  speedUp: {
+    title: { vi: "Tăng tốc độ phát (+0.1x)", en: "Speed Up Playback (+0.1x)" },
+    desc: { vi: "Tăng nhanh tốc độ phát video hiện tại", en: "Increase current playback rate" }
+  },
+  speedDown: {
+    title: { vi: "Giảm tốc độ phát (-0.1x)", en: "Slow Down Playback (-0.1x)" },
+    desc: { vi: "Giảm tốc độ để nghe hoặc quan sát rõ hơn", en: "Decrease speed for transcription or practice" }
+  },
+  speedReset: {
+    title: { vi: "Đặt lại tốc độ về 1.0x", en: "Reset Speed to 1.0x" },
+    desc: { vi: "Trả tốc độ phát về mức bình thường ngay lập tức", en: "Instantly restore normal playback speed" }
+  },
+  abSetA: {
+    title: { vi: "Đặt mốc bắt đầu A", en: "Set Start Point A" },
+    desc: { vi: "Ghim mốc đầu đoạn cần lặp lại", en: "Pin start timestamp for loop segment" }
+  },
+  abSetB: {
+    title: { vi: "Đặt mốc kết thúc B", en: "Set End Point B" },
+    desc: { vi: "Ghim mốc cuối và bắt đầu vòng lặp A-B", en: "Pin end timestamp and start A-B looping" }
+  },
+  abToggle: {
+    title: { vi: "Bật / Tắt lặp đoạn A-B", en: "Toggle A-B Looping" },
+    desc: { vi: "Tạm dừng hoặc kích hoạt lại chế độ lặp", en: "Pause or resume current loop interval" }
+  },
+  bookmarkAdd: {
+    title: { vi: "Thêm Bookmark tại mốc hiện tại", en: "Add Bookmark at Timestamp" },
+    desc: { vi: "Lưu nhanh thời gian và mở hộp nhập ghi chú", en: "Save current timestamp and open note field" }
+  },
+  bookmarkPanel: {
+    title: { vi: "Bật / Tắt bảng Bookmarks", en: "Toggle Bookmarks Panel" },
+    desc: { vi: "Mở danh sách các mốc đã lưu của video này", en: "View and jump to saved bookmarks for this video" }
+  },
+  volumeUp: {
+    title: { vi: "Tăng âm lượng 500% (+20%)", en: "Increase Volume (+20%)" },
+    desc: { vi: "Tăng mức khuếch đại âm thanh vượt ngưỡng 100%", en: "Boost audio output beyond standard 100%" }
+  },
+  volumeDown: {
+    title: { vi: "Giảm âm lượng 500% (-20%)", en: "Decrease Volume (-20%)" },
+    desc: { vi: "Giảm mức khuếch đại âm lượng cực đại", en: "Reduce audio booster amplification" }
+  },
+  sponsorRevert: {
+    title: { vi: "Hoàn tác bỏ qua tài trợ", en: "Undo Sponsor Skip" },
+    desc: { vi: "Quay lại đoạn intro / sponsor vừa tự động nhảy", en: "Jump back to skipped sponsor or intro segment" }
+  }
+};
+
 let activeCategory = null;
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -194,12 +440,13 @@ function showToast(message) {
 }
 
 function updateActiveCount() {
+  const isEnglish = currentSettings.language === "en";
   // Cập nhật tổng số tính năng đang bật (không tính toggle hotkeys master vào tổng 20 tính năng giao diện)
   const mainFeatureKeys = TOGGLE_FEATURE_KEYS.filter((key) => key !== "hotkeysEnabled");
   const activeCount = mainFeatureKeys.filter((key) => currentSettings[key]).length;
   const countEl = document.getElementById("active-features-count");
   if (countEl) {
-    countEl.textContent = `${activeCount}/${mainFeatureKeys.length} bật`;
+    countEl.textContent = `${activeCount}/${mainFeatureKeys.length} ${isEnglish ? "active" : "bật"}`;
   }
 
   // Cập nhật bộ đếm real-time trên từng thẻ danh mục
@@ -209,13 +456,13 @@ function updateActiveCount() {
     if (pill) {
       if (catId === "shortcuts") {
         const isEnabled = currentSettings.hotkeysEnabled !== false;
-        pill.textContent = isEnabled ? "Bật" : "Tắt";
+        pill.textContent = isEnabled ? (isEnglish ? "On" : "Bật") : (isEnglish ? "Off" : "Tắt");
         pill.classList.toggle("has-active", isEnabled);
       } else if (catId === "toolbar") {
         const order = Array.isArray(currentSettings.toolbarOrder) ? currentSettings.toolbarOrder : DEFAULT_TOOLBAR_ORDER;
         const hidden = currentSettings.toolbarHidden || {};
         const visible = order.filter((id) => !hidden[id]).length;
-        pill.textContent = `${visible}/${order.length} nút`;
+        pill.textContent = `${visible}/${order.length} ${isEnglish ? "btns" : "nút"}`;
         pill.classList.toggle("has-active", visible > 0);
       } else {
         pill.textContent = `${enabledInCat}/${keys.length}`;
@@ -231,12 +478,12 @@ function updateActiveCount() {
     const badge = document.getElementById("sub-count-badge");
     if (badge) {
       if (activeCategory === "shortcuts") {
-        badge.textContent = currentSettings.hotkeysEnabled !== false ? "Đang bật" : "Đã tắt";
+        badge.textContent = currentSettings.hotkeysEnabled !== false ? (isEnglish ? "Active" : "Đang bật") : (isEnglish ? "Off" : "Đã tắt");
       } else if (activeCategory === "toolbar") {
         const order = Array.isArray(currentSettings.toolbarOrder) ? currentSettings.toolbarOrder : DEFAULT_TOOLBAR_ORDER;
         const hidden = currentSettings.toolbarHidden || {};
         const visible = order.filter((id) => !hidden[id]).length;
-        badge.textContent = `${visible}/${order.length} nút`;
+        badge.textContent = `${visible}/${order.length} ${isEnglish ? "btns" : "nút"}`;
       } else {
         badge.textContent = `${enabled}/${keys.length}`;
       }
@@ -1009,6 +1256,239 @@ function navigateBackToMain() {
   if (slider) slider.classList.remove("show-detail");
 }
 
+function applyLanguage(lang) {
+  const currentLang = (lang === "en") ? "en" : "vi";
+  const isEnglish = currentLang === "en";
+  document.documentElement.lang = currentLang;
+
+  // 1. Update header toggle button
+  const flagEl = document.getElementById("header-lang-flag");
+  const codeEl = document.getElementById("header-lang-code");
+  const switchBtn = document.getElementById("btn-switch-lang");
+  if (flagEl) flagEl.textContent = isEnglish ? "🇬🇧" : "🇻🇳";
+  if (codeEl) codeEl.textContent = isEnglish ? "EN" : "VI";
+  if (switchBtn) {
+    switchBtn.title = isEnglish ? "Chuyển sang Tiếng Việt (Switch to Vietnamese)" : "Đổi sang Tiếng Anh (Switch to English)";
+  }
+
+  // 2. Translate all [data-i18n] text elements
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (I18N[currentLang] && I18N[currentLang][key]) {
+      el.textContent = I18N[currentLang][key];
+    }
+  });
+
+  // 3. Translate all [data-i18n-title] elements
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    if (I18N[currentLang] && I18N[currentLang][key]) {
+      el.setAttribute("title", I18N[currentLang][key]);
+    }
+  });
+
+  // 4. Translate all [data-i18n-html] elements
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (I18N[currentLang] && I18N[currentLang][key]) {
+      el.innerHTML = I18N[currentLang][key];
+    }
+  });
+
+  // 5. Update dynamic CATEGORY_META
+  if (isEnglish) {
+    CATEGORY_META.player.title = "Player & Audio";
+    CATEGORY_META.player.desc = "500% Volume, Ambient Light, Progress bar color, PiP";
+    CATEGORY_META.tools.title = "Tools & Utilities";
+    CATEGORY_META.tools.desc = "4K Screenshot, Bookmarks, Dislike & Skip Intro/Sponsor";
+    CATEGORY_META.layout.title = "Interface & Focus";
+    CATEGORY_META.layout.desc = "Custom logo, 4-column grid, sidebar curation, hide Shorts, sticky comments";
+    CATEGORY_META.shortcuts.title = "Quick Hotkeys";
+    CATEGORY_META.shortcuts.desc = "Pro shortcuts, screenshot, speed dial, cinema mode, bookmarks";
+    CATEGORY_META.toolbar.title = "Toolbar Arrangement";
+    CATEGORY_META.toolbar.desc = "Reorder, show/hide player toolbar buttons";
+  } else {
+    CATEGORY_META.player.title = "Trình phát & Âm thanh";
+    CATEGORY_META.player.desc = "Âm lượng 500%, Ambient Light, màu thanh thời gian, PiP";
+    CATEGORY_META.tools.title = "Công cụ & Tiện ích";
+    CATEGORY_META.tools.desc = "Chụp ảnh 4K, Bookmarks, Dislike & Bỏ qua Intro/Sponsor";
+    CATEGORY_META.layout.title = "Giao diện & Tập trung";
+    CATEGORY_META.layout.desc = "Logo tùy biến, lưới 4 cột, lọc Sidebar, ẩn Shorts, cố định bình luận";
+    CATEGORY_META.shortcuts.title = "Phím tắt nhanh (Hotkeys)";
+    CATEGORY_META.shortcuts.desc = "Bảng phím tắt pro, chụp ảnh, tua tốc độ, rạp phim, bookmark";
+    CATEGORY_META.toolbar.title = "Sắp xếp thanh công cụ";
+    CATEGORY_META.toolbar.desc = "Đổi thứ tự, ẩn/hiện nút tiện ích trên thanh điều khiển YouTube";
+  }
+
+  // 6. Update Sub-header title if open
+  if (activeCategory && CATEGORY_META[activeCategory]) {
+    const subTitleEl = document.getElementById("sub-header-title");
+    if (subTitleEl) subTitleEl.textContent = CATEGORY_META[activeCategory].title;
+  }
+
+  // 7. Update Feature Names
+  Object.entries(FEATURE_NAMES_I18N).forEach(([key, tr]) => {
+    const toggle = document.getElementById(`toggle-${key}`);
+    if (toggle) {
+      const featRow = toggle.closest(".feat-row, .shortcuts-master-row");
+      if (featRow) {
+        const nameEl = featRow.querySelector(".feat-name");
+        if (nameEl) nameEl.textContent = tr[currentLang];
+      }
+    }
+  });
+
+  // 8. Update Shortcuts list titles & descriptions
+  Object.entries(SHORTCUT_I18N).forEach(([action, tr]) => {
+    const item = document.querySelector(`.shortcut-item[data-action="${action}"]`);
+    if (item) {
+      const tEl = item.querySelector(".shortcut-title");
+      const dEl = item.querySelector(".shortcut-desc");
+      if (tEl) tEl.textContent = tr.title[currentLang];
+      if (dEl) dEl.textContent = tr.desc[currentLang];
+    }
+  });
+
+  // 9. Update TOOLBAR_BUTTONS_DEF
+  if (isEnglish) {
+    if (TOOLBAR_BUTTONS_DEF.abLooper) {
+      TOOLBAR_BUTTONS_DEF.abLooper.name = "A-B Looper";
+      TOOLBAR_BUTTONS_DEF.abLooper.desc = "Pin points A & B to loop video segment";
+    }
+    if (TOOLBAR_BUTTONS_DEF.cinemaMode) {
+      TOOLBAR_BUTTONS_DEF.cinemaMode.name = "Cinema Mode";
+      TOOLBAR_BUTTONS_DEF.cinemaMode.desc = "Darken video surroundings for focus";
+    }
+    if (TOOLBAR_BUTTONS_DEF.videoFilter) {
+      TOOLBAR_BUTTONS_DEF.videoFilter.name = "Video Filter & Effects";
+      TOOLBAR_BUTTONS_DEF.videoFilter.desc = "Adjust Brightness, Contrast, Saturation & Warmth";
+    }
+    if (TOOLBAR_BUTTONS_DEF.customSpeed) {
+      TOOLBAR_BUTTONS_DEF.customSpeed.name = "Speed Button";
+      TOOLBAR_BUTTONS_DEF.customSpeed.desc = "Flexible playback speed adjustment (1.0x, 1.25x...)";
+    }
+    if (TOOLBAR_BUTTONS_DEF.pipButton) {
+      TOOLBAR_BUTTONS_DEF.pipButton.name = "Picture-in-Picture (PiP)";
+      TOOLBAR_BUTTONS_DEF.pipButton.desc = "Floating mini-player for multitasking";
+    }
+    if (TOOLBAR_BUTTONS_DEF.videoScreenshot) {
+      TOOLBAR_BUTTONS_DEF.videoScreenshot.name = "Screenshot Capture";
+      TOOLBAR_BUTTONS_DEF.videoScreenshot.desc = "Capture pristine high-res video frame";
+    }
+    if (TOOLBAR_BUTTONS_DEF.videoBookmarks) {
+      TOOLBAR_BUTTONS_DEF.videoBookmarks.name = "Video Bookmarks";
+      TOOLBAR_BUTTONS_DEF.videoBookmarks.desc = "Save timestamps and notes to local storage";
+    }
+  } else {
+    if (TOOLBAR_BUTTONS_DEF.abLooper) {
+      TOOLBAR_BUTTONS_DEF.abLooper.name = "Lặp đoạn A-B";
+      TOOLBAR_BUTTONS_DEF.abLooper.desc = "Đánh dấu điểm A & B để lặp lại đoạn video";
+    }
+    if (TOOLBAR_BUTTONS_DEF.cinemaMode) {
+      TOOLBAR_BUTTONS_DEF.cinemaMode.name = "Chế độ Rạp phim";
+      TOOLBAR_BUTTONS_DEF.cinemaMode.desc = "Làm tối nền video giúp tập trung xem";
+    }
+    if (TOOLBAR_BUTTONS_DEF.videoFilter) {
+      TOOLBAR_BUTTONS_DEF.videoFilter.name = "Bộ lọc màu & Hiệu ứng";
+      TOOLBAR_BUTTONS_DEF.videoFilter.desc = "Chỉnh Độ sáng, Tương phản, Bão hòa & Tone ấm";
+    }
+    if (TOOLBAR_BUTTONS_DEF.customSpeed) {
+      TOOLBAR_BUTTONS_DEF.customSpeed.name = "Nút Tốc độ phát (Speed)";
+      TOOLBAR_BUTTONS_DEF.customSpeed.desc = "Chỉnh tốc độ phát video linh hoạt (1.0x, 1.25x...)";
+    }
+    if (TOOLBAR_BUTTONS_DEF.pipButton) {
+      TOOLBAR_BUTTONS_DEF.pipButton.name = "Hình trong hình (PiP)";
+      TOOLBAR_BUTTONS_DEF.pipButton.desc = "Thu nhỏ video phát nổi để vừa làm việc vừa xem";
+    }
+    if (TOOLBAR_BUTTONS_DEF.videoScreenshot) {
+      TOOLBAR_BUTTONS_DEF.videoScreenshot.name = "Chụp ảnh Video (Camera)";
+      TOOLBAR_BUTTONS_DEF.videoScreenshot.desc = "Chụp khung hình gốc độ nét cao";
+    }
+    if (TOOLBAR_BUTTONS_DEF.videoBookmarks) {
+      TOOLBAR_BUTTONS_DEF.videoBookmarks.name = "Đánh dấu thời gian (Bookmarks)";
+      TOOLBAR_BUTTONS_DEF.videoBookmarks.desc = "Lưu mốc thời gian kèm ghi chú vào bộ nhớ";
+    }
+  }
+
+  // 10. Update counts and toolbar if active
+  updateActiveCount();
+  if (activeCategory === "toolbar") {
+    renderToolbarManager();
+  }
+}
+
+let languageOnboardingInitialized = false;
+function initLanguageOnboarding() {
+  if (languageOnboardingInitialized) return;
+  languageOnboardingInitialized = true;
+
+  const modal = document.getElementById("lang-modal-backdrop");
+  const urlParams = new URLSearchParams(window.location.search);
+  const isOnboardingParam = urlParams.get("onboarding") === "1";
+  const shouldShowModal = isOnboardingParam || currentSettings.hasChosenLanguage === false;
+
+  if (isOnboardingParam) {
+    document.body.classList.add("is-onboarding-mode");
+  }
+
+  let selectedLang = currentSettings.language || "vi";
+
+  if (modal) {
+    const cards = modal.querySelectorAll(".lang-card");
+    const updateCardSelection = (lang) => {
+      selectedLang = lang;
+      cards.forEach((c) => {
+        c.classList.toggle("active", c.dataset.lang === lang);
+      });
+    };
+    updateCardSelection(selectedLang);
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const l = card.dataset.lang;
+        if (l) updateCardSelection(l);
+      });
+    });
+
+    const confirmBtn = document.getElementById("btn-lang-confirm");
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", async () => {
+        currentSettings.language = selectedLang;
+        currentSettings.hasChosenLanguage = true;
+        await saveSettings();
+        applyLanguage(selectedLang);
+        modal.classList.remove("show");
+
+        if (isOnboardingParam) {
+          showToast(selectedLang === "en" ? "Setup complete! Ready to enjoy YouTube." : "Cài đặt hoàn tất! Chúc bạn xem YouTube vui vẻ.");
+          setTimeout(() => {
+            chrome.tabs.create({ url: "https://www.youtube.com" });
+          }, 1000);
+        } else {
+          showToast(selectedLang === "en" ? "Switched to English 🇬🇧" : "Đã chọn Tiếng Việt 🇻🇳");
+        }
+      });
+    }
+
+    if (shouldShowModal) {
+      modal.classList.add("show");
+    }
+  }
+
+  // Header quick language toggle button
+  const switchBtn = document.getElementById("btn-switch-lang");
+  if (switchBtn) {
+    switchBtn.addEventListener("click", async () => {
+      const newLang = currentSettings.language === "en" ? "vi" : "en";
+      currentSettings.language = newLang;
+      currentSettings.hasChosenLanguage = true;
+      await saveSettings();
+      applyLanguage(newLang);
+      showToast(newLang === "en" ? "Switched to English 🇬🇧" : "Đã chuyển sang Tiếng Việt 🇻🇳");
+    });
+  }
+}
+
 async function loadSettings() {
   try {
     const data = await chrome.storage.local.get(["ctfSettings", "blockedRequestCount"]);
@@ -1024,6 +1504,8 @@ async function loadSettings() {
       await chrome.storage.local.set({ ctfSettings: currentSettings });
     }
 
+    applyLanguage(currentSettings.language || "vi");
+    initLanguageOnboarding();
     renderToggles();
 
     const countEl = document.getElementById("blocked-count");

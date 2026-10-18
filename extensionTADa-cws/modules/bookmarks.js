@@ -512,19 +512,20 @@ function ensureBookmarkButton() {
 
 function updateBookmarkButtonUI() {
   const addBtn = document.getElementById(BOOKMARK_ADD_BTN_ID);
+  const en = typeof isEn === "function" && isEn();
   if (addBtn) {
     addBtn.classList.toggle("picking", bookmarkPicking);
-    addBtn.setAttribute("title", bookmarkPicking
-      ? "Đang chọn trên thanh tua · Click để hủy"
-      : "Thêm ghi chú mốc thời gian · Bật để click chọn điểm trên thanh tua (N)");
+    addBtn.setAttribute("title", en
+      ? (bookmarkPicking ? "Selecting on progress bar · Click to cancel" : "Add timestamp bookmark · Click progress bar to pin (N)")
+      : (bookmarkPicking ? "Đang chọn trên thanh tua · Click để hủy" : "Thêm ghi chú mốc thời gian · Bật để click chọn điểm trên thanh tua (N)"));
   }
 
   const listBtn = document.getElementById(BOOKMARK_BTN_ID);
   if (listBtn) {
     listBtn.classList.toggle("active", bookmarkPanelOpen);
-    listBtn.setAttribute("title", bookmarkPanelOpen
-      ? "Đang mở danh sách ghi chú · Click để đóng (B)"
-      : "Xem tất cả ghi chú (B)");
+    listBtn.setAttribute("title", en
+      ? (bookmarkPanelOpen ? "Close bookmarks panel (B)" : "View all saved bookmarks (B)")
+      : (bookmarkPanelOpen ? "Đang mở danh sách ghi chú · Click để đóng (B)" : "Xem tất cả ghi chú (B)"));
     updateBookmarkButtonBadge();
   }
 }

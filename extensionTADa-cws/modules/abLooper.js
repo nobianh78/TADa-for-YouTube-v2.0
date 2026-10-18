@@ -161,11 +161,12 @@ function abUpdatePickingUI() {
 
 /* --- Button UI --- */
 function abBtnLabel() {
+  const en = typeof isEn === "function" && isEn();
   if (ab.a !== null && ab.b !== null) {
-    return ab.on ? "Đang lặp" : "Đang tắt";
+    return ab.on ? (en ? "Looping" : "Đang lặp") : (en ? "Paused" : "Đang tắt");
   }
-  if (abPicking && ab.a !== null) return "Chọn B...";
-  if (abPicking) return "Chọn A...";
+  if (abPicking && ab.a !== null) return en ? "Pick B..." : "Chọn B...";
+  if (abPicking) return en ? "Pick A..." : "Chọn A...";
   return "A-B";
 }
 
@@ -198,10 +199,15 @@ function ensureAbBtn() {
     }
   }
 
+  const en = typeof isEn === "function" && isEn();
   btn.textContent = abBtnLabel();
-  btn.title = ab.a !== null && ab.b !== null
-    ? (ab.on ? "Đang lặp · Click: Tắt lặp · Chuột phải: Xóa" : "Đang tắt · Click: Bật lặp · Chuột phải: Xóa")
-    : abPicking ? "Đang chọn trên thanh tua · Click để hủy" : "A-B Looper · Click để chọn mốc";
+  btn.title = en
+    ? (ab.a !== null && ab.b !== null
+        ? (ab.on ? "Looping · Click: Stop loop · Right-click: Clear" : "Loop paused · Click: Start loop · Right-click: Clear")
+        : abPicking ? "Selecting on progress bar · Click to cancel" : "A-B Looper · Click to pick loop points")
+    : (ab.a !== null && ab.b !== null
+        ? (ab.on ? "Đang lặp · Click: Tắt lặp · Chuột phải: Xóa" : "Đang tắt · Click: Bật lặp · Chuột phải: Xóa")
+        : abPicking ? "Đang chọn trên thanh tua · Click để hủy" : "A-B Looper · Click để chọn mốc");
   btn.classList.toggle("active", ab.on);
   btn.classList.toggle("has-points", ab.a !== null && ab.b !== null);
   btn.classList.toggle("picking", abPicking);
@@ -222,8 +228,8 @@ function ensureAbBtn() {
       });
       btn.insertAdjacentElement("afterend", clearBtn);
     }
-    clearBtn.textContent = abPicking ? "Hủy" : "Xóa";
-    clearBtn.title = abPicking ? "Hủy chọn mốc" : "Xóa mốc lặp";
+    clearBtn.textContent = en ? (abPicking ? "Cancel" : "Clear") : (abPicking ? "Hủy" : "Xóa");
+    clearBtn.title = en ? (abPicking ? "Cancel picking" : "Clear loop points") : (abPicking ? "Hủy chọn mốc" : "Xóa mốc lặp");
   } else if (clearBtn) {
     clearBtn.remove();
   }

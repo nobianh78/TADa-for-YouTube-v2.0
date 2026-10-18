@@ -24,18 +24,22 @@
                 <span class="brand-name">TADa</span>
                 <span class="brand-tag">for YouTube</span>
               </div>
-              <div class="brand-sub">Tùy chỉnh thông minh</div>
+              <div class="brand-sub" data-i18n="brandSub">Tùy chỉnh thông minh</div>
             </div>
           </div>
           <div class="header-actions">
-            <button id="btn-header-about" class="btn-icon-top" title="Giới thiệu TADa & Tác giả">
+            <button id="btn-switch-lang" class="btn-icon-top btn-lang-toggle" data-i18n-title="switchLangTitle" title="Đổi ngôn ngữ / Switch Language" aria-label="Switch Language">
+              <span class="lang-flag" id="header-lang-flag">🇻🇳</span>
+              <span class="lang-code" id="header-lang-code">VI</span>
+            </button>
+            <button id="btn-header-about" class="btn-icon-top" data-i18n-title="aboutTitle" title="Giới thiệu TADa & Tác giả">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
             </button>
-            <button id="btn-reload-tab" class="btn-icon-top" title="Tải lại tab YouTube">
+            <button id="btn-reload-tab" class="btn-icon-top" data-i18n-title="reloadTabTitle" title="Tải lại tab YouTube">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
@@ -48,13 +52,13 @@
         <div class="status-row">
           <div class="status-left">
             <span class="status-dot"></span>
-            <span class="status-label">Chặn quảng cáo</span>
-            <span class="status-always-on">LUÔN BẬT</span>
+            <span class="status-label" data-i18n="adBlockLabel">Chặn quảng cáo</span>
+            <span class="status-always-on" data-i18n="alwaysOn">LUÔN BẬT</span>
           </div>
           <div class="status-right">
             <span class="blocked-num" id="blocked-count">0</span>
-            <span class="blocked-unit">đã chặn</span>
-            <button id="btn-reset-stats" class="btn-reset" title="Đặt lại">
+            <span class="blocked-unit" data-i18n="blockedUnit">đã chặn</span>
+            <button id="btn-reset-stats" class="btn-reset" data-i18n-title="resetStatsTitle" title="Đặt lại thống kê">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
@@ -66,7 +70,7 @@
         <!-- Quick Logo Selector Bar on Main View -->
         <div class="quick-logo-bar">
           <div class="quick-logo-header">
-            <span class="quick-logo-title">Logo YouTube</span>
+            <span class="quick-logo-title" data-i18n="logoTitle">Logo YouTube</span>
             <span class="feat-badge-val" id="topbar-logo-badge-main">TADa</span>
           </div>
           <div class="logo-segmented-control" role="group" aria-label="Tùy chọn logo YouTube">
@@ -77,7 +81,7 @@
               <span>Premium</span>
             </button>
             <button type="button" class="logo-seg-btn" data-logo="default" title="Logo YouTube gốc mặc định">
-              <span>Mặc định</span>
+              <span data-i18n="logoDefault">Mặc định</span>
             </button>
           </div>
         </div>
@@ -85,7 +89,7 @@
         <!-- Quick Interface Mode Selector Bar on Main View -->
         <div class="quick-interface-bar">
           <div class="quick-interface-header">
-            <span class="quick-interface-title">Chế độ giao diện</span>
+            <span class="quick-interface-title" data-i18n="modeTitle">Chế độ giao diện</span>
             <span class="feat-badge-val" id="topbar-interface-badge-main">PC</span>
           </div>
           <div class="mode-segmented-control" role="group" aria-label="Tùy chọn giao diện YouTube">
@@ -112,18 +116,18 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
-              <span>Mở YouTube TV ngay</span>
+              <span data-i18n="openTvNow">Mở YouTube TV ngay</span>
             </button>
           </div>
         </div>
 
         <!-- Category List -->
         <div class="section-hdr">
-          <span class="section-label">Tính năng</span>
+          <span class="section-label" data-i18n="featuresLabel">Tính năng</span>
           <span class="global-count" id="active-features-count">16/16</span>
           <div class="section-actions">
-            <button id="btn-enable-all" class="btn-chip">Bật hết</button>
-            <button id="btn-disable-all" class="btn-chip">Tắt hết</button>
+            <button id="btn-enable-all" class="btn-chip" data-i18n="enableAll">Bật hết</button>
+            <button id="btn-disable-all" class="btn-chip" data-i18n="disableAll">Tắt hết</button>
           </div>
         </div>
 
@@ -136,7 +140,7 @@
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>
-            <span class="cat-label">Trình phát &amp; Âm thanh</span>
+            <span class="cat-label" data-i18n="catPlayer">Trình phát &amp; Âm thanh</span>
             <span class="cat-pill" id="cat-count-player">10</span>
             <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6" />
@@ -152,7 +156,7 @@
                   d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
               </svg>
             </div>
-            <span class="cat-label">Công cụ &amp; Tiện ích</span>
+            <span class="cat-label" data-i18n="catTools">Công cụ &amp; Tiện ích</span>
             <span class="cat-pill" id="cat-count-tools">4</span>
             <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6" />
@@ -169,7 +173,7 @@
                 <line x1="9" y1="21" x2="9" y2="9" />
               </svg>
             </div>
-            <span class="cat-label">Giao diện &amp; Tập trung</span>
+            <span class="cat-label" data-i18n="catLayout">Giao diện &amp; Tập trung</span>
             <span class="cat-pill" id="cat-count-layout">6</span>
             <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6" />
@@ -185,7 +189,7 @@
                 <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" stroke-width="2.5" />
               </svg>
             </div>
-            <span class="cat-label">Phím tắt nhanh</span>
+            <span class="cat-label" data-i18n="catShortcuts">Phím tắt nhanh</span>
             <span class="cat-pill" id="cat-count-shortcuts">Bật</span>
             <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6" />
@@ -205,7 +209,7 @@
                 <circle cx="10" cy="18" r="2" fill="currentColor" />
               </svg>
             </div>
-            <span class="cat-label">Sắp xếp thanh công cụ</span>
+            <span class="cat-label" data-i18n="catToolbar">Sắp xếp thanh công cụ</span>
             <span class="cat-pill" id="cat-count-toolbar">7/7 nút</span>
             <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6" />
@@ -220,7 +224,7 @@
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <span class="cat-label">Thư viện Bookmarks</span>
+          <span class="cat-label" data-i18n="catBookmarks">Thư viện Bookmarks</span>
           <span class="bm-count-badge" id="bm-lib-summary">0 mốc</span>
           <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="9 18 15 12 9 6" />
@@ -237,8 +241,8 @@
             </svg>
           </div>
           <div class="about-row-text">
-            <span class="cat-label">Giới thiệu TADa</span>
-            <span class="about-row-sub">Nguyễn Tuấn Anh • TADa Team</span>
+            <span class="cat-label" data-i18n="catAbout">Giới thiệu TADa</span>
+            <span class="about-row-sub" data-i18n="catAboutSub">Nguyễn Tuấn Anh • TADa Team</span>
           </div>
           <svg class="chevron-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="9 18 15 12 9 6" />
@@ -252,7 +256,7 @@
 
         <!-- Sub Header -->
         <div class="sub-hdr">
-          <button class="btn-back" id="btn-back">
+          <button class="btn-back" id="btn-back" data-i18n-title="btnBackTitle" title="Quay lại">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="15 18 9 12 15 6" />
             </svg>
@@ -260,8 +264,8 @@
           <span class="sub-title" id="sub-header-title">Trình phát</span>
           <div class="sub-hdr-right">
             <span class="sub-badge" id="sub-count-badge">5/5</span>
-            <button id="btn-sub-enable-all" class="btn-chip">Bật</button>
-            <button id="btn-sub-disable-all" class="btn-chip btn-chip-off">Tắt</button>
+            <button id="btn-sub-enable-all" class="btn-chip" data-i18n="btnSubEnable">Bật</button>
+            <button id="btn-sub-disable-all" class="btn-chip btn-chip-off" data-i18n="btnSubDisable">Tắt</button>
           </div>
         </div>
 
@@ -1383,7 +1387,56 @@
         </div>
         <div class="about-modal-footer">
           <span class="about-copyright">© 2026 TADa Team</span>
-          <button id="btn-close-about-modal-footer" class="btn-subtle">Đóng</button>
+          <button id="btn-close-about-modal-footer" class="btn-subtle" data-i18n="aboutCloseBtn">Đóng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Language Selection & Onboarding -->
+    <div class="lang-modal-backdrop" id="lang-modal-backdrop">
+      <div class="lang-modal">
+        <div class="lang-modal-icon-wrap">
+          <img src="icons/icon128.png" alt="TADa" class="lang-modal-logo">
+        </div>
+        <h2 class="lang-modal-title" id="lang-modal-title">Chào mừng đến với TADa!</h2>
+        <p class="lang-modal-subtitle" id="lang-modal-subtitle">
+          Vui lòng chọn ngôn ngữ bạn muốn sử dụng<br>
+          <span class="lang-modal-sub-en">Please select your preferred language</span>
+        </p>
+
+        <div class="lang-cards-grid">
+          <!-- Vietnamese Card -->
+          <div class="lang-card active" data-lang="vi" id="lang-card-vi" role="button" tabindex="0">
+            <div class="lang-card-flag">🇻🇳</div>
+            <div class="lang-card-info">
+              <div class="lang-card-name">Tiếng Việt</div>
+              <div class="lang-card-desc">Giao diện tiếng Việt chuẩn</div>
+            </div>
+            <div class="lang-card-radio">
+              <span class="lang-radio-dot"></span>
+            </div>
+          </div>
+
+          <!-- English Card -->
+          <div class="lang-card" data-lang="en" id="lang-card-en" role="button" tabindex="0">
+            <div class="lang-card-flag">🇬🇧</div>
+            <div class="lang-card-info">
+              <div class="lang-card-name">English</div>
+              <div class="lang-card-desc">International English UI</div>
+            </div>
+            <div class="lang-card-radio">
+              <span class="lang-radio-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lang-modal-actions">
+          <button type="button" class="btn-lang-confirm" id="btn-lang-confirm">
+            <span id="btn-lang-confirm-text">Bắt đầu ngay • Get Started</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         </div>
       </div>
     </div>

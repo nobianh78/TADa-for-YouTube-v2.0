@@ -39,14 +39,15 @@ function updatePipButtonState() {
   const btn = document.getElementById(PIP_BUTTON_ID);
   if (!btn) return;
   const isPipActive = Boolean(document.pictureInPictureElement);
+  const en = typeof isEn === "function" && isEn();
   if (isPipActive) {
     btn.classList.add("tada-pip-active");
-    btn.setAttribute("aria-label", "Thoát hình trong hình (P)");
-    btn.setAttribute("title", "Thoát hình trong hình (P)");
+    btn.setAttribute("aria-label", en ? "Exit Picture-in-Picture (P)" : "Thoát hình trong hình (P)");
+    btn.setAttribute("title", en ? "Exit Picture-in-Picture (P)" : "Thoát hình trong hình (P)");
   } else {
     btn.classList.remove("tada-pip-active");
-    btn.setAttribute("aria-label", "Hình trong hình (P)");
-    btn.setAttribute("title", "Hình trong hình (P)");
+    btn.setAttribute("aria-label", en ? "Picture-in-Picture (P)" : "Hình trong hình (P)");
+    btn.setAttribute("title", en ? "Picture-in-Picture (P)" : "Hình trong hình (P)");
   }
 }
 
@@ -456,8 +457,9 @@ function ensureScreenshotButton() {
     btn = document.createElement("button");
     btn.id = SCREENSHOT_BUTTON_ID;
     btn.className = "ytp-button tada-screenshot-button";
-    btn.setAttribute("aria-label", "Chụp ảnh màn hình (S)");
-    btn.setAttribute("title", "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
+    const scEn = typeof isEn === "function" && isEn();
+    btn.setAttribute("aria-label", scEn ? "Screenshot (S)" : "Chụp ảnh màn hình (S)");
+    btn.setAttribute("title", scEn ? "Capture Screenshot (S) • Right-click / Shift: Copy to Clipboard" : "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
     btn.innerHTML = `
       <div class="toy-camera-wrapper">
         <div class="toy-camera-body">
@@ -931,7 +933,8 @@ function updateSpeedButtonText() {
   if (badge) {
     badge.textContent = rateText;
   }
-  btn.setAttribute("title", `Tốc độ: ${rateText} • Click: Menu • Chuột phải: 1.0x • Cuộn: ±0.05x • Phím [>] [<] [=]`);
+  const spEn = typeof isEn === "function" && isEn();
+  btn.setAttribute("title", spEn ? `Speed: ${rateText} • Click: Menu • Right-click: 1.0x • Scroll: ±0.05x • Keys [>] [<] [=]` : `Tốc độ: ${rateText} • Click: Menu • Chuột phải: 1.0x • Cuộn: ±0.05x • Phím [>] [<] [=]`);
   if (Math.abs(currentCustomSpeed - 1.0) > 0.01) {
     btn.classList.add("tada-speed-customized");
   } else {

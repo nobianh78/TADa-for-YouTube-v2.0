@@ -25,9 +25,23 @@ async function incrementBlockedCount() {
   return next;
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   await writeCount(0);
   console.info("[TADa] Ready to block YouTube ads.");
+
+  if (details.reason === "install") {
+    try {
+      const data = await chrome.storage.local.get(["ctfSettings"]);
+      const settings = data.ctfSettings || {};
+      settings.hasChosenLanguage = false;
+      const uiLang = (chrome.i18n?.getUILanguage?.() || navigator.language || "en").toLowerCase();
+      settings.language = uiLang.startsWith("vi") ? "vi" : "en";
+      await chrome.storage.local.set({ ctfSettings: settings });
+      chrome.tabs.create({ url: "popup.html?onboarding=1" });
+    } catch (e) {
+      console.warn("[TADa] Onboarding trigger error:", e);
+    }
+  }
 });
 
 if (chrome.declarativeNetRequest?.onRuleMatchedDebug) {

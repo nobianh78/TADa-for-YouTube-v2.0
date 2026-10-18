@@ -4,7 +4,6 @@
  * Edit files in modules/ and run 'node build.js'
  */
 
-
 /* ======================================================= */
 /* [MODULE] modules/core.js */
 /* ======================================================= */
@@ -15,6 +14,8 @@
  */
 
 const DEFAULT_SETTINGS = {
+  language: "vi",
+  hasChosenLanguage: false,
   superVolume: true,
   ambientLight: true,
   ambientBrightness: 100,
@@ -107,7 +108,10 @@ function getHotkeyForAction(action) {
   }
   return DEFAULT_HOTKEYS[action];
 }
-window.getHotkeyForAction = getHotkeyForAction;
+function isEn() {
+  return currentSettings.language === "en";
+}
+window.isEn = isEn;
 
 function checkEventMatchesHotkey(e, hotkeyStr) {
   if (!hotkeyStr || !e) return false;
@@ -983,7 +987,6 @@ if (typeof globalThis !== "undefined") {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/adBlocker.js */
 /* ======================================================= */
@@ -1380,7 +1383,6 @@ function bindPageBridge() {
 function updateHud() {
   ensureHud();
 }
-
 
 
 /* ======================================================= */
@@ -2142,7 +2144,6 @@ function initTvModeUi() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/volumeBooster.js */
 /* ======================================================= */
@@ -2881,7 +2882,6 @@ function applyHudSetting() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/ambientLight.js */
 /* ======================================================= */
@@ -3255,7 +3255,6 @@ function applyAmbientLightSetting() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/playerTools.js */
 /* ======================================================= */
@@ -3301,14 +3300,15 @@ function updatePipButtonState() {
   const btn = document.getElementById(PIP_BUTTON_ID);
   if (!btn) return;
   const isPipActive = Boolean(document.pictureInPictureElement);
+  const en = typeof isEn === "function" && isEn();
   if (isPipActive) {
     btn.classList.add("tada-pip-active");
-    btn.setAttribute("aria-label", "Thoát hình trong hình (P)");
-    btn.setAttribute("title", "Thoát hình trong hình (P)");
+    btn.setAttribute("aria-label", en ? "Exit Picture-in-Picture (P)" : "Thoát hình trong hình (P)");
+    btn.setAttribute("title", en ? "Exit Picture-in-Picture (P)" : "Thoát hình trong hình (P)");
   } else {
     btn.classList.remove("tada-pip-active");
-    btn.setAttribute("aria-label", "Hình trong hình (P)");
-    btn.setAttribute("title", "Hình trong hình (P)");
+    btn.setAttribute("aria-label", en ? "Picture-in-Picture (P)" : "Hình trong hình (P)");
+    btn.setAttribute("title", en ? "Picture-in-Picture (P)" : "Hình trong hình (P)");
   }
 }
 
@@ -3718,8 +3718,9 @@ function ensureScreenshotButton() {
     btn = document.createElement("button");
     btn.id = SCREENSHOT_BUTTON_ID;
     btn.className = "ytp-button tada-screenshot-button";
-    btn.setAttribute("aria-label", "Chụp ảnh màn hình (S)");
-    btn.setAttribute("title", "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
+    const scEn = typeof isEn === "function" && isEn();
+    btn.setAttribute("aria-label", scEn ? "Screenshot (S)" : "Chụp ảnh màn hình (S)");
+    btn.setAttribute("title", scEn ? "Capture Screenshot (S) • Right-click / Shift: Copy to Clipboard" : "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
     btn.innerHTML = `
       <div class="toy-camera-wrapper">
         <div class="toy-camera-body">
@@ -4193,7 +4194,8 @@ function updateSpeedButtonText() {
   if (badge) {
     badge.textContent = rateText;
   }
-  btn.setAttribute("title", `Tốc độ: ${rateText} • Click: Menu • Chuột phải: 1.0x • Cuộn: ±0.05x • Phím [>] [<] [=]`);
+  const spEn = typeof isEn === "function" && isEn();
+  btn.setAttribute("title", spEn ? `Speed: ${rateText} • Click: Menu • Right-click: 1.0x • Scroll: ±0.05x • Keys [>] [<] [=]` : `Tốc độ: ${rateText} • Click: Menu • Chuột phải: 1.0x • Cuộn: ±0.05x • Phím [>] [<] [=]`);
   if (Math.abs(currentCustomSpeed - 1.0) > 0.01) {
     btn.classList.add("tada-speed-customized");
   } else {
@@ -4901,7 +4903,6 @@ function applyToolbarLayout() {
 }
 window.applyToolbarLayout = applyToolbarLayout;
 globalThis.applyToolbarLayout = applyToolbarLayout;
-
 
 
 /* ======================================================= */
@@ -5653,7 +5654,6 @@ function applyVideoFilterSetting() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/cinemaMode.js */
 /* ======================================================= */
@@ -6000,7 +6000,6 @@ function applyCinemaModeSetting() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/customLoader.js */
 /* ======================================================= */
@@ -6156,7 +6155,6 @@ function applyCustomLoaderSetting() {
     removeCustomLoader();
   }
 }
-
 
 
 /* ======================================================= */
@@ -6323,7 +6321,6 @@ function applyAutoQualitySetting() {
     if (badge) badge.classList.remove("show");
   }
 }
-
 
 
 /* ======================================================= */
@@ -6493,11 +6490,12 @@ function abUpdatePickingUI() {
 
 /* --- Button UI --- */
 function abBtnLabel() {
+  const en = typeof isEn === "function" && isEn();
   if (ab.a !== null && ab.b !== null) {
-    return ab.on ? "Đang lặp" : "Đang tắt";
+    return ab.on ? (en ? "Looping" : "Đang lặp") : (en ? "Paused" : "Đang tắt");
   }
-  if (abPicking && ab.a !== null) return "Chọn B...";
-  if (abPicking) return "Chọn A...";
+  if (abPicking && ab.a !== null) return en ? "Pick B..." : "Chọn B...";
+  if (abPicking) return en ? "Pick A..." : "Chọn A...";
   return "A-B";
 }
 
@@ -6530,10 +6528,15 @@ function ensureAbBtn() {
     }
   }
 
+  const en = typeof isEn === "function" && isEn();
   btn.textContent = abBtnLabel();
-  btn.title = ab.a !== null && ab.b !== null
-    ? (ab.on ? "Đang lặp · Click: Tắt lặp · Chuột phải: Xóa" : "Đang tắt · Click: Bật lặp · Chuột phải: Xóa")
-    : abPicking ? "Đang chọn trên thanh tua · Click để hủy" : "A-B Looper · Click để chọn mốc";
+  btn.title = en
+    ? (ab.a !== null && ab.b !== null
+        ? (ab.on ? "Looping · Click: Stop loop · Right-click: Clear" : "Loop paused · Click: Start loop · Right-click: Clear")
+        : abPicking ? "Selecting on progress bar · Click to cancel" : "A-B Looper · Click to pick loop points")
+    : (ab.a !== null && ab.b !== null
+        ? (ab.on ? "Đang lặp · Click: Tắt lặp · Chuột phải: Xóa" : "Đang tắt · Click: Bật lặp · Chuột phải: Xóa")
+        : abPicking ? "Đang chọn trên thanh tua · Click để hủy" : "A-B Looper · Click để chọn mốc");
   btn.classList.toggle("active", ab.on);
   btn.classList.toggle("has-points", ab.a !== null && ab.b !== null);
   btn.classList.toggle("picking", abPicking);
@@ -6554,8 +6557,8 @@ function ensureAbBtn() {
       });
       btn.insertAdjacentElement("afterend", clearBtn);
     }
-    clearBtn.textContent = abPicking ? "Hủy" : "Xóa";
-    clearBtn.title = abPicking ? "Hủy chọn mốc" : "Xóa mốc lặp";
+    clearBtn.textContent = en ? (abPicking ? "Cancel" : "Clear") : (abPicking ? "Hủy" : "Xóa");
+    clearBtn.title = en ? (abPicking ? "Cancel picking" : "Clear loop points") : (abPicking ? "Hủy chọn mốc" : "Xóa mốc lặp");
   } else if (clearBtn) {
     clearBtn.remove();
   }
@@ -7212,7 +7215,6 @@ function applyAbLooperSetting() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/bookmarks.js */
 /* ======================================================= */
@@ -7731,19 +7733,20 @@ function ensureBookmarkButton() {
 
 function updateBookmarkButtonUI() {
   const addBtn = document.getElementById(BOOKMARK_ADD_BTN_ID);
+  const en = typeof isEn === "function" && isEn();
   if (addBtn) {
     addBtn.classList.toggle("picking", bookmarkPicking);
-    addBtn.setAttribute("title", bookmarkPicking
-      ? "Đang chọn trên thanh tua · Click để hủy"
-      : "Thêm ghi chú mốc thời gian · Bật để click chọn điểm trên thanh tua (N)");
+    addBtn.setAttribute("title", en
+      ? (bookmarkPicking ? "Selecting on progress bar · Click to cancel" : "Add timestamp bookmark · Click progress bar to pin (N)")
+      : (bookmarkPicking ? "Đang chọn trên thanh tua · Click để hủy" : "Thêm ghi chú mốc thời gian · Bật để click chọn điểm trên thanh tua (N)"));
   }
 
   const listBtn = document.getElementById(BOOKMARK_BTN_ID);
   if (listBtn) {
     listBtn.classList.toggle("active", bookmarkPanelOpen);
-    listBtn.setAttribute("title", bookmarkPanelOpen
-      ? "Đang mở danh sách ghi chú · Click để đóng (B)"
-      : "Xem tất cả ghi chú (B)");
+    listBtn.setAttribute("title", en
+      ? (bookmarkPanelOpen ? "Close bookmarks panel (B)" : "View all saved bookmarks (B)")
+      : (bookmarkPanelOpen ? "Đang mở danh sách ghi chú · Click để đóng (B)" : "Xem tất cả ghi chú (B)"));
     updateBookmarkButtonBadge();
   }
 }
@@ -8887,7 +8890,6 @@ function applyVideoBookmarksSetting() {
 }
 
 
-
 /* ======================================================= */
 /* [MODULE] modules/returnDislike.js */
 /* ======================================================= */
@@ -9445,7 +9447,6 @@ function applyReturnDislikeSetting() {
 }
 
 /* Note: Video Downloader module is omitted from this build for Chrome Web Store compliance. */
-
 
 
 /* ======================================================= */
@@ -10090,7 +10091,6 @@ function applyAutoSkipSegmentsSetting() {
     removeAutoSkipUI();
   }
 }
-
 
 
 /* ======================================================= */

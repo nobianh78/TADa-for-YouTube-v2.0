@@ -4,6 +4,8 @@
  */
 
 const DEFAULT_SETTINGS = {
+  language: "vi",
+  hasChosenLanguage: false,
   superVolume: true,
   ambientLight: true,
   ambientBrightness: 100,
@@ -96,7 +98,10 @@ function getHotkeyForAction(action) {
   }
   return DEFAULT_HOTKEYS[action];
 }
-window.getHotkeyForAction = getHotkeyForAction;
+function isEn() {
+  return currentSettings.language === "en";
+}
+window.isEn = isEn;
 
 function checkEventMatchesHotkey(e, hotkeyStr) {
   if (!hotkeyStr || !e) return false;
