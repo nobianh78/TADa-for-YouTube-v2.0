@@ -2,16 +2,20 @@
   "manifest_version": 3,
   "name": "TADa for YouTube",
   "description": "TADa — Chặn quảng cáo YouTube, ẩn Shorts, tăng âm lượng 500% và nhiều tiện ích. Cùng hệ sinh thái TADa Manager.",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "permissions": [
     "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
     "activeTab",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://*.youtube.com/*",
-    "https://*.googlevideo.com/*"
+    "https://*.googlevideo.com/*",
+    "https://returnyoutubedislikeapi.com/*",
+    "https://api.sponsor.ajay.app/*"
   ],
   "background": {
     "service_worker": "background.js"

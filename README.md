@@ -1,4 +1,4 @@
-# TADa for YouTube (v2.0)
+# TADa for YouTube (v2.2)
 
 > **Tiện ích mở rộng thông minh, tối ưu trải nghiệm xem YouTube sạch sẽ, không quảng cáo cùng bộ công cụ hỗ trợ toàn diện.**  
 > Thuộc hệ sinh thái **TADa Manager**.
@@ -8,7 +8,7 @@
 ## 👨‍💻 Tác giả & Phát triển
 * **Phát triển bởi:** **Nguyễn Tuấn Anh** (Thành viên team TADa)
 * **Mã nguồn GitHub:** [https://github.com/nobianh78/TADa-for-YouTube-v2.0](https://github.com/nobianh78/TADa-for-YouTube-v2.0)
-* **Phiên bản:** `v2.0.0` (Manifest V3)
+* **Phiên bản:** `v2.2.0` (Manifest V3)
 * **Bản quyền:** © 2026 TADa Team. Phát hành theo giấy phép MIT.
 
 ---

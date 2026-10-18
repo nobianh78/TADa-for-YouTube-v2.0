@@ -989,6 +989,215 @@
     }
   }
 
+  /* ============================================================
+   * TADa Auto Video Quality Engine (MAIN World)
+   * ============================================================ */
+  const QUALITY_ORDER = [
+    "highres",
+    "hd2880",
+    "hd2160",
+    "hd1440",
+    "hd1080",
+    "hd720",
+    "large",
+    "medium",
+    "small",
+    "tiny"
+  ];
+
+  const QUALITY_NAMES = {
+    highres: "8K (4320p)",
+    hd2880: "5K (2880p)",
+    hd2160: "4K (2160p)",
+    hd1440: "2K (1440p)",
+    hd1080: "1080p (Full HD)",
+    hd720: "720p (HD)",
+    large: "480p",
+    medium: "360p",
+    small: "240p",
+    tiny: "144p"
+  };
+
+  let activeQualitySetting = {
+    enabled: true,
+    preferredQuality: "highest"
+  };
+  let qualityCheckTimer = null;
+  let lastAppliedQuality = null;
+  let lastAppliedVideoId = null;
+
+  function getPlayerInstance() {
+    return (
+      document.getElementById("movie_player") ||
+      document.querySelector(".html5-video-player")
+    );
+  }
+
+  function pickTargetQuality(availableLevels, preferred) {
+    if (!Array.isArray(availableLevels) || availableLevels.length === 0) {
+      return null;
+    }
+    const validLevels = availableLevels.filter((lvl) => lvl && lvl !== "auto");
+    if (validLevels.length === 0) return null;
+
+    if (!preferred || preferred === "highest") {
+      for (const rank of QUALITY_ORDER) {
+        if (validLevels.includes(rank)) return rank;
+      }
+      return validLevels[0];
+    }
+
+    if (validLevels.includes(preferred)) {
+      return preferred;
+    }
+
+    const preferredIdx = QUALITY_ORDER.indexOf(preferred);
+    if (preferredIdx !== -1) {
+      for (let i = preferredIdx; i < QUALITY_ORDER.length; i++) {
+        if (validLevels.includes(QUALITY_ORDER[i])) {
+          return QUALITY_ORDER[i];
+        }
+      }
+    }
+    return validLevels[0];
+  }
+
+  function enforceVideoQuality(force = false) {
+    if (!activeQualitySetting.enabled) return;
+
+    const player = getPlayerInstance();
+    if (!player) return;
+
+    let available = null;
+    try {
+      if (typeof player.getAvailableQualityLevels === "function") {
+        available = player.getAvailableQualityLevels();
+      }
+    } catch (e) {}
+
+    if (!available || available.length === 0 || (available.length === 1 && available[0] === "auto")) {
+      return;
+    }
+
+    const targetQuality = pickTargetQuality(available, activeQualitySetting.preferredQuality);
+    if (!targetQuality) return;
+
+    let current = null;
+    try {
+      if (typeof player.getPlaybackQuality === "function") {
+        current = player.getPlaybackQuality();
+      }
+    } catch (e) {}
+
+    let videoData = null;
+    try {
+      if (typeof player.getVideoData === "function") {
+        videoData = player.getVideoData();
+      }
+    } catch (e) {}
+    const currentVideoId = videoData?.video_id || null;
+
+    if (!force && current === targetQuality && currentVideoId === lastAppliedVideoId) {
+      return;
+    }
+
+    try {
+      if (typeof player.setPlaybackQualityRange === "function") {
+        player.setPlaybackQualityRange(targetQuality, targetQuality);
+      }
+      if (typeof player.setPlaybackQuality === "function") {
+        player.setPlaybackQuality(targetQuality);
+      }
+
+      const now = Date.now();
+      const storageItem = {
+        data: targetQuality,
+        expiration: now + 30 * 86400 * 1000,
+        creation: now
+      };
+      localStorage.setItem("yt-player-quality", JSON.stringify(storageItem));
+
+      lastAppliedQuality = targetQuality;
+      lastAppliedVideoId = currentVideoId;
+
+      let label = QUALITY_NAMES[targetQuality] || targetQuality;
+      try {
+        if (typeof player.getAvailableQualityData === "function") {
+          const qData = player.getAvailableQualityData();
+          const match = qData?.find?.((d) => d.quality === targetQuality);
+          if (match?.qualityLabel) {
+            label = match.qualityLabel;
+          }
+        }
+      } catch (e) {}
+
+      window.postMessage(
+        {
+          source: "TADA_QUALITY_CONTROLLER",
+          type: "QUALITY_APPLIED",
+          quality: targetQuality,
+          label: label,
+          videoId: currentVideoId
+        },
+        "*"
+      );
+    } catch (err) {
+      console.debug("[TADa] Quality enforce error", err);
+    }
+  }
+
+  function startQualityEnforcerLoop() {
+    if (qualityCheckTimer) {
+      clearInterval(qualityCheckTimer);
+      qualityCheckTimer = null;
+    }
+
+    let attempts = 0;
+    qualityCheckTimer = setInterval(() => {
+      attempts++;
+      enforceVideoQuality();
+      if (attempts > 25) {
+        clearInterval(qualityCheckTimer);
+        qualityCheckTimer = null;
+      }
+    }, 400);
+  }
+
+  function setupQualityBridge() {
+    window.addEventListener("message", (event) => {
+      if (event.source !== window || !event.data) return;
+      if (event.data.source === "TADA_QUALITY_CONTROLLER_REQUEST") {
+        if (event.data.type === "UPDATE_SETTINGS") {
+          activeQualitySetting.enabled = Boolean(event.data.enabled);
+          if (event.data.preferredQuality) {
+            activeQualitySetting.preferredQuality = event.data.preferredQuality;
+          }
+          if (activeQualitySetting.enabled) {
+            startQualityEnforcerLoop();
+          }
+        } else if (event.data.type === "NAVIGATE") {
+          lastAppliedQuality = null;
+          lastAppliedVideoId = null;
+          if (activeQualitySetting.enabled) {
+            startQualityEnforcerLoop();
+          }
+        }
+      }
+    });
+
+    document.addEventListener(
+      "play",
+      (e) => {
+        if (e.target && e.target.nodeName === "VIDEO") {
+          if (activeQualitySetting.enabled) {
+            startQualityEnforcerLoop();
+          }
+        }
+      },
+      true
+    );
+  }
+
   patchGlobal("ytInitialPlayerResponse");
   patchGlobal("ytInitialData");
   patchJSONParse();
@@ -1000,4 +1209,5 @@
   spoofAdDetectionGlobals();
   spoofGoogleAdStatus();
   patchYtPlayer();
+  setupQualityBridge();
 })();

@@ -351,5 +351,22 @@
 
 
 
+    // ============================================
+    // 14. YOUTUBE TV (LEANBACK) CLIENT-SIDE SPOOF
+    // ============================================
+    if (window.location.pathname.startsWith('/tv')) {
+        const TV_UA = 'Mozilla/5.0 (PS4; Leanback Shell) Cobalt/26.lts.0-qa; compatible;';
+        try {
+            Object.defineProperty(navigator, 'userAgent', {
+                get: () => TV_UA,
+                configurable: true
+            });
+            Object.defineProperty(navigator, 'appVersion', {
+                get: () => '5.0 (PS4; Leanback Shell) Cobalt/26.lts.0-qa; compatible;',
+                configurable: true
+            });
+        } catch (e) { }
+    }
+
     console.info('[TADa] Anti-bot protections enabled');
 })();

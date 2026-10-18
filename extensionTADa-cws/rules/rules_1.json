@@ -109,5 +109,24 @@
       "resourceTypes": ["xmlhttprequest", "image"],
       "initiatorDomains": ["www.youtube.com", "m.youtube.com"]
     }
+  },
+  {
+    "id": 14,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "User-Agent",
+          "operation": "set",
+          "value": "Mozilla/5.0 (PS4; Leanback Shell) Cobalt/26.lts.0-qa; compatible;"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||youtube.com/tv*",
+      "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
+    }
   }
 ]
+
