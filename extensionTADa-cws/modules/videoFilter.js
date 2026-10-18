@@ -174,6 +174,7 @@ function updateVideoFilterButtonState() {
   const active = isFilterActive(currentSettings);
   btn.classList.toggle("tada-filter-active", active);
   const en = typeof isEn === "function" && isEn();
+  btn.setAttribute("aria-label", en ? "Color & Lighting Filter" : "Bộ lọc màu & Ánh sáng");
   btn.setAttribute("title", active
     ? (en ? "Video Filter (Active)" : "Bộ lọc video (Đang kích hoạt)")
     : (en ? "Color & Lighting Filter (TADa)" : "Bộ lọc màu & Ánh sáng (TADa)"));

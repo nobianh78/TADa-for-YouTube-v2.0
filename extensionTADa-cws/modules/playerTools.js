@@ -459,9 +459,6 @@ function ensureScreenshotButton() {
     btn = document.createElement("button");
     btn.id = SCREENSHOT_BUTTON_ID;
     btn.className = "ytp-button tada-screenshot-button";
-    const scEn = typeof isEn === "function" && isEn();
-    btn.setAttribute("aria-label", scEn ? "Screenshot (S)" : "Chụp ảnh màn hình (S)");
-    btn.setAttribute("title", scEn ? "Capture Screenshot (S) • Right-click / Shift: Copy to Clipboard" : "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
     btn.innerHTML = `
       <div class="toy-camera-wrapper">
         <div class="toy-camera-body">
@@ -494,6 +491,10 @@ function ensureScreenshotButton() {
       rightControls.appendChild(btn);
     }
   }
+
+  const scEn = typeof isEn === "function" && isEn();
+  btn.setAttribute("aria-label", scEn ? "Screenshot (S)" : "Chụp ảnh màn hình (S)");
+  btn.setAttribute("title", scEn ? "Capture Screenshot (S) • Right-click / Shift: Copy to Clipboard" : "Chụp ảnh màn hình (S) • Chuột phải / Shift: Sao chép Clipboard");
 
   if (isNew && typeof applyToolbarLayout === "function") {
     applyToolbarLayout();
@@ -936,6 +937,7 @@ function updateSpeedButtonText() {
     badge.textContent = rateText;
   }
   const spEn = typeof isEn === "function" && isEn();
+  btn.setAttribute("aria-label", spEn ? "Fine Speed Tuning" : "Tốc độ phát vi chỉnh");
   btn.setAttribute("title", spEn ? `Speed: ${rateText} • Click: Menu • Right-click: 1.0x • Scroll: ±0.05x • Keys [>] [<] [=]` : `Tốc độ: ${rateText} • Click: Menu • Chuột phải: 1.0x • Cuộn: ±0.05x • Phím [>] [<] [=]`);
   if (Math.abs(currentCustomSpeed - 1.0) > 0.01) {
     btn.classList.add("tada-speed-customized");
@@ -1643,8 +1645,126 @@ function applyToolbarLayout() {
   } finally {
     isApplyingToolbarLayout = false;
   }
+
+  // Hook YouTube player tooltip translator
+  initPlayerTooltipTranslator();
 }
 window.applyToolbarLayout = applyToolbarLayout;
 globalThis.applyToolbarLayout = applyToolbarLayout;
+
+/* ==========================================================================
+   YouTube Native Player Bar Tooltip & Menu Translator
+   ========================================================================== */
+const YT_PLAYER_I18N = {
+  "Phát (k)": "Play (k)",
+  "Phát (phím k)": "Play (k)",
+  "Phát": "Play",
+  "Tạm dừng (k)": "Pause (k)",
+  "Tạm dừng (phím k)": "Pause (k)",
+  "Tạm dừng": "Pause",
+  "Tiếp theo (SHIFT+n)": "Next (SHIFT+n)",
+  "Video tiếp theo": "Next video",
+  "Video trước đó (SHIFT+p)": "Previous (SHIFT+p)",
+  "Video trước (SHIFT+p)": "Previous (SHIFT+p)",
+  "Tắt tiếng (m)": "Mute (m)",
+  "Tắt tiếng (phím m)": "Mute (m)",
+  "Bật âm thanh (m)": "Unmute (m)",
+  "Bật âm thanh (phím m)": "Unmute (m)",
+  "Phụ đề (c)": "Subtitles/closed captions (c)",
+  "Phụ đề (phím c)": "Subtitles/closed captions (c)",
+  "Tắt phụ đề (c)": "Turn off subtitles (c)",
+  "Tắt phụ đề (phím c)": "Turn off subtitles (c)",
+  "Cài đặt": "Settings",
+  "Trình phát thu nhỏ (i)": "Miniplayer (i)",
+  "Trình phát thu nhỏ (phím i)": "Miniplayer (i)",
+  "Chế độ rạp chiếu phim (t)": "Cinema mode (t)",
+  "Chế độ rạp chiếu phim (phím t)": "Cinema mode (t)",
+  "Chế độ xem mặc định (t)": "Default view (t)",
+  "Chế độ xem mặc định (phím t)": "Default view (t)",
+  "Toàn màn hình (f)": "Full screen (f)",
+  "Toàn màn hình (phím f)": "Full screen (f)",
+  "Thoát khỏi chế độ toàn màn hình (f)": "Exit full screen (f)",
+  "Thoát khỏi chế độ toàn màn hình (phím f)": "Exit full screen (f)",
+  "Tự động phát": "Autoplay",
+  "Tự động phát đang bật": "Autoplay is on",
+  "Tự động phát đang tắt": "Autoplay is off",
+  "Chất lượng": "Quality",
+  "Tốc độ phát": "Playback speed",
+  "Chú thích": "Annotations",
+  "Chuẩn": "Normal",
+  "Chia sẻ": "Share",
+  "Sao chép liên kết": "Copy link"
+};
+
+let ytTooltipObserver = null;
+let ytMenuObserver = null;
+
+function translatePlayerTooltipText(textEl) {
+  if (!textEl || typeof isEn !== "function" || !isEn()) return;
+  const raw = textEl.textContent?.trim();
+  if (!raw) return;
+  if (YT_PLAYER_I18N[raw]) {
+    textEl.textContent = YT_PLAYER_I18N[raw];
+    return;
+  }
+  if (/^Âm lượng/i.test(raw)) {
+    textEl.textContent = raw.replace(/^Âm lượng/i, "Volume");
+  }
+}
+
+function initPlayerTooltipTranslator() {
+  const player = document.getElementById("movie_player") || document.querySelector(".html5-video-player");
+  if (!player) return;
+
+  const tooltipText = player.querySelector(".ytp-tooltip-text");
+  if (tooltipText && !tooltipText.dataset.tadaObserved) {
+    tooltipText.dataset.tadaObserved = "true";
+    ytTooltipObserver = new MutationObserver(() => {
+      translatePlayerTooltipText(tooltipText);
+    });
+    ytTooltipObserver.observe(tooltipText, { characterData: true, childList: true, subtree: true });
+  }
+
+  // Intercept hover on native player controls to translate labels and titles
+  const chromeBottom = player.querySelector(".ytp-chrome-bottom");
+  if (chromeBottom && !chromeBottom.dataset.tadaI18nBound) {
+    chromeBottom.dataset.tadaI18nBound = "true";
+    chromeBottom.addEventListener("mouseover", (e) => {
+      if (typeof isEn !== "function" || !isEn()) return;
+      const btn = e.target.closest?.(".ytp-button");
+      if (!btn) return;
+      const label = btn.getAttribute("aria-label");
+      if (label && YT_PLAYER_I18N[label]) {
+        btn.setAttribute("aria-label", YT_PLAYER_I18N[label]);
+      }
+      const titleAttr = btn.getAttribute("title");
+      if (titleAttr && YT_PLAYER_I18N[titleAttr]) {
+        btn.setAttribute("title", YT_PLAYER_I18N[titleAttr]);
+      }
+      const noTooltip = btn.getAttribute("data-title-no-tooltip");
+      if (noTooltip && YT_PLAYER_I18N[noTooltip]) {
+        btn.setAttribute("data-title-no-tooltip", YT_PLAYER_I18N[noTooltip]);
+      }
+    }, true);
+  }
+
+  // Settings popup menu translation
+  const settingsPanel = player.querySelector(".ytp-settings-menu, .ytp-popup");
+  if (settingsPanel && !settingsPanel.dataset.tadaObserved) {
+    settingsPanel.dataset.tadaObserved = "true";
+    ytMenuObserver = new MutationObserver(() => {
+      if (typeof isEn !== "function" || !isEn()) return;
+      settingsPanel.querySelectorAll(".ytp-menuitem-label, .ytp-menuitem-content").forEach((el) => {
+        const t = el.textContent?.trim();
+        if (t && YT_PLAYER_I18N[t]) {
+          el.textContent = YT_PLAYER_I18N[t];
+        }
+      });
+    });
+    ytMenuObserver.observe(settingsPanel, { childList: true, subtree: true, characterData: true });
+  }
+}
+window.initPlayerTooltipTranslator = initPlayerTooltipTranslator;
+globalThis.initPlayerTooltipTranslator = initPlayerTooltipTranslator;
 
 

@@ -200,6 +200,7 @@ function updateCinemaButtonState() {
 
   btn.classList.toggle("active", isCinemaActive);
   const en = typeof isEn === "function" && isEn();
+  btn.setAttribute("aria-label", en ? "Cinema Mode (Dim lights)" : "Rạp chiếu phim (Tắt đèn)");
   btn.setAttribute(
     "title",
     isCinemaActive
