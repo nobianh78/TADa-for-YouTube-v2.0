@@ -10,16 +10,6 @@
     }
   },
   {
-    "id": 2,
-    "priority": 1,
-    "action": { "type": "block" },
-    "condition": {
-      "urlFilter": "https://www.youtube.com/get_midroll_info",
-      "resourceTypes": ["xmlhttprequest", "script"],
-      "initiatorDomains": ["www.youtube.com"]
-    }
-  },
-  {
     "id": 3,
     "priority": 1,
     "action": { "type": "block" },
@@ -30,43 +20,12 @@
     }
   },
   {
-    "id": 4,
-    "priority": 1,
-    "action": { "type": "block" },
-    "condition": {
-      "regexFilter": "^https:\\/\\/r[0-9]+---sn-[a-z0-9]+\\.googlevideo\\.com\\/.*[?&]adformat=",
-      "resourceTypes": ["media", "xmlhttprequest"],
-      "initiatorDomains": ["www.youtube.com"],
-      "domainType": "thirdParty"
-    }
-  },
-  {
     "id": 5,
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
       "urlFilter": "youtube.com/pagead/",
       "resourceTypes": ["xmlhttprequest", "script", "sub_frame"],
-      "initiatorDomains": ["www.youtube.com", "m.youtube.com"]
-    }
-  },
-  {
-    "id": 6,
-    "priority": 1,
-    "action": { "type": "block" },
-    "condition": {
-      "urlFilter": "youtubei/v1/player/ad_break",
-      "resourceTypes": ["xmlhttprequest"],
-      "initiatorDomains": ["www.youtube.com"]
-    }
-  },
-  {
-    "id": 7,
-    "priority": 1,
-    "action": { "type": "block" },
-    "condition": {
-      "urlFilter": "youtube.com/api/stats/qoe?adcontext",
-      "resourceTypes": ["xmlhttprequest"],
       "initiatorDomains": ["www.youtube.com", "m.youtube.com"]
     }
   },

@@ -589,6 +589,10 @@
         configurable: true,
         get() {
           const value = originalResponseGetter.call(this);
+          // Never run JSON ad-sanitization on binary media chunks (ArrayBuffer, Blob)
+          if (this.responseType && this.responseType !== "json" && this.responseType !== "text" && this.responseType !== "") {
+            return value;
+          }
           return sanitize(value);
         }
       });
@@ -603,18 +607,53 @@
     try {
       const nativeFetch = window.fetch.bind(window);
 
-      // Try to override directly first
-      try {
-        window.fetch = function patchedFetch(input, init) {
-          const blockedUrl = getBlockedUrl(input);
+      function handlePatchedFetch(input, init) {
+        const urlCandidate = normalizeUrlCandidate(input);
+        if (urlCandidate) {
+          // 1. Intercept midroll ad_break endpoint with successful empty response to prevent player error
+          if (urlCandidate.includes("/youtubei/v1/player/ad_break")) {
+            notifyBlocked("fetch", urlCandidate);
+            return Promise.resolve(
+              new Response(
+                JSON.stringify({
+                  responseContext: {},
+                  playabilityStatus: { status: "OK" }
+                }),
+                {
+                  status: 200,
+                  headers: { "Content-Type": "application/json" }
+                }
+              )
+            );
+          }
+
+          // 2. Intercept midroll info with successful empty text response
+          if (urlCandidate.includes("/get_midroll_info")) {
+            notifyBlocked("fetch", urlCandidate);
+            return Promise.resolve(
+              new Response("", {
+                status: 200,
+                headers: { "Content-Type": "text/plain" }
+              })
+            );
+          }
+
+          // 3. Intercept ad stats and tracking endpoints with 204 No Content
+          const blockedUrl = getBlockedUrl(urlCandidate);
           if (blockedUrl) {
             notifyBlocked("fetch", blockedUrl);
-            return Promise.resolve(new Response(null, { status: 204, statusText: "Blocked" }));
+            return Promise.resolve(new Response(null, { status: 204, statusText: "No Content" }));
           }
-          const { input: spoofedInput, init: spoofedInit } = applyLoggedOutSpoof(input, init);
-          return nativeFetch(spoofedInput, spoofedInit);
-        };
-        return; // Success
+        }
+
+        const { input: spoofedInput, init: spoofedInit } = applyLoggedOutSpoof(input, init);
+        return nativeFetch(spoofedInput, spoofedInit);
+      }
+
+      // Try to override directly first
+      try {
+        window.fetch = handlePatchedFetch;
+        return;
       } catch (directError) {
         // Property is read-only, try defineProperty
       }
@@ -624,15 +663,7 @@
         configurable: true,
         enumerable: true,
         writable: true,
-        value: function patchedFetch(input, init) {
-          const blockedUrl = getBlockedUrl(input);
-          if (blockedUrl) {
-            notifyBlocked("fetch", blockedUrl);
-            return Promise.resolve(new Response(null, { status: 204, statusText: "Blocked" }));
-          }
-          const { input: spoofedInput, init: spoofedInit } = applyLoggedOutSpoof(input, init);
-          return nativeFetch(spoofedInput, spoofedInit);
-        }
+        value: handlePatchedFetch
       });
     } catch (error) {
       console.warn('[TADa] Could not patch fetch:', error);
@@ -757,13 +788,6 @@
           };
         }
 
-        // Keep premium flags to prevent ads
-        cfg.data_.PREMIUM_SUBSCRIPTION = true;
-        cfg.data_.PREMIUM_ADS_DISABLED = true;
-        cfg.data_.ACCOUNT_FEATURES = cfg.data_.ACCOUNT_FEATURES || [];
-        if (!cfg.data_.ACCOUNT_FEATURES.includes('adsfree')) {
-          cfg.data_.ACCOUNT_FEATURES.push('adsfree');
-        }
       }
 
       if (typeof cfg.get === "function") {
@@ -772,13 +796,6 @@
           const value = originalGet.call(this, key, defaultValue);
           if (key === "EXPERIMENT_FLAGS") {
             disableEnforcementFlags(value);
-          }
-          // Report as premium user (keeps ads away)
-          if (key === "PREMIUM_SUBSCRIPTION") {
-            return true;
-          }
-          if (key === "PREMIUM_ADS_DISABLED") {
-            return true;
           }
           return value;
         };

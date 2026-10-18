@@ -367,7 +367,7 @@ if (document.readyState === "loading") {
   bootstrap();
 }
 
-window.addEventListener("unload", () => {
+window.addEventListener("pagehide", () => {
   teardownOnInvalidation();
 });
 
